@@ -47,5 +47,4 @@ exec "$(dirname "$0")"/do-configure "$arch" \
      -Dtests=false \
      -Dnewlib-iconv-encodings=none \
      -Dmultilib=true \
-     -Dtinystdio=true \
-     -Dposix-io=false "$@"
+     -Dtinystdio=true "$@"
