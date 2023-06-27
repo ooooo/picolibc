@@ -149,6 +149,145 @@ _trap(void)
 #endif
         __asm__("j      _ctrap");
 }
+#else
+#include <unistd.h>
+
+#define SOC_MCAUSE_ECALL_EXP 0x0000000B
+
+#ifdef __riscv_32e
+#define NUM_REG 16
+#define STACK_FRAME_MEPC_OFFSET 64
+#else
+#define NUM_REG 32
+#define STACK_FRAME_MEPC_OFFSET 128
+#endif
+
+#if __riscv_xlen == 32
+#define SD      "sw"
+#define LD      "lw"
+#else
+#define SD      "sd"
+#define LD      "ld"
+#endif
+
+struct fault {
+        unsigned long   r[NUM_REG];
+        unsigned long   mepc;
+        unsigned long   mstatus;
+        unsigned long   mcause;
+};
+
+void __attribute__((weak)) __section(".init")
+trap_handler(__attribute__((unused)) struct fault *fault)
+{
+        return;
+}
+
+#define _PASTE(r) #r
+#define PASTE(r) _PASTE(r)
+
+void __attribute__((naked)) __section(".init") __attribute__((used)) __attribute((aligned(4)))
+_trap(void)
+{
+#ifndef __clang__
+        __asm__(".option	nopic");
+#endif
+        /* Make space for saved registers */
+        __asm__("addi   sp,sp,%0" :: "i" (-sizeof(struct fault)));
+
+        /* Save registers on stack */
+#define SAVE_REG(num)   \
+        __asm__ volatile (SD"     x%0, %1(sp)" :: "i" (num), \
+                "i" ((num) * sizeof(unsigned long) + offsetof(struct fault, r)))
+
+#define SAVE_REGS_7(base) \
+        SAVE_REG(base+0); SAVE_REG(base+1); SAVE_REG(base+2); SAVE_REG(base+3); \
+        SAVE_REG(base+4); SAVE_REG(base+5); SAVE_REG(base+6)
+
+#define SAVE_REGS_8(base) \
+        SAVE_REG(base+0); SAVE_REG(base+1); SAVE_REG(base+2); SAVE_REG(base+3); \
+        SAVE_REG(base+4); SAVE_REG(base+5); SAVE_REG(base+6); SAVE_REG(base+7)
+
+        SAVE_REGS_7(1);
+        SAVE_REGS_8(8);
+#ifndef __riscv_32e
+        SAVE_REGS_8(16);
+        SAVE_REGS_8(24);
+#endif
+
+#define SAVE_CSR(name)  \
+        __asm__ volatile ("csrr   t0, "PASTE(name)); \
+        __asm__ volatile (SD"  t0, %0(sp)" :: "i" (offsetof(struct fault, name)));
+
+        SAVE_CSR(mepc);
+        SAVE_CSR(mstatus);
+        SAVE_CSR(mcause);
+
+        /*
+        * Add 4 to mepc value if mcause equals to "Machine mode Environment Call(0x0000000B)".
+        */
+        __asm__ volatile (
+                "li t1, %0"
+                : 
+                : "i"(SOC_MCAUSE_ECALL_EXP)
+        );
+        __asm__ volatile(
+                "bne t0, t1, is_not_ecall\n\t"
+                LD" t0, %0(sp)\n\t"
+                "addi t0, t0, 4\n\t"
+                SD" t0, %1(sp)\n\t"
+                "is_not_ecall:\n\t"
+                :
+                :"i"(STACK_FRAME_MEPC_OFFSET), "i"(STACK_FRAME_MEPC_OFFSET)
+        );
+
+        /*
+         * Pass pointer to saved registers in first parameter register
+         */
+        __asm__ volatile ("mv     a0, sp");
+
+        /* Enable FPU (just in case) */
+#ifdef __riscv_flen
+	__asm__ volatile ("csrr	t0, mstatus\n"
+                "li	t1, 8192\n"     	// 1 << 13 = 8192
+                "or	t0, t1, t0\n"
+                "csrw	mstatus, t0\n"
+                "csrwi	fcsr, 0");
+#endif
+        __asm__ volatile ("jal      trap_handler");
+
+        /* Restore registers on stack */
+#define RESTORE_REG(num)   \
+        __asm__ volatile (LD"     x%0, %1(sp)" :: "i" (num), \
+                "i" ((num) * sizeof(unsigned long) + offsetof(struct fault, r)))
+
+#define RESTORE_REGS_7(base) \
+        RESTORE_REG(base+0); RESTORE_REG(base+1); RESTORE_REG(base+2); RESTORE_REG(base+3); \
+        RESTORE_REG(base+4); RESTORE_REG(base+5); RESTORE_REG(base+6)
+
+#define RESTORE_REGS_8(base) \
+        RESTORE_REG(base+0); RESTORE_REG(base+1); RESTORE_REG(base+2); RESTORE_REG(base+3); \
+        RESTORE_REG(base+4); RESTORE_REG(base+5); RESTORE_REG(base+6); RESTORE_REG(base+7)
+
+        RESTORE_REGS_7(1);
+        RESTORE_REGS_8(8);
+#ifndef __riscv_32e
+        RESTORE_REGS_8(16);
+        RESTORE_REGS_8(24);
+#endif
+#define RESTORE_CSR(name)  \
+        __asm__ volatile (LD"  t0, %0(sp)" :: "i" (offsetof(struct fault, name))); \
+        __asm__ volatile ("csrw  " PASTE(name) ", t0");
+
+        RESTORE_CSR(mepc);
+        RESTORE_CSR(mstatus);
+        RESTORE_CSR(mcause);
+
+        /* Free space for saved registers */
+        __asm__ volatile ("addi   sp,sp,%0" :: "i" (sizeof(struct fault)));
+
+        __asm__ volatile ("mret");
+}
 #endif
 
 void __attribute__((naked)) __section(".text.init.enter") __attribute__((used))
@@ -181,6 +320,10 @@ _start(void)
                 "csrwi	fcsr, 0");
 #endif
 #ifdef CRT0_SEMIHOST
+        __asm__("la     t0, _trap");
+        __asm__("csrw   mtvec, t0");
+        __asm__("csrr   t1, mtvec");
+#else
         __asm__("la     t0, _trap");
         __asm__("csrw   mtvec, t0");
         __asm__("csrr   t1, mtvec");
