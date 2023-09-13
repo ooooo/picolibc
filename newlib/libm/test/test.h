@@ -24,6 +24,12 @@
 #include <stdio.h>
 #include <stdint.h>
 
+#ifdef INCLUDE_GENERATE
+#define TEST_CONST
+#else
+#define TEST_CONST const
+#endif
+
 /* FIXME FIXME FIXME:
    Neither of __ieee_{float,double}_shape_type seem to be used anywhere
    except in libm/test.  If that is the case, please delete these from here.
@@ -71,31 +77,31 @@ typedef union
   struct 
   {
 #ifdef __SMALL_BITFIELDS
-    unsigned int fraction3:16;
-    unsigned int fraction2:16;
-    unsigned int fraction1:16;
-    unsigned int fraction0: 4;
+    uint32_t fraction3:16;
+    uint32_t fraction2:16;
+    uint32_t fraction1:16;
+    uint32_t fraction0: 4;
 #else
-    unsigned int fraction1:32;
-    unsigned int fraction0:20;
+    uint32_t fraction1:32;
+    uint32_t fraction0:20;
 #endif
-    unsigned int exponent :11;
-    unsigned int sign     : 1;
+    uint32_t exponent :11;
+    uint32_t sign     : 1;
   } number;
   struct 
   {
 #ifdef __SMALL_BITFIELDS
-    unsigned int function3:16;
-    unsigned int function2:16;
-    unsigned int function1:16;
-    unsigned int function0:3;
+    uint32_t function3:16;
+    uint32_t function2:16;
+    uint32_t function1:16;
+    uint32_t function0:3;
 #else
-    unsigned int function1:32;
-    unsigned int function0:19;
+    uint32_t function1:32;
+    uint32_t function0:19;
 #endif
-    unsigned int quiet:1;
-    unsigned int exponent: 11;
-    unsigned int sign : 1;
+    uint32_t quiet:1;
+    uint32_t exponent: 11;
+    uint32_t sign : 1;
   } nan;
   struct 
   {
@@ -116,18 +122,18 @@ typedef union
   float value;
   struct 
   {
-    unsigned int sign : 1;
-    unsigned int exponent: 8;
-    unsigned int fraction0: 7;
-    unsigned int fraction1: 16;
+    uint32_t sign : 1;
+    uint32_t exponent: 8;
+    uint32_t fraction0: 7;
+    uint32_t fraction1: 16;
   } number;
   struct 
   {
-    unsigned int sign:1;
-    unsigned int exponent:8;
-    unsigned int quiet:1;
-    unsigned int function0:6;
-    unsigned int function1:16;
+    uint32_t sign:1;
+    uint32_t exponent:8;
+    uint32_t quiet:1;
+    uint32_t function0:6;
+    uint32_t function1:16;
   } nan;
   uint32_t p1;
   
@@ -140,18 +146,18 @@ typedef union
   float value;
   struct 
   {
-    unsigned int fraction0: 7;
-    unsigned int fraction1: 16;
-    unsigned int exponent: 8;
-    unsigned int sign : 1;
+    uint32_t fraction0: 7;
+    uint32_t fraction1: 16;
+    uint32_t exponent: 8;
+    uint32_t sign : 1;
   } number;
   struct 
   {
-    unsigned int function1:16;
-    unsigned int function0:6;
-    unsigned int quiet:1;
-    unsigned int exponent:8;
-    unsigned int sign:1;
+    uint32_t function1:16;
+    uint32_t function0:6;
+    uint32_t quiet:1;
+    uint32_t exponent:8;
+    uint32_t sign:1;
   } nan;
   int32_t p1;
   
@@ -176,7 +182,7 @@ typedef struct
 } question_struct_type;
 
 
-typedef struct 
+typedef TEST_CONST struct 
 {
   char error_bit;
   char errno_val;
@@ -224,7 +230,7 @@ int fmag_of_error (float, float);
 
 
 
-typedef struct 
+typedef TEST_CONST struct 
 {
   int line;
   
@@ -237,13 +243,13 @@ typedef struct
 #define ENDSCAN_IS_ZERO	0x80
 #define ENDSCAN_IS_INF	0x80
 
-typedef struct {
+typedef TEST_CONST struct {
   long int value;
   char end;
   char errno_val;
 } int_scan_type;
 
-typedef struct 
+typedef TEST_CONST struct 
 {
   int line;
   int_scan_type octal;
@@ -255,7 +261,7 @@ typedef struct
 } int_type;
 
 
-typedef struct 
+typedef TEST_CONST struct 
 {
   int line;
   double value;
@@ -272,7 +278,7 @@ typedef struct
   char *gfstring;
 } ddouble_type;
 
-typedef struct
+typedef TEST_CONST struct
 {
   int line;
   double value;
@@ -282,10 +288,10 @@ typedef struct
 } sprint_double_type;
 
 
-typedef struct
+typedef TEST_CONST struct
 {
   int line;
-  int value;
+  int32_t value;
   char *result;
   char *format_string;
 } sprint_int_type;

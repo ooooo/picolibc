@@ -48,15 +48,9 @@ foreach target : targets
     _objs = []
   endif
 
-  have_crt_minimal = is_variable('crt0_minimal' + target)
-  if have_crt_minimal
-    _objs_minimal = [get_variable('crt0_minimal'+ target)]
-  else
-    _objs_minimal = _objs
-  endif
-
-  _c_args = value[1] + test_c_args
-  _link_args = value[1] + test_link_args
+  _c_args = value[1] + get_variable('test_c_args_' + target, test_c_args)
+  _link_args = value[1] + get_variable('test_link_args_' + target, test_link_args)
+  _link_depends = get_variable('test_link_depends_' + target, test_link_depends)
 
   t1 = 'printf_scanf'
   if target == ''
@@ -71,7 +65,7 @@ foreach target : targets
 		  link_args: double_printf_link_args + _link_args,
 		  objects: _objs,
 		  link_with: _libs,
-		  link_depends:  test_link_depends,
+		  link_depends:  _link_depends,
 		  include_directories: inc),
        depends: bios_bin,
        env: test_env)
@@ -89,7 +83,7 @@ foreach target : targets
 		  link_args: float_printf_link_args + _link_args,
 		  objects: _objs,
 		  link_with: _libs,
-		  link_depends:  test_link_depends,
+		  link_depends:  _link_depends,
 		  include_directories: inc),
        depends: bios_bin,
        env: test_env)
@@ -189,8 +183,10 @@ foreach target : targets
   t1 = 'hosted-exit'
   if target == ''
     t1_name = t1
+    t1_fail_name = t1 + '-fail'
   else
     t1_name = t1 + '_' + target
+    t1_fail_name = t1 + '-fail_' + target
   endif
 
   test(t1_name,
@@ -203,8 +199,8 @@ foreach target : targets
        depends: bios_bin,
        env: test_env)
 
-  test(t1 + '-fail' + target,
-       executable(t1_name + '-fail', ['hosted-exit.c', 'lock-valid.c'],
+  test(t1_fail_name,
+       executable(t1_fail_name, ['hosted-exit.c', 'lock-valid.c'],
 		  c_args: _c_args + ['-DRETVAL=1'],
 		  link_args:  _link_args,
 		  objects: _objs,
@@ -234,7 +230,12 @@ foreach target : targets
        should_fail: true
       )
 
-  if have_crt_minimal
+  # POSIX console code requires a constructor to run, so
+  # it is incompatible with the minimal crt0 when using stdout
+  # (which lock-valid.c uses).
+
+  if is_variable('crt0_minimal' + target) and not posix_console
+    _objs_minimal = [get_variable('crt0_minimal'+ target)]
     t1 = 'constructor-skip'
     if target == ''
       t1_name = t1
@@ -301,7 +302,7 @@ foreach target : targets
 		  link_args: double_printf_link_args + _link_args,
 		  objects: _objs,
 		  link_with: _libs,
-		  link_depends:  test_link_depends,
+		  link_depends:  _link_depends,
 		  include_directories: inc),
        depends: bios_bin,
        env: test_env,
@@ -322,11 +323,40 @@ foreach target : targets
 		  link_args: double_printf_link_args + _link_args,
 		  objects: _objs,
 		  link_with: _libs,
-		  link_depends:  test_link_depends,
+		  link_depends:  _link_depends,
 		  include_directories: inc),
        depends: bios_bin,
        env: test_env,
+       timeout: 90,
       )
+
+  if have_ubsan
+    t1 = 'test-ubsan'
+    t1_src = t1 + '.c'
+    if target == ''
+      t1_name = t1
+    else
+      t1_name = t1 + '_' + target
+    endif
+
+    test_ubsan_flags = []
+    if sanitize_trap_on_error
+      test_ubsan_flags = ['-DSANITIZE_TRAP_ON_ERROR']
+    endif
+
+    test(t1_name,
+	 executable(t1_name, t1_src,
+		    c_args: c_sanitize_bounds_flags + _c_args + test_ubsan_flags,
+		    link_args: _link_args,
+		    objects: _objs,
+		    link_with: _libs,
+		    link_depends:  _link_depends,
+		    include_directories: inc),
+	 depends: bios_bin,
+	 env: test_env,
+	 should_fail: sanitize_trap_on_error
+	)
+  endif
 
   plain_tests = ['rand', 'regex', 'ungetc', 'fenv',
 		 'malloc', 'tls',
@@ -336,6 +366,7 @@ foreach target : targets
 		 'test-memset', 'test-put',
 		 'test-efcvt', 'test-atomic',
 		 'test-raise',
+                 'test-fma',
 		]
 
   if have_attr_ctor_dtor
@@ -377,7 +408,7 @@ foreach target : targets
 		    link_args: double_printf_link_args + _link_args,
 		    objects: _objs,
 		    link_with: _libs,
-		    link_depends:  test_link_depends,
+		    link_depends:  _link_depends,
 		    include_directories: inc),
          depends: bios_bin,
 	 timeout: 60,
@@ -394,41 +425,54 @@ if enable_native_tests
     test('long_double_native',
 	 executable('long_double_native', 'long_double.c',
 		    c_args: native_c_args,
+		    link_args: native_c_args,
+		    dependencies: native_lib_m))
+    test('test-fma_native',
+	 executable('test-fma_native', 'test-fma.c',
+		    c_args: native_c_args,
+		    link_args: native_c_args,
 		    dependencies: native_lib_m))
     test('math_errhandling_native',
 	 executable('math_errhandling_native', 'math_errhandling.c',
 		    c_args: native_c_args,
+		    link_args: native_c_args,
 		    dependencies: native_lib_m))
     test('rounding-mode_native',
 	 executable('rounding-mode_native',
 		    ['rounding-mode.c', 'rounding-mode-sub.c'],
 		    c_args: native_c_args,
+		    link_args: native_c_args,
 		    dependencies: native_lib_m))
     test('printf-tests_native',
 	 executable('printf-tests_native',
 		    'printf-tests.c',
 		    c_args: native_c_args,
+		    link_args: native_c_args,
 		    dependencies: native_lib_m))
     test('printf_scanf_native',
 	 executable('printf_scanf_native',
 		    'printf_scanf.c',
 		    c_args: native_c_args,
+		    link_args: native_c_args,
 		    dependencies: native_lib_m))
     test('test-efcvt_native',
 	 executable('test-efcvt_native',
 		    'test-efcvt.c',
 		    c_args: native_c_args,
+		    link_args: native_c_args,
 		    dependencies: native_lib_m))
     test('test-strtod_native',
 	 executable('test-strtod_native',
 		    'test-strtod.c',
 		    c_args: native_c_args,
+		    link_args: native_c_args,
 		    dependencies: native_lib_m))
   endif
 
   test('test-atomic-native',
        executable('test-atomic-native', 'test-atomic.c',
-		  c_args: native_c_args))
+		  c_args: native_c_args,
+		  link_args: native_c_args))
 
 endif
 

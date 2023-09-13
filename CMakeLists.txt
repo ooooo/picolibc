@@ -35,7 +35,13 @@
 
 cmake_minimum_required(VERSION 3.20.0)
 
-project(Picolibc VERSION 1.8.1 LANGUAGES C ASM)
+project(Picolibc VERSION 1.8.3 LANGUAGES C ASM)
+
+find_program(CCACHE_PROGRAM ccache)
+if(CCACHE_PROGRAM)
+  message(STATUS "Using ccache: ${CCACHE_PROGRAM}")
+  set(CMAKE_C_COMPILER_LAUNCHER "${CCACHE_PROGRAM}")
+endif()
 
 if(${CMAKE_SYSTEM_PROCESSOR} STREQUAL "arm64")
   set(CMAKE_SYSTEM_PROCESSOR "aarch64")
@@ -193,6 +199,9 @@ picolibc_flag(_HAVE_CC_INHIBIT_LOOP_TO_LIBCALL)
 
 # Compiler supports _Complex
 picolibc_flag(_HAVE_COMPLEX)
+
+# Compiler supports __builtin_complex
+picolibc_flag(_HAVE_BUILTIN_COMPLEX)
 
 # Compiler supports format function attribute
 picolibc_flag(_HAVE_FORMAT_ATTRIBUTE 1)
@@ -465,7 +474,7 @@ set(PREFIX "${PROJECT_BINARY_DIR}")
 configure_file(picolibc.specs.in "${PROJECT_BINARY_DIR}/picolibc.specs" @ONLY)
 
 set(PICOLIBC_COMPILE_OPTIONS
-  "--include" "${PICOLIBC_INCLUDE}/picolibc.h"
+  "-include" "${PICOLIBC_INCLUDE}/picolibc.h"
   "-nostdlib"
   "-D_LIBC"
   ${TLSMODEL}

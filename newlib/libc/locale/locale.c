@@ -194,7 +194,7 @@ static char *categories[_LC_LAST] = {
  * This variable can be changed by any outside mechanism.  This allows,
  * for instance, to load the default locale from a file.
  */
-char __default_locale[ENCODING_LEN + 1] = DEFAULT_LOCALE;
+static const char __default_locale[ENCODING_LEN + 1] = DEFAULT_LOCALE;
 
 const struct __locale_t __C_locale =
 {
@@ -474,7 +474,7 @@ __loadlocale (struct __locale_t *loc, int category, char *new_locale)
      is extracted and stored in ctype_codeset or message_charset
      dependent on the cateogry. */
   char *locale = NULL;
-  char charset[ENCODING_LEN + 1];
+  char charset[ENCODING_LEN + 1] = {};
   long val = 0;
   char *end, *c = NULL;
   int mbc_max;

@@ -38,8 +38,10 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <float.h>
+#include <stdlib.h>
+#include <string.h>
 
-#ifdef LDBL_MANT_DIG
+#ifdef _TEST_LONG_DOUBLE
 
 static long double max_error;
 
@@ -72,7 +74,11 @@ check_long_double(const char *name, int i, long double prec, long double expect,
     if (!within_error(expect, result, prec)) {
         long double diff = fabsl(expect - result);
 #ifdef __PICOLIBC__
-        printf("%s test %d got %.15g expect %.15g diff %.15g\n", name, i, (double) result, (double) expect, (double) diff);
+#ifdef _WANT_IO_LONG_DOUBLE
+        printf("%s test %d got %La expect %La diff %La\n", name, i, result, expect, diff);
+#else
+        printf("%s test %d got %a expect %a diff %a\n", name, i, (double) result, (double) expect, (double) diff);
+#endif
 #else
 //        printf("%s test %d got %.33Lg expect %.33Lg diff %.33Lg\n", name, i, result, expect, diff);
         printf("%s test %d got %La expect %La diff %La\n", name, i, result, expect, diff);
@@ -93,32 +99,40 @@ check_long_long(const char *name, int i, long long expect, long long result)
     return 0;
 }
 
-typedef struct {
+typedef const struct {
     const char *name;
     int (*test)(void);
 } long_double_test_t;
 
-typedef struct {
+typedef const struct {
     int line;
     long double x;
     long double y;
 } long_double_test_f_f_t;
 
-typedef struct {
+typedef const struct {
     int line;
     long double x0;
     long double x1;
     long double y;
 } long_double_test_f_ff_t;
 
-typedef struct {
+typedef const struct {
+    int line;
+    long double x0;
+    long double x1;
+    long double x2;
+    long double y;
+} long_double_test_f_fff_t;
+
+typedef const struct {
     int line;
     long double x0;
     int x1;
     long double y;
 } long_double_test_f_fi_t;
 
-typedef struct {
+typedef const struct {
     int line;
     long double x;
     long long y;
@@ -130,6 +144,7 @@ typedef struct {
  * to some answers getting rounded to an even value instead of the
  * (more accurate) odd value
  */
+#define FMA_PREC 0
 #if LDBL_MANT_DIG == 64
 #define DEFAULT_PREC 0x1p-55L
 #define SQRTL_PREC 0x1.0p-63L
@@ -167,8 +182,12 @@ typedef struct {
 
 #include "long_double_vec.h"
 
-#if defined(_WANT_IO_LONG_DOUBLE) && (defined(TINY_STDIO) || defined(FLOATING_POINT))
+#if !defined(__PICOLIBC__) || (defined(_WANT_IO_LONG_DOUBLE) && (defined(TINY_STDIO) || defined(FLOATING_POINT)))
 #define TEST_IO_LONG_DOUBLE
+#endif
+
+#if defined(__PICOLIBC__) && defined(__m68k__) && !defined(TINY_STDIO)
+#undef TEST_IO_LONG_DOUBLE
 #endif
 
 #ifdef TEST_IO_LONG_DOUBLE
@@ -177,9 +196,92 @@ static long double vals[] = {
     0x1.8p0L,
     3.141592653589793238462643383279502884197169L,
     0.0L,
+    1.0L/0.0L,
+    0.0L/0.0L,
 };
 
 #define NVALS   (sizeof(vals)/sizeof(vals[0]))
+
+static long double
+naive_strtold(const char *buf)
+{
+    long double v = 0.0L;
+    long exp = 0;
+    long double frac_mul = 1.0L / 16.0L;
+    long exp_sign = 1;
+    char c;
+    enum {
+        LDOUBLE_INT,
+        LDOUBLE_FRAC,
+        LDOUBLE_EXP,
+    } state = LDOUBLE_INT;
+
+    if (strncmp(buf, "0x", 2) != 0)
+        return -(long double)INFINITY;
+    buf += 2;
+    while ((c = *buf++)) {
+        int digit;
+        switch (c) {
+        case '.':
+            if (state == LDOUBLE_INT) {
+                state = LDOUBLE_FRAC;
+                continue;
+            }
+            return -(long double)INFINITY;
+        case 'p':
+            if (state == LDOUBLE_INT || state == LDOUBLE_FRAC) {
+                state = LDOUBLE_EXP;
+                continue;
+            }
+            return -(long double)INFINITY;
+        case '-':
+            if (state == LDOUBLE_EXP) {
+                exp_sign = -1;
+                continue;
+            }
+            return -(long double)INFINITY;
+        case '+':
+            if (state == LDOUBLE_EXP) {
+                exp_sign = 1;
+                continue;
+            }
+            return -(long double)INFINITY;
+        case '0': case '1': case '2': case '3': case '4':
+        case '5': case '6': case '7': case '8': case '9':
+            digit = c - '0';
+            break;
+        case 'A': case 'B': case 'C':
+        case 'D': case 'E': case 'F':
+            if (state == LDOUBLE_INT || state == LDOUBLE_FRAC) {
+                digit = c - 'A' + 10;
+                break;
+            }
+            return -(long double)INFINITY;
+        case 'a': case 'b': case 'c':
+        case 'd': case 'e': case 'f':
+            if (state == LDOUBLE_INT || state == LDOUBLE_FRAC) {
+                digit = c - 'a' + 10;
+                break;
+            }
+            return -(long double)INFINITY;
+        default:
+            return -(long double)INFINITY;
+        }
+        switch (state) {
+        case LDOUBLE_INT:
+            v = v * 16.0L + digit;
+            break;
+        case LDOUBLE_FRAC:
+            v = v + digit * frac_mul;
+            frac_mul *= 1.0L / 16.0L;
+            break;
+        case LDOUBLE_EXP:
+            exp = exp * 10 + digit;
+            break;
+        }
+    }
+    return ldexpl(v, exp * exp_sign);
+}
 
 static int
 test_io(void)
@@ -188,6 +290,7 @@ test_io(void)
     int result = 0;
     char buf[80];
     unsigned i;
+    char *end;
 
     for (e = __LDBL_MIN_EXP__ - __LDBL_MANT_DIG__; e <= __LDBL_MAX_EXP__; e++)
     {
@@ -195,9 +298,31 @@ test_io(void)
         for (i = 0; i < NVALS; i++) {
             v = ldexpl(vals[i], e);
             sprintf(buf, "%La", v);
+            if (isinf(v)) {
+                if (strcmp(buf, "inf") != 0) {
+                    printf("test_io is %s should be inf\n", buf);
+                    result++;
+                }
+            } else if (isnan(v)) {
+                if (strcmp(buf, "nan") != 0) {
+                    printf("test_io is %s should be nan\n", buf);
+                    result++;
+                }
+            } else {
+                r = naive_strtold(buf);
+                if (v != r) {
+                    printf("test_io naive i %d val %La exp %d: \"%s\", is %La should be %La\n", i, vals[i], e, buf, r, v);
+                    result++;
+                }
+            }
             sscanf(buf, "%Lf", &r);
-            if (v != r) {
-                printf("%d: \"%s\", is %La should be %La\n", e, buf, r, v);
+            if (v != r && !(isnan(v) && isnan(r))) {
+                printf("test_io scanf i %d val %La exp %d: \"%s\", is %La should be %La\n", i, vals[i], e, buf, r, v);
+                result++;
+            }
+            r = strtold(buf, &end);
+            if ((v != r && !(isnan(v) && isnan(r)))|| end != buf + strlen(buf)) {
+                printf("test_io strtold i %d val %La exp %d: \"%s\", is %La should be %La\n", i, vals[i], e, buf, r, v);
                 result++;
             }
         }
@@ -212,6 +337,15 @@ int main(void)
     unsigned int i;
 
     printf("LDBL_MANT_DIG %d\n", LDBL_MANT_DIG);
+#ifdef __m68k__
+    volatile long double zero = 0.0L;
+    volatile long double one = 1.0L;
+    volatile long double check = nextafterl(zero, one);
+    if (check + check == zero) {
+        printf("m68k emulating long double with double, skipping\n");
+        return 77;
+    }
+#endif
 #ifdef TEST_IO_LONG_DOUBLE
     result += test_io();
 #endif

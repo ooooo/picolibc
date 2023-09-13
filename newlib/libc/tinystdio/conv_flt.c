@@ -39,16 +39,9 @@ static const char pstr_an[] = "an";
 #if defined(STRTOD) || defined(STRTOF) || defined(STRTOLD)
 # define CHECK_WIDTH()   1
 # define CHECK_RANGE(flt) do {                                          \
-        if (CHECK_LONG()) {                                             \
-            if ((double) flt == 0.0 || (double) flt == (double) INFINITY) \
-                errno = ERANGE;                                         \
-        } else if (CHECK_LONG_LONG()) {                                 \
-            if (flt == (FLOAT) 0.0 || flt == (FLOAT) INFINITY)          \
-                errno = ERANGE;                                         \
-        } else {                                                        \
-            if ((float) flt == 0.0f || (float) flt == (float) INFINITY) \
-                errno = ERANGE;                                         \
-        }                                                               \
+        int __class = fpclassify(flt);                                  \
+        if (__class == FP_INFINITE || __class == FP_SUBNORMAL || __class == FP_ZERO) \
+            errno = ERANGE;                                             \
     } while (0);
 # ifdef STRTOD
 #  define CHECK_LONG()          1
@@ -208,7 +201,7 @@ conv_flt (FLT_STREAM *stream, int *lenp, width_t width, void *addr, uint16_t fla
     switch ((unsigned char)i) {
     case '-':
         flags |= FL_MINUS;
-	FALLTHROUGH;
+	__PICOLIBC_FALLTHROUGH;
     case '+':
 	if (!CHECK_WIDTH() || (i = scanf_getc (stream, lenp)) < 0)
 	    return 0;
@@ -330,7 +323,7 @@ conv_flt (FLT_STREAM *stream, int *lenp, width_t width, void *addr, uint16_t fla
 	    switch ((unsigned char)esign) {
             case '-':
 		flags |= FL_MEXP;
-		FALLTHROUGH;
+		__PICOLIBC_FALLTHROUGH;
             case '+':
                 if (!CHECK_WIDTH()) {
                     scanf_ungetc(esign, stream, lenp);
@@ -448,7 +441,7 @@ conv_flt (FLT_STREAM *stream, int *lenp, width_t width, void *addr, uint16_t fla
             if (exp >= FLOAT_MAX_EXP) {
                 flt = (FLOAT) INFINITY;
             } else {
-#if !defined(UINTFLOAT_128) || __LDBL_IS_IEC_60559__ != 0
+#if !defined(UINTFLOAT_128) || __LDBL_IS_IEC_60559__ != 0 || defined(__m68k__)
                 if (UF_LT(uint, UF_LSHIFT_64(1, (FLOAT_MANT_DIG-1)))) {
                     exp = 0;
                 } else {
@@ -461,6 +454,8 @@ conv_flt (FLT_STREAM *stream, int *lenp, width_t width, void *addr, uint16_t fla
                      * the integer bit
                      */
 #define EXP_SHIFT       FLOAT_MANT_DIG
+#elif defined(UINTFLOAT_128) && defined(__m68k__)
+#define EXP_SHIFT   FLOAT_MANT_DIG + 16
 #else
                     uint = UF_AND(uint, UF_NOT(UF_LSHIFT_64(1, (FLOAT_MANT_DIG-1))));
 #define EXP_SHIFT       (FLOAT_MANT_DIG-1)
@@ -471,6 +466,7 @@ conv_flt (FLT_STREAM *stream, int *lenp, width_t width, void *addr, uint16_t fla
 #else /* !defined(UINTFLOAT_128) || __LDBL_IS_IEC_60559__ != 0 */
                 flt = scalbnl(TOFLOAT(uint), exp - (FLOAT_MANT_DIG-1));
 #endif
+                CHECK_RANGE(flt);
             }
         }
         else

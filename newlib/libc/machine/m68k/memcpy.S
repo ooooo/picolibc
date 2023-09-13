@@ -108,5 +108,11 @@ SYM(memcpy):
 	subq.l	#1,d1
 	bpl	1b
 #endif
-	move.l	4(sp),d0	| return value
+	move.l	4(sp),a0	| return value
+	move.l	a0,d0		| in both a0 and d0
 	rts
+	.size	SYM(memcpy), . - SYM(memcpy)
+	
+#if defined(__linux__) && defined(__ELF__)
+	.section .note.GNU-stack,"",%progbits
+#endif

@@ -56,14 +56,17 @@ void myset (char *target, char ch, int size)
     }
 }
 
-static char target[MAX_1] = "A";
-static char buffer2[MAX_1];
-static char buffer3[MAX_1];
-static char buffer4[MAX_1];
-static char buffer5[MAX_2];
-static char buffer6[MAX_2];
-static char buffer7[MAX_2];
-static char expected[MAX_1];
+char *getbuf(size_t size, const char *template)
+{
+    char *buf = calloc(size, 1);
+    if (!buf) {
+        printf("not enough memory\n");
+        exit(77);
+    }
+    if (template)
+        strcpy(buf, template);
+    return buf;
+}
 
 int main(void)
 {
@@ -76,12 +79,20 @@ int main(void)
 
   int test_failed = 0;
 
+  char *target = getbuf(MAX_1, "A");
+  char *buffer2 = getbuf(MAX_1, NULL);
+  char *buffer3 = getbuf(MAX_1, NULL);
+  char *buffer4 = getbuf(MAX_1, NULL);
+  char *buffer5 = getbuf(MAX_2, NULL);
+  char *buffer6 = getbuf(MAX_2, NULL);
+  char *buffer7 = getbuf(MAX_2, NULL);
+  char *expected = getbuf(MAX_1, NULL);
+
   tmp1 = target;
   tmp2 = buffer2;
   tmp3 = buffer3;
   tmp4 = buffer4;
   tmp5 = buffer5;
-  tmp6 = buffer6;
   tmp7 = buffer7;
 
   tmp2[0] = 'Z';

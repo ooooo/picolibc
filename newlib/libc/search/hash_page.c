@@ -31,6 +31,7 @@
  */
 
 #define _DEFAULT_SOURCE
+#define __LINUX_ERRNO_EXTENSIONS__
 #include <sys/param.h>
 #if defined(LIBC_SCCS) && !defined(lint)
 static char sccsid[] = "@(#)hash_page.c	8.7 (Berkeley) 8/16/94";
@@ -851,11 +852,12 @@ static int
 open_temp(HTAB *hashp)
 {
 	sigset_t set, oset;
-	static char namestr[] = "_hashXXXXXX";
+	char namestr[sizeof("_hashXXXXXX")];
 
 	/* Block signals; make sure file goes away at process exit. */
 	(void)sigfillset(&set);
 	(void)sigprocmask(SIG_BLOCK, &set, &oset);
+        strcpy(namestr, "_hashXXXXXX");
 	if ((hashp->fp = mkstemp(namestr)) != -1) {
 		(void)unlink(namestr);
 #ifdef _HAVE_FCNTL

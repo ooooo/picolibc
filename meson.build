@@ -42,7 +42,7 @@ project('picolibc', 'c',
 	],
 	license : 'BSD',
 	meson_version : '>= 0.53',
-	version: '1.8.1'
+	version: '1.8.3'
        )
 
 targets = []
@@ -136,12 +136,13 @@ long_double_code = '''
 #ifndef __LDBL_MANT_DIG__
 #error No long double support in float.h
 #endif
-long double test()
+long double test(void)
 {
 	long double ld = 0.0L;
-	 return ld;
+	return ld;
 }
 '''
+
 have_long_double = cc.compiles(long_double_code, name : 'long double check', args: core_c_args)
 
 have_sizeof_float = cc.get_define('__SIZEOF_FLOAT__') != ''
@@ -210,6 +211,11 @@ endif
 c_flags = cc.get_supported_arguments(['-fno-common', '-frounding-math', '-fsignaling-nans',
 				      '-Wno-unsupported-floating-point-opt', '-fno-stack-protector',
 				      '-fno-builtin-copysignl'])
+
+c_sanitize_bounds_flags = cc.get_supported_arguments(['-fsanitize=bounds'])
+c_sanitize_trap_flags = cc.get_supported_arguments(['-fsanitize-undefined-trap-on-error'])
+c_sanitize_no_trap_flags = cc.get_supported_arguments(['-fno-sanitize-undefined-trap-on-error', '-static-libubsan'])
+have_ubsan = c_sanitize_bounds_flags != []
 c_args += c_flags
 native_c_args += c_flags
 
@@ -221,6 +227,22 @@ if fortify_source == 'none'
   c_args += '-U_FORTIFY_SOURCE'
 else
   c_args += '-D_FORTIFY_SOURCE=' + fortify_source
+endif
+
+sanitize_bounds = get_option('sanitize-bounds')
+sanitize_trap_on_error = get_option('sanitize-trap-on-error')
+
+if sanitize_bounds
+  if not have_ubsan
+    error('sanitize-bounds option selected but -fsanitize=bounds is not supported')
+  endif
+  c_args += c_sanitize_bounds_flags
+  native_c_args += c_sanitize_bounds_flags
+  if sanitize_trap_on_error
+    c_args += c_sanitize_trap_flags
+  else
+    c_args += c_sanitize_no_trap_flags
+  endif
 endif
 
 if cc.symbols_have_underscore_prefix()
@@ -274,12 +296,15 @@ endif
 # Select stdio implementation
 tinystdio = get_option('tinystdio')
 
-has_link_defsym = meson.get_cross_property('has_link_defsym', cc.has_link_argument('-Wl,--defsym=' + global_prefix + '_start=0'))
+has_link_defsym = meson.get_cross_property('has_link_defsym',
+                                           cc.has_link_argument('-Wl,--defsym=' + global_prefix + '_start=0') or
+                                           cc.has_link_argument('-Wl,--defsym=' + global_prefix + '__start=0') )
 has_link_alias = meson.get_cross_property('has_link_alias', cc.has_link_argument('-Wl,-alias,' + global_prefix + 'main,testalias'))
+lib_gcc = meson.get_cross_property('libgcc', '-lgcc')
 
 # tinystdio options
-posix_io = tinystdio and get_option('posix-io')
-posix_console = posix_io and get_option('posix-console')
+posix_console = tinystdio and get_option('posix-console')
+posix_io = tinystdio and (get_option('posix-io') or posix_console)
 io_float_exact = not tinystdio or get_option('io-float-exact')
 atomic_ungetc = tinystdio and get_option('atomic-ungetc')
 format_default = get_option('format-default')
@@ -409,6 +434,9 @@ else
   if posix_console
     error('newlib stdio does not support the posix-console option (posix-console)')
   endif
+  if io_pos_args
+    error('newlib stdio has bugs with positional arguments (io-pos-args)')
+  endif	
 endif
 
 if host_cpu_family == ''
@@ -442,7 +470,7 @@ have_picolibc_tls_api = fs.is_file('newlib/libc/picolib/machine' / host_cpu_fami
 if thread_local_storage_option == 'auto' or thread_local_storage_option == 'picolibc'
   # We assume that _set_tls() is defined in the arch specific tls.c
   if thread_local_storage_option == 'auto' or have_picolibc_tls_api
-    thread_local_storage = not cc.has_function('__emutls_get_address', args: core_c_args + ['-lgcc'])
+    thread_local_storage = not cc.has_function('__emutls_get_address', args: core_c_args + [lib_gcc])
   endif
 else
   thread_local_storage = get_option('thread-local-storage') == 'true'
@@ -696,71 +724,6 @@ picolibcpp_specs = configure_file(input: 'picolibc.specs.in',
 				  install_dir: specs_dir,
 				  install: specs_install)
 
-picolibc_linker_type_data = configuration_data()
-if cc.get_linker_id() == 'ld.lld'
-    # ld.lld does not implement ALIGN_WITH_INPUT, but this flag is not needed
-    # with ld.lld's output section LMA/VMA algorithm.
-    # An added ASSERT() statement in the linker script ensures that we don't
-    # get silent failures in case this changes in the future.
-    picolibc_linker_type_data.set('LDSCRIPT_ALIGN_WITH_INPUT', '')
-    if host_cpu_family == 'riscv'
-        # ld.lld before version 15 did not support linker relaxations, disable
-        # them if we are using an older version.
-        # There is no `cc.get_linker_version()` function, so we detect ld.lld
-        # version 15 by checking for a newly added linker flag.
-        if not cc.has_link_argument('--package-metadata=1')
-            message('Linking for RISCV with ld.lld < 15, forcing -mno-relax')
-            c_args += ['-mno-relax']
-        endif
-    endif
-else
-    picolibc_linker_type_data.set('LDSCRIPT_ALIGN_WITH_INPUT', 'ALIGN_WITH_INPUT')
-endif
-
-picolibc_linker_type_data.set('DEFAULT_FLASH_ADDR',
-			      meson.get_cross_property('default_flash_addr',
-						       '0x10000000'))
-
-picolibc_linker_type_data.set('DEFAULT_FLASH_SIZE',
-			      meson.get_cross_property('default_flash_size',
-						       '0x00010000'))
-
-picolibc_linker_type_data.set('DEFAULT_RAM_ADDR',
-			      meson.get_cross_property('default_ram_addr',
-						       '0x20000000'))
-
-picolibc_linker_type_data.set('DEFAULT_RAM_SIZE',
-			      meson.get_cross_property('default_ram_size',
-						       '0x00008000'))
-
-picolibc_linker_type_data.set('DEFAULT_STACK_SIZE',
-			      meson.get_cross_property('default_stack_size',
-						       '0x00001000'))
-
-picolibc_ld_data = configuration_data()
-picolibc_ld_data.merge_from(picolibc_linker_type_data)
-picolibc_ld_data.set('CPP_START', '/*')
-picolibc_ld_data.set('CPP_END', '*/')
-picolibc_ld_data.set('C_START', '')
-picolibc_ld_data.set('C_END', '')
-
-picolibc_ld = configure_file(input: 'picolibc.ld.in',
-			     output: 'picolibc.ld',
-			     configuration: picolibc_ld_data,
-			     install_dir: lib_dir)
-
-picolibcpp_ld_data = configuration_data()
-picolibcpp_ld_data.merge_from(picolibc_linker_type_data)
-picolibcpp_ld_data.set('CPP_START', '')
-picolibcpp_ld_data.set('CPP_END', '')
-picolibcpp_ld_data.set('C_START', '/*')
-picolibcpp_ld_data.set('C_END', '*/')
-
-picolibcpp_ld = configure_file(input: 'picolibc.ld.in',
-			     output: 'picolibcpp.ld',
-			     configuration: picolibcpp_ld_data,
-			     install_dir: lib_dir)
-
 # Not all compilers necessarily support all warnings; only use these which are:
 c_warnings = [
   '-Werror=implicit-function-declaration',
@@ -769,6 +732,11 @@ c_warnings = [
   '-Wold-style-definition',
   '-Werror=double-promotion',
 ]
+if get_option('analyzer')
+  c_warnings += [
+    '-fanalyzer',
+    ]
+endif
 disabled_warnings = [
   '-Wno-missing-braces',
   '-Wno-implicit-int',
@@ -809,6 +777,13 @@ complex_code = '''
 float _Complex test(float _Complex z) { return z; }
 '''
 have_complex = cc.compiles(complex_code, name : 'supports _Complex', args: core_c_args)
+
+builtin_complex_code = '''
+#include <stddef.h>
+double _Complex test(double r, double i) { return __builtin_complex(r, i); }
+'''
+
+have_builtin_complex = have_complex and cc.compiles(builtin_complex_code, name : 'supports __builtin_complex', args: core_c_args)
 
 # CompCert does not have __builtin_expect
 builtin_expect_code = '''
@@ -927,6 +902,218 @@ else
   target_ = ['.', c_args]
 endif
 
+foreach target : ['default-target'] + targets
+  
+  message('generate linker script target ' + target)
+
+  custom_mem_config = meson.get_cross_property('custom_mem_config_' + target, '')
+
+  if target == 'default-target' or custom_mem_config != ''
+
+    picolibc_linker_type_data = configuration_data()
+    # We need to use different alignment flags for .tdata/.tbss for ld.bfd
+    # (ALIGN_WITH_INPUT, which is not supported by ld.lld) and ld.lld
+    # (ALIGN(__tls_align), which is rejected as non-constant by ld.bfd), so we use
+    # the {BFD,LLD}_{START,END} templates to comment out the incompatible flag.
+    if cc.get_linker_id() == 'ld.lld'
+      picolibc_linker_type_data.set('BFD_START', '/* For ld.bfd: ')
+      picolibc_linker_type_data.set('BFD_END', '*/')
+      picolibc_linker_type_data.set('LLD_START', '')
+      picolibc_linker_type_data.set('LLD_END', '')
+      if host_cpu_family == 'riscv'
+        # ld.lld before version 15 did not support linker relaxations, disable
+        # them if we are using an older version.
+        # There is no `cc.get_linker_version()` function, so we detect ld.lld
+        # version 15 by checking for a newly added linker flag.
+        if not cc.has_link_argument('--package-metadata=1')
+          message('Linking for RISCV with ld.lld < 15, forcing -mno-relax')
+          c_args += ['-mno-relax']
+        endif
+      endif
+    else
+      picolibc_linker_type_data.set('BFD_START', '')
+      picolibc_linker_type_data.set('BFD_END', '')
+      picolibc_linker_type_data.set('LLD_START', '/* For ld.lld: ')
+      picolibc_linker_type_data.set('LLD_END', '*/')
+    endif
+
+    init_memory_template = '''
+        @0@ (rx!w) : ORIGIN = @1@, LENGTH = @2@
+'''
+    init_section_template = '''
+        .@0@ : {
+@1@
+        } >@2@ AT>@2@ :text
+'''
+    default_init_section_template = init_section_template.format('@0@', '''      		KEEP (*(.text.init.enter))
+		KEEP (*(.data.init.enter))
+		KEEP (*(SORT_BY_NAME(.init) SORT_BY_NAME(.init.*)))''',
+                                                                 '@1@')
+
+    additional_sections = []
+
+    fallback_flash_addr = '0x10000000'
+    fallback_flash_size = '0x00010000'
+
+    if meson.get_cross_property('separate_boot_flash_' + custom_mem_config,
+                                meson.get_cross_property('separate_boot_flash', false))
+      boot_flash_addr = meson.get_cross_property(
+        'default_boot_flash_addr_' + custom_mem_config,
+        meson.get_cross_property(
+          'default_boot_flash_addr',
+          '0x10000000'))
+      boot_flash_size = meson.get_cross_property(
+        'default_boot_flash_size_' + custom_mem_config,
+        meson.get_cross_property(
+          'default_boot_flash_size',
+          '0x00000400'))
+      additional_sections = [
+        {
+          'name' : 'boot_flash',
+          'addr' : boot_flash_addr,
+          'size' : boot_flash_size,
+          'contents' : default_init_section_template.format('boot_flash', 'boot_flash')
+        }]
+      fallback_flash_addr = '0x10000400'
+      fallback_flash_size = '0x0000fc00'
+    else
+      additional_section_names = meson.get_cross_property('additional_sections_' + custom_mem_config,
+                                                     meson.get_cross_property('additional_sections', []))
+      if additional_section_names != []
+        foreach section_name : additional_section_names
+          default_content_list =  ['*.(.' + section_name + ')', '*.(.' + section_name + '.*)']
+          content_list = meson.get_cross_property('default_' + section_name + '_contents', default_content_list)
+          contents = ''
+          foreach content : content_list
+            if contents != ''
+              contents += '''
+'''
+            endif
+            contents += '                @0@'.format(content)
+          endforeach
+          additional_sections += [
+            {
+              'name' : section_name,
+              'addr' : meson.get_cross_property('default_' + section_name + '_addr'),
+              'size' : meson.get_cross_property('default_' + section_name + '_size'),
+              'contents' : init_section_template.format(section_name, contents, section_name)
+            }]
+        endforeach
+      endif
+    endif
+                          
+    init_memory = ''
+    init_sections = ''
+
+    if additional_sections != []
+      foreach section : additional_sections
+        section_name = section['name']
+        init_memory += init_memory_template.format(section_name, section['addr'], section['size'])
+        init_sections += section['contents']
+      endforeach
+    else
+      init_memory = ''
+      init_sections = default_init_section_template.format('init', 'flash')
+    endif
+
+    picolibc_linker_type_data.set('INIT_MEMORY', init_memory)
+    picolibc_linker_type_data.set('INIT_SECTIONS', init_sections)
+
+    picolibc_linker_type_data.set(
+      'DEFAULT_FLASH_ADDR', meson.get_cross_property(
+        'default_flash_addr_' + custom_mem_config,
+        meson.get_cross_property(
+          'default_flash_addr',
+          fallback_flash_addr)))
+
+    picolibc_linker_type_data.set(
+      'DEFAULT_FLASH_SIZE', meson.get_cross_property(
+        'default_flash_size_' + custom_mem_config,
+        meson.get_cross_property(
+          'default_flash_size',
+          fallback_flash_size)))
+
+    picolibc_linker_type_data.set(
+      'DEFAULT_RAM_ADDR',
+      meson.get_cross_property('default_ram_addr_' + custom_mem_config,
+                               meson.get_cross_property('default_ram_addr',
+                                                        '0x20000000')))
+
+    picolibc_linker_type_data.set(
+      'DEFAULT_RAM_SIZE',
+      meson.get_cross_property('default_ram_size_' + custom_mem_config,
+                               meson.get_cross_property('default_ram_size',
+                                                        '0x00008000')))
+
+    picolibc_linker_type_data.set(
+      'DEFAULT_STACK_SIZE',
+      meson.get_cross_property('default_stack_size_' + custom_mem_config,
+                               meson.get_cross_property('default_stack_size',
+                                                        '0x00001000')))
+
+    picolibc_linker_type_data.set(
+      'DEFAULT_ALIGNMENT',
+      meson.get_cross_property('default_alignment_' + custom_mem_config,
+                               meson.get_cross_property('default_alignment',
+                                                        '8')))
+
+    picolibc_ld_data = configuration_data()
+    picolibc_ld_data.merge_from(picolibc_linker_type_data)
+    picolibc_ld_data.set('CPP_START', '/*')
+    picolibc_ld_data.set('CPP_END', '*/')
+    picolibc_ld_data.set('C_START', '')
+    picolibc_ld_data.set('C_END', '')
+
+    if target == 'default-target'
+      picolibc_ld_file = 'picolibc.ld'
+      picolibc_ld_variable = 'picolibc_ld'
+      picolibc_ld_config_variable = 'picolibc_ld_config'
+      picolibcpp_ld_file = 'picolibcpp.ld'
+      picolibcpp_ld_variable = 'picolibcpp_ld'
+      picolibcpp_ld_config_variable = 'picolibcpp_ld_config'
+      picolibc_ld_install = true
+    else
+      picolibc_ld_file = 'picolibc_' + custom_mem_config + '.ld'
+      picolibc_ld_variable = 'picolibc_' + target + '_ld'
+      picolibc_ld_config_variable = 'picolibc_' + target + 'ld_config'
+      picolibcpp_ld_file = 'picolibcpp_' + custom_mem_config + '.ld'
+      picolibcpp_ld_variable = 'picolibcpp_' + target + '_ld'
+      picolibcpp_ld_config_variable = 'picolibcpp_' + target + 'ld_config'
+      picolibc_ld_install = false
+    endif
+
+    if not is_variable(picolibc_ld_config_variable)
+      set_variable(picolibc_ld_config_variable,
+                   configure_file(input: 'picolibc.ld.in',
+                                  output: picolibc_ld_file,
+                                  configuration: picolibc_ld_data,
+                                  install: picolibc_ld_install,
+                                  install_dir: lib_dir))
+    endif
+
+    set_variable(picolibc_ld_variable, get_variable(picolibc_ld_config_variable))
+
+    picolibcpp_ld_data = configuration_data()
+    picolibcpp_ld_data.merge_from(picolibc_linker_type_data)
+    picolibcpp_ld_data.set('CPP_START', '')
+    picolibcpp_ld_data.set('CPP_END', '')
+    picolibcpp_ld_data.set('C_START', '/*')
+    picolibcpp_ld_data.set('C_END', '*/')
+
+    if not is_variable(picolibcpp_ld_config_variable)
+      set_variable(picolibcpp_ld_config_variable,
+                 configure_file(input: 'picolibc.ld.in',
+                                output: picolibcpp_ld_file,
+                                configuration: picolibcpp_ld_data,
+                                install: picolibc_ld_install,
+                                install_dir: lib_dir))
+    endif
+                   
+    set_variable(picolibcpp_ld_variable, get_variable(picolibcpp_ld_config_variable))
+
+  endif
+endforeach
+
 conf_data = configuration_data()
 
 # The supported builtins vary depending on compiler and target.
@@ -952,6 +1139,7 @@ builtins = [
   ['builtin_isnan', '__builtin_isnan((long double)42)', 'int'],
   ['builtin_finitel', '__builtin_finitel((long double)42)', 'int'],
   ['builtin_isfinite', '__builtin_isfinite((long double)42)', 'int'],
+  ['builtin_issignalingl', '__builtin_issignalingl((long double)42)', 'int'],
 ]
 foreach builtin : builtins
   builtin_template='''
@@ -1049,6 +1237,7 @@ conf_data.set('_HAVE_BITFIELDS_IN_PACKED_STRUCTS', have_bitfields_in_packed_stru
 conf_data.set('_HAVE_BUILTIN_MUL_OVERFLOW', have_builtin_mul_overflow, description: 'Compiler has __builtin_mul_overflow')
 conf_data.set('_HAVE_BUILTIN_ADD_OVERFLOW', have_builtin_add_overflow, description: 'Compiler has __builtin_add_overflow')
 conf_data.set('_HAVE_COMPLEX', have_complex, description: 'Compiler supports _Complex')
+conf_data.set('_HAVE_BUILTIN_COMPLEX', have_builtin_complex, description: 'Compiler has __builtin_complex')
 conf_data.set('_HAVE_BUILTIN_EXPECT', have_builtin_expect, description: 'Compiler has __builtin_expect')
 conf_data.set('_HAVE_ALLOC_SIZE', have_alloc_size, description: 'The compiler REALLY has the attribute __alloc_size__')
 conf_data.set('_HAVE_ATTRIBUTE_ALWAYS_INLINE',
@@ -1282,6 +1471,11 @@ if tests_enable_stack_protector
   endif
 endif
 
+if have_long_double and get_option('test-long-double')
+  test_c_args += ['-D_TEST_LONG_DOUBLE']
+  native_c_args += ['-D_TEST_LONG_DOUBLE']
+endif
+
 # Meson version 0.53.2 doesn't check for the skip_sanity_check value
 # before attempting to run test fragments during configuration. That
 # means the exe_wrapper value needs to handle being run at that
@@ -1303,17 +1497,12 @@ if cc.get_id() == 'ccomp'
 endif
 
 if has_semihost
-  test_link_args = ['-nostartfiles', '-T', '@0@'.format(picolibc_ld),
-		    '-lgcc'] + additional_libs_list
-  test_linker_files = [picolibc_ld]
   specs = picolibc_specs
 else
   specs = configure_file(input: 'test.specs.in',
 			 output: '@BASENAME@',
 			 configuration: specs_data,
 			 install: false)
-  test_link_args = []
-  test_linker_files = []
 endif
 
 # Clang does not support spec files
@@ -1321,11 +1510,36 @@ specs_line = []
 if cc.get_id() != 'clang'
   specs_line += [specs_prefix + '--specs', specs_prefix + meson.current_build_dir() / '@0@'.format(specs)]
 endif
-
 test_c_args += specs_line
-test_link_args += specs_line
-# Make sure all of the tests get re-linked if the linker scripts change.
-test_link_depends = test_linker_files + [specs]
+
+if has_semihost
+  foreach target : ['default-target'] + targets
+    if target == 'default-target'
+      test_link_args_variable = 'test_link_args'
+      test_linker_files_variable = 'test_linker_files'
+      test_link_depends_variable = 'test_link_depends'
+      picolibc_ld_value = picolibc_ld
+    else
+      test_link_args_variable = 'test_link_args_' + target
+      test_linker_files_variable = 'test_linker_files_' + target
+      test_link_depends_variable = 'test_link_depends_' + target
+      picolibc_ld_value = get_variable('picolibc_' + target + '_ld', picolibc_ld)
+    endif
+
+    set_variable(test_link_args_variable,
+		 ['-nostartfiles', '-T', '@0@'.format(picolibc_ld_value),
+		  lib_gcc] + additional_libs_list + specs_line)
+
+    set_variable(test_linker_files_variable, [picolibc_ld_value])
+
+    # Make sure all of the tests get re-linked if the linker scripts change.
+    set_variable(test_link_depends_variable, [picolibc_ld_value, specs])
+  endforeach
+else
+  test_link_args = specs_line
+  test_linker_files = [specs]
+  test_link_depends = [specs]
+endif
 
 # make sure to include semihost BEFORE picocrt!
 if enable_picocrt
