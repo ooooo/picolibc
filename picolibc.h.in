@@ -362,6 +362,8 @@
 
 #cmakedefine _IO_FLOAT_EXACT
 
+#cmakedefine _PRINTF_SMALL_ULTOA
+
 #cmakedefine _LITE_EXIT
 
 #cmakedefine _MB_CAPABLE
@@ -396,13 +398,21 @@
 
 #cmakedefine _WANT_IO_LONG_LONG
 
+#cmakedefine _WANT_IO_LONG_DOUBLE
+
+#cmakedefine _WANT_MINIMAL_IO_LONG_LONG
+
 #cmakedefine _WANT_IO_POS_ARGS
 
-#cmakedefine FORMAT_DEFAULT_DOUBLE
+#cmakedefine _FORMAT_DEFAULT_DOUBLE
 
-#cmakedefine FORMAT_DEFAULT_FLOAT
+#cmakedefine _FORMAT_DEFAULT_FLOAT
 
-#cmakedefine FORMAT_DEFAULT_INTEGER
+#cmakedefine _FORMAT_DEFAULT_LONG_LONG
+
+#cmakedefine _FORMAT_DEFAULT_INTEGER
+
+#cmakedefine _FORMAT_DEFAULT_MINIMAL
 
 /* math library sets errno */
 #cmakedefine _WANT_MATH_ERRNO
@@ -415,6 +425,9 @@
 #cmakedefine _WANT_USE_LONG_TIME_T
 
 #cmakedefine _WIDE_ORIENT
+
+/* chatty assert */
+#cmakedefine _ASSERT_VERBOSE
 
 /* extended locale support */
 #cmakedefine __HAVE_LOCALE_INFO_EXTENDED__

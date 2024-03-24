@@ -56,16 +56,24 @@ if(CONFIG_PICOLIBC_USE_MODULE)
     endif()
   endfunction()
 
+  function (picolibc_option_val name val)
+    set(${name} ${val} PARENT_SCOPE)
+  endfunction()
+
   # Map Zephyr options to Picolibc options
 
   picolibc_option_true(FAST_STRCMP CONFIG_PICOLIBC_FAST_STRCMP)
   picolibc_option_true("_WANT_IO_C99_FORMATS" CONFIG_PICOLIBC_IO_C99_FORMATS)
-  picolibc_option_true("_WANT_IO_LONG_LONG" CONFIG_PICOLIBC_IO_LONG_LONG)
+  picolibc_option_true("_WANT_MINIMAL_IO_LONG_LONG" CONFIG_PICOLIBC_IO_MINIMAL_LONG_LONG)
   picolibc_option_false("_WANT_IO_PERCENT_B" CONFIG_PICOLIBC_IO_PERCENT_B)
   picolibc_option_true("_WANT_IO_POS_ARGS" CONFIG_PICOLIBC_IO_POS_ARGS)
-  picolibc_option_true("FORMAT_DEFAULT_DOUBLE" CONFIG_PICOLIBC_IO_FLOAT)
-  picolibc_option_false("FORMAT_DEFAULT_INTEGER" CONFIG_PICOLIBC_IO_FLOAT)
-  set(FORMAT_DEFAULT_FLOAT 0)
+  picolibc_option_true("_WANT_IO_LONG_DOUBLE" CONFIG_PICOLIBC_IO_LONG_DOUBLE)
+  picolibc_option_true("_PRINTF_SMALL_ULTOA" CONFIG_PICOLIBC_IO_SMALL_ULTOA)
+  picolibc_option_true("_FORMAT_DEFAULT_DOUBLE" CONFIG_PICOLIBC_IO_FLOAT)
+  picolibc_option_val("_FORMAT_DEFAULT_FLOAT" 0)
+  picolibc_option_true("_FORMAT_DEFAULT_LONG_LONG" CONFIG_PICOLIBC_IO_LONG_LONG)
+  picolibc_option_true("_FORMAT_DEFAULT_INTEGER" CONFIG_PICOLIBC_IO_INTEGER)
+  picolibc_option_true("_FORMAT_DEFAULT_MINIMAL" CONFIG_PICOLIBC_IO_MINIMAL)
   picolibc_option_true("_IO_FLOAT_EXACT" CONFIG_PICOLIBC_IO_FLOAT_EXACT)
   picolibc_option_true("__HAVE_LOCALE_INFO__" CONFIG_PICOLIBC_LOCALE_INFO)
   picolibc_option_true("__HAVE_LOCALE_INFO_EXTENDED__" CONFIG_PICOLIBC_LOCALE_EXTENDED_INFO)
@@ -74,6 +82,7 @@ if(CONFIG_PICOLIBC_USE_MODULE)
   picolibc_option_true("PICOLIBC_TLS" CONFIG_THREAD_LOCAL_STORAGE)
   picolibc_option_true("NEWLIB_GLOBAL_ERRNO" CONFIG_PICOLIBC_GLOBAL_ERRNO)
   picolibc_option_true(PREFER_SIZE_OVER_SPEED CONFIG_SIZE_OPTIMIZATIONS)
+  picolibc_option_true("_ASSERT_VERBOSE" CONFIG_PICOLIBC_ASSERT_VERBOSE)
 
   if(NOT DEFINED CONFIG_THREAD_LOCAL_STORAGE)
     set(__PICOLIBC_ERRNO_FUNCTION z_errno_wrap)
@@ -83,8 +92,6 @@ if(CONFIG_PICOLIBC_USE_MODULE)
   get_property(PICOLIBC_EXTRA_COMPILE_OPTIONS TARGET zephyr_interface PROPERTY INTERFACE_COMPILE_OPTIONS)
 
   # Enable POSIX APIs
-
-  zephyr_compile_options(-D_POSIX_C_SOURCE=200809)
 
   # Link to C library and libgcc (on non-armclang toolchains)
 

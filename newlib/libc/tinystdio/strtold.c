@@ -30,18 +30,11 @@
 
 /* $Id: strtod.c 2191 2010-11-05 13:45:57Z arcanum $ */
 
+#define STRTOLD
 
-#include <ctype.h>
-#include <errno.h>
-#include <limits.h>
-#include <math.h>		/* INFINITY, NAN		*/
-#include <string.h>
-#include <stdlib.h>
-#include <inttypes.h>
-#include <stdbool.h>
 #include "stdio_private.h"
 
-#if defined(_HAVE_LONG_DOUBLE) && !defined(_LDBL_EQ_DBL)
+#if defined(_HAVE_LONG_DOUBLE) && __SIZEOF_LONG_DOUBLE__ > __SIZEOF_DOUBLE__
 
 /**  The strtold() function converts the initial portion of the string pointed
      to by \a nptr to long double representation.
@@ -69,7 +62,6 @@
      returned and \c ERANGE is stored in \c errno.
  */
 
-#define STRTOLD
 #include "conv_flt.c"
 
 long double
@@ -79,7 +71,7 @@ strtold (const char * nptr, char ** endptr)
     long double flt;
     unsigned char ret;
 
-    while (ISSPACE(nptr[len]))
+    while (isspace(nptr[len]))
         len++;
 
     ret = conv_flt(nptr, &len, INT_MAX, &flt, FL_LONG);

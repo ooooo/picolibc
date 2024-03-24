@@ -35,7 +35,7 @@
 
 cmake_minimum_required(VERSION 3.20.0)
 
-project(Picolibc VERSION 1.8.3 LANGUAGES C ASM)
+project(Picolibc VERSION 1.8.6 LANGUAGES C ASM)
 
 find_program(CCACHE_PROGRAM ccache)
 if(CCACHE_PROGRAM)
@@ -347,6 +347,10 @@ set(_LITE_EXIT 1)
 
 set(_PICO_EXIT 1)
 
+if(NOT DEFINED _ASSERT_VERBOSE)
+  option(_ASSERT_VERBOSE "Assert provides verbose information" 1)
+endif()
+
 if(NOT DEFINED _MB_CAPABLE)
   option(_MB_CAPABLE "Enable multi-byte support" 0)
 endif()
@@ -369,26 +373,57 @@ if(NOT DEFINED _WANT_IO_LONG_LONG)
   option(_WANT_IO_LONG_LONG "Support long long in integer printf/scanf" OFF)
 endif()
 
+if(NOT DEFINED _WANT_IO_LONG_DOUBLE)
+  option(_WANT_IO_LONG_DOUBLE "Support long double in printf/scanf" OFF)
+endif()
+
+if(NOT DEFINED _WANT_MINIMAL_IO_LONG_LONG)
+  option(_WANT_MINIMAL_IO_LONG_LONG "Support long long in minimal printf/scanf" OFF)
+endif()
+
 if(NOT DEFINED _WANT_IO_POS_ARGS)
   option(_WANT_IO_POS_ARGS "Support positional args in integer printf/scanf" OFF)
 endif()
 
 option(__IO_FLOAT "Support floating point in printf/scanf by default" OFF)
 
+if(NOT DEFINED _PRINTF_SMALL_ULTOA)
+  option(_PRINTF_SMALL_ULTOA "Avoid soft divide in printf" ON)
+endif()
+
 if(NOT DEFINED _WANT_IO_PERCENT_B)
   option(_WANT_IO_PERCENT_B "Support %b/%B formats in printf/scanf" OFF)
 endif()
 
-if(NOT DEFINED FORMAT_DEFAULT_DOUBLE)
-  set(FORMAT_DEFAULT_DOUBLE ${__IO_FLOAT})
+if(NOT DEFINED _FORMAT_DEFAULT_MINIMAL)
+  set(_FORMAT_DEFAULT_MINIMAL ${IO_MINIMAL})
 endif()
 
-if(NOT DEFINED FORMAT_DEFAULT_FLOAT)
-  set(FORMAT_DEFAULT_FLOAT 0)
+if(_FORMAT_DEFAULT_MINIMAL)
+  set(_FORMAT_DEFAULT_DOUBLE 0)
+  set(_FORMAT_DEFAULT_FLOAT 0)
+  set(_FORMAT_DEFAULT_INTEGER 0)
+  set(_FORMAT_DEFAULT_LONG_LONG 0)
 endif()
 
-if(NOT DEFINED FORMAT_DEFAULT_INTEGER)
-  set(FORMAT_DEFAULT_INTEGER NOT ${__IO_FLOAT})
+if(NOT DEFINED _FORMAT_DEFAULT_DOUBLE)
+  set(_FORMAT_DEFAULT_DOUBLE ${__IO_FLOAT})
+endif()
+
+if(NOT DEFINED _FORMAT_DEFAULT_FLOAT)
+  set(_FORMAT_DEFAULT_FLOAT 0)
+endif()
+
+if(NOT DEFINED _FORMAT_DEFAULT_LONG_LONG)
+  set(_FORMAT_DEFAULT_LONG_LONG 0)
+endif()
+
+if(NOT DEFINED _FORMAT_DEFAULT_INTEGER)
+  if (__IO_FLOAT)
+    set(_FORMAT_DEFAULT_INTEGER 0)
+  else()
+    set(_FORMAT_DEFAULT_INTEGER 1)
+  endif()
 endif()
 
 # math library sets errno
@@ -468,7 +503,11 @@ string(APPEND SPECS_PRINTF "%{DPICOLIBC_FLOAT_PRINTF_SCANF:--defsym=vfprintf=__f
   " %{DPICOLIBC_FLOAT_PRINTF_SCANF:--defsym=vfscanf=__f_vfscanf}"
   " %{DPICOLIBC_DOUBLE_PRINTF_SCANF:--defsym=vfprintf=__d_vfprintf}"
   " %{DPICOLIBC_DOUBLE_PRINTF_SCANF:--defsym=vfscanf=__d_vfscanf}"
-  " %{DPICOLIBC_INTEGER_PRINTF_SCANF:--defsym=vfprintf=__i_vfprintf}")
+  " %{DPICOLIBC_INTEGER_PRINTF_SCANF:--defsym=vfprintf=__i_vfprintf}"
+  " %{DPICOLIBC_INTEGER_PRINTF_SCANF:--defsym=vfscanf=__i_vfscanff}"
+  " %{DPICOLIBC_MINIMAL_PRINTF_SCANF:--defsym=vfprintf=__m_vfprintf}"
+  " %{DPICOLIBC_MINIMAL_PRINTF_SCANF:--defsym=vfscanf=__i_vfscanff}"
+  )
 set(PREFIX "${PROJECT_BINARY_DIR}")
 
 configure_file(picolibc.specs.in "${PROJECT_BINARY_DIR}/picolibc.specs" @ONLY)

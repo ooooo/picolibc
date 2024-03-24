@@ -47,24 +47,67 @@
 #include <wchar.h>
 
 #ifndef __PICOLIBC__
-# define _WANT_IO_C99_FORMATS
-# define _WANT_IO_LONG_LONG
-# define _WANT_IO_POS_ARGS
 # define printf_float(x) ((double) (x))
 #elif defined(TINY_STDIO)
-# ifdef PICOLIBC_INTEGER_PRINTF_SCANF
+# if defined(PICOLIBC_MINIMAL_PRINTF_SCANF)
+#  define NO_FLOATING_POINT
+#  define NO_POS_ARGS
+#  if !defined(_WANT_MINIMAL_IO_LONG_LONG) && __SIZEOF_LONG_LONG__ > __SIZEOF_LONG__
+#   define NO_LONG_LONG
+#  endif
+#  ifndef _WANT_IO_C99_FORMATS
+#   define NO_C99_FORMATS
+#  endif
+# elif defined(PICOLIBC_INTEGER_PRINTF_SCANF)
+#  define NO_FLOATING_POINT
 #  ifndef _WANT_IO_POS_ARGS
 #   define NO_POS_ARGS
 #  endif
-# endif
-# ifdef _WANT_IO_PERCENT_B
-#  define BINARY_FORMAT
+#  if !defined(_WANT_IO_LONG_LONG) && __SIZEOF_LONG_LONG__ > __SIZEOF_LONG__
+#   define NO_LONG_LONG
+#  endif
+#  ifndef _WANT_IO_C99_FORMATS
+#   define NO_C99_FORMATS
+#  endif
+#  ifdef _WANT_IO_PERCENT_B
+#   define BINARY_FORMAT
+#  endif
+# elif defined(PICOLIBC_LONG_LONG_PRINTF_SCANF)
+#  define NO_FLOATING_POINT
+#  ifndef _WANT_IO_POS_ARGS
+#   define NO_POS_ARGS
+#  endif
+#  ifndef _WANT_IO_C99_FORMATS
+#   define NO_C99_FORMATS
+#  endif
+#  ifdef _WANT_IO_PERCENT_B
+#   define BINARY_FORMAT
+#  endif
+# elif defined(PICOLIBC_FLOAT_PRINTF_SCANF) || defined(PICOLIBC_DOUBLE_PRINTF_SCANF)
+#  ifdef _WANT_IO_PERCENT_B
+#   define BINARY_FORMAT
+#  endif
 # endif
 #else
 #define printf_float(x) ((double) (x))
 
+#ifndef _WIDE_ORIENT
+#define NO_WIDE_IO
+#endif
+
 #ifndef _WANT_IO_POS_ARGS
 #define NO_POS_ARGS
+#endif
+#if !defined(_WANT_IO_C99_FORMATS) || defined(_NANO_FORMATTED_IO)
+# define NO_C99_FORMATS
+#endif
+
+#if __SIZEOF_DOUBLE__ != 8
+#define NO_FLOATING_POINT
+#endif
+
+#ifndef _WANT_IO_LONG_LONG
+#define NO_LONG_LONG
 #endif
 
 #ifdef _NANO_FORMATTED_IO
@@ -79,7 +122,7 @@ int (*_reference_scanf_float)() = _scanf_float;
 #endif
 #endif
 
-#if defined(TINY_STDIO) || !defined(NO_FLOATING_POINT)
+#if !defined(NO_FLOATING_POINT)
 static const double test_vals[] = { 1.234567, 1.1, M_PI };
 #endif
 
@@ -99,6 +142,7 @@ check_vsnprintf(char *str, size_t size, const char *format, ...)
 #define LEGACY_NEWLIB
 #endif
 
+#ifndef NO_WIDE_IO
 static struct {
     const wchar_t *str;
     const wchar_t *fmt;
@@ -134,6 +178,7 @@ static struct {
     { .str = L"foo%bar1", .fmt = L"foo%%bar%d", 1 },
     { }
 };
+#endif
 
 int
 main(void)
@@ -166,6 +211,7 @@ main(void)
 	printf ("%g\n", exp(11));
 #endif
 
+#ifndef NO_WIDE_IO
         unsigned wt;
         for (wt = 0; wtest[wt].str; wt++) {
             void *extra;
@@ -177,8 +223,10 @@ main(void)
             }
         }
         wprintf(L"hello world %g\n", 1.0);
+#endif
 
-#if defined(TINY_STDIO) || !defined(NO_FLOATING_POINT)
+#if !defined(NO_FLOATING_POINT)
+        printf("checking floating point\n");
 	sprintf(buf, "%g", printf_float(0.0f));
 	if (strcmp(buf, "0") != 0) {
 		printf("0: wanted \"0\" got \"%s\"\n", buf);
@@ -188,10 +236,11 @@ main(void)
 #endif
 
 #ifndef NO_POS_ARGS
+        printf("checking pos args\n");
         x = y = 0;
         int r = sscanf("3 4", "%2$d %1$d", &x, &y);
         if (x != 4 || y != 3 || r != 2) {
-            printf("pos: wanted %d %d (ret %d) got %d %d (ret %d)", 4, 3, 2, x, y, r);
+            printf("pos: wanted %d %d (ret %d) got %d %d (ret %d)\n", 4, 3, 2, x, y, r);
             errors++;
             fflush(stdout);
         }
@@ -251,6 +300,7 @@ main(void)
 #define VERIFY(prefix, conv) VERIFY_BOTH(prefix, conv, conv)
 
 #ifdef BINARY_FORMAT
+        printf("checking binary format\n");
 #define VERIFY_BINARY(prefix) VERIFY(prefix, "b")
 #pragma GCC diagnostic ignored "-Wformat"
 #pragma GCC diagnostic ignored "-Wformat-extra-args"
@@ -280,11 +330,13 @@ main(void)
 	CHECK_RT(unsigned short, "h");
         CHECK_RT(unsigned int, "");
         CHECK_RT(unsigned long, "l");
-#if defined(_WANT_IO_LONG_LONG) || defined(TINY_STDIO)
+#ifndef NO_LONG_LONG
+        printf("checking long long\n");
         CHECK_RT(unsigned long long, "ll");
 #endif
-#ifndef _NANO_FORMATTED_IO
-#if !defined(_WANT_IO_LONG_LONG) && !defined(TINY_STDIO)
+#ifndef NO_C99_FORMATS
+        printf("checking c99 formats\n");
+#ifdef NO_LONG_LONG
 	if (sizeof(intmax_t) <= sizeof(long))
 #endif
 	{
@@ -300,7 +352,7 @@ main(void)
             void *r = (void *) -1;
             VERIFY("", "p");
         }
-#if defined(TINY_STDIO) || !defined(NO_FLOATING_POINT)
+#if !defined(NO_FLOATING_POINT)
 #ifdef PICOLIBC_FLOAT_PRINTF_SCANF
 #define float_type float
 #define pow(a,b) powf((float) a, (float) b)
@@ -315,7 +367,11 @@ main(void)
 #define float_type double
 #define scanf_format "%lf"
 #if defined(TINY_STDIO) && !defined(_IO_FLOAT_EXACT)
-#define ERROR_MAX 1e-14
+# if __SIZEOF_DOUBLE__ == 4
+#  define ERROR_MAX 1e-6
+# else
+#  define ERROR_MAX 1e-14
+# endif
 #else
 #if (!defined(TINY_STDIO) && defined(_WANT_IO_LONG_DOUBLE))
 /* __ldtoa is really broken */
@@ -368,7 +424,7 @@ main(void)
 				fflush(stdout);
 			}
 
-#ifdef _WANT_IO_C99_FORMATS
+#ifndef NO_C99_FORMATS
 			sprintf(buf, "%.20a", printf_float(v));
 			sscanf(buf, scanf_format, &r);
 			e = fabs(v-r) / v;
@@ -382,7 +438,7 @@ main(void)
 #endif
 
 		}
-#ifdef _WANT_IO_C99_FORMATS
+#ifndef NO_C99_FORMATS
                 sprintf(buf, "0x0.0p%+d", x);
                 sscanf(buf, scanf_format, &r);
                 if (r != (float_type) 0.0)

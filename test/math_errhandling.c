@@ -63,7 +63,7 @@ opt_barrier_double (double x)
   return y;
 }
 
-#ifdef _HAVE_LONG_DOUBLE
+#if __SIZEOF_LONG_DOUBLE__ > 0
 static ALWAYS_INLINE long double
 opt_barrier_long_double (long double x)
 {
@@ -219,13 +219,14 @@ e_to_str(int e)
 #define BIGODD  0x1.123456789abcdef2p+63l
 #define BIGEVEN 0x1.123456789abcdef0p+63l
 #else
-#define BIGODD  0x1.123456789abcdp+52
-#define BIGEVEN 0x1.123456789abccp+52
+#define BIGODD  0x1.123456789abcdp+52l
+#define BIGEVEN 0x1.123456789abccp+52l
 #endif
 #define SMALL __LDBL_DENORM_MIN__
 #define FLOAT_T long double
 #define MIN_VAL __LDBL_DENORM_MIN__
 #define MAX_VAL __LDBL_MAX__
+#define MANT_DIG __LDBL_MANT_DIG__
 #define EPSILON_VAL __LDBL_EPSILON__
 #define sNAN __builtin_nansl("")
 #define force_eval(x) clang_barrier_long_double(x)
@@ -243,6 +244,7 @@ e_to_str(int e)
 #undef SMALL
 #undef MIN_VAL
 #undef MAX_VAL
+#undef MANT_DIG
 #undef EPSILON_VAL
 #undef force_eval
 #undef sNAN
@@ -264,13 +266,21 @@ e_to_str(int e)
 #endif
 #define DOUBLE_EXCEPTION_TEST EXCEPTION_TEST
 
+#if __SIZEOF_DOUBLE__ == 4
+#define BIG 3e38
+#define BIGODD  0x1.123456p+23
+#define BIGEVEN 0x1.123454p+23
+#define SMALL 1e-45
+#else
 #define BIG 1.7e308
 #define BIGODD  0x1.123456789abcdp+52
 #define BIGEVEN 0x1.123456789abccp+52
 #define SMALL 5e-324
+#endif
 #define FLOAT_T double
 #define MIN_VAL __DBL_DENORM_MIN__
 #define MAX_VAL __DBL_MAX__
+#define MANT_DIG __DBL_MANT_DIG__
 #define EPSILON_VAL __DBL_EPSILON__
 #define sNAN __builtin_nans("")
 #define force_eval(x) clang_barrier_double(x)
@@ -289,6 +299,7 @@ e_to_str(int e)
 #undef SMALL
 #undef MIN_VAL
 #undef MAX_VAL
+#undef MANT_DIG
 #undef EPSILON_VAL
 #undef force_eval
 #undef sNAN
@@ -307,6 +318,7 @@ e_to_str(int e)
 #define SMALL 1e-45
 #define MIN_VAL 0x8p-152f
 #define MAX_VAL 0xf.fffffp+124f
+#define MANT_DIG __FLT_MANT_DIG__
 #define EPSILON_VAL 0x1p-23f
 #define sNAN __builtin_nansf("")
 #define force_eval(x) clang_barrier_float(x)

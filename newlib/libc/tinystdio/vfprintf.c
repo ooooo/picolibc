@@ -33,89 +33,127 @@
 /* From: Id: printf_p_new.c,v 1.1.1.9 2002/10/15 20:10:28 joerg_wunsch Exp */
 /* $Id: vfprintf.c 2191 2010-11-05 13:45:57Z arcanum $ */
 
-#define _DEFAULT_SOURCE
-#include <stdarg.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <math.h>
 #include "stdio_private.h"
 #include "../../libm/common/math_config.h"
 
 #ifdef WIDE_CHARS
-#include <wchar.h>
 #define CHAR wchar_t
 #define UCHAR wchar_t
-#undef vfprintf
 #define vfprintf vfwprintf
+#define PRINTF_LEVEL PRINTF_DBL
 #else
 #define CHAR char
 #define UCHAR unsigned char
 #endif
 
-#ifdef PICOLIBC_FLOAT_PRINTF_SCANF
-static inline float
-printf_float_get(uint32_t u)
-{
-    return asfloat(u);
-}
-
-#define PRINTF_FLOAT_ARG(ap) (printf_float_get(va_arg(ap, uint32_t)))
-typedef float printf_float_t;
-typedef int32_t printf_float_int_t;
-#define ASUINT(a) asuint(a)
-#define EXP_BIAS 127
-
-#define dtoa ftoa
-#define DTOA_MINUS FTOA_MINUS
-#define DTOA_ZERO  FTOA_ZERO
-#define DTOA_INF   FTOA_INF
-#define DTOA_NAN   FTOA_NAN
-#define DTOA_CARRY FTOA_CARRY
-#define DTOA_MAX_DIG FTOA_MAX_DIG
-#define __dtoa_engine(x,dtoa,dig,f,dec) __ftoa_engine(x,dtoa,dig,f,dec)
-#include "ftoa_engine.h"
-
-#else
-
-#define PRINTF_FLOAT_ARG(ap) va_arg(ap, double)
-typedef double printf_float_t;
-typedef int64_t printf_float_int_t;
-#define ASUINT(a) asuint64(a)
-#define EXP_BIAS 1023
-#include "dtoa_engine.h"
-
-#if defined(_WANT_IO_LONG_DOUBLE) && __SIZEOF_LONG_DOUBLE__ > __SIZEOF_DOUBLE__
-# define PICOLIBC_LONG_DOUBLE_PRINTF_SCANF
-# include "ldtoa_engine.h"
-#endif
-
-#endif
-
 /*
- * This file can be compiled into more than one flavour.  The default
- * is to offer the usual modifiers and integer formatting support
- * (level 1).  Level 2 includes floating point support.
+ * This file can be compiled into more than one flavour:
+ *
+ *  PRINTF_MIN: limited integer-only support with option for long long
+ *
+ *  PRINTF_STD: full integer support with options for positional
+ *              params and long long
+ *
+ *  PRINTF_LLONG: full integer support including long long with
+ *                options for positional params
+ *
+ *  PRINTF_FLT: full support
  */
 
 #ifndef PRINTF_LEVEL
-#  define PRINTF_LEVEL PRINTF_FLT
-#  ifndef FORMAT_DEFAULT_DOUBLE
+#  define PRINTF_LEVEL PRINTF_DBL
+#  ifndef _FORMAT_DEFAULT_DOUBLE
 #    define vfprintf __d_vfprintf
 #  endif
 #endif
 
-#if PRINTF_LEVEL == PRINTF_STD || PRINTF_LEVEL == PRINTF_FLT
+/*
+ * Compute which features are required. This should match the _HAS
+ * values computed in stdio.h
+ */
 
-#if ((PRINTF_LEVEL >= PRINTF_FLT) || defined(_WANT_IO_LONG_LONG))
-#define PRINTF_LONGLONG
+#if PRINTF_LEVEL == PRINTF_MIN
+# define _NEED_IO_SHRINK
+# if defined(_WANT_MINIMAL_IO_LONG_LONG) && __SIZEOF_LONG_LONG__ > __SIZEOF_LONG__
+#  define _NEED_IO_LONG_LONG
+# endif
+# ifdef _WANT_IO_C99_FORMATS
+#  define _NEED_IO_C99_FORMATS
+# endif
+#elif PRINTF_LEVEL == PRINTF_STD
+# if defined(_WANT_IO_LONG_LONG) && __SIZEOF_LONG_LONG__ > __SIZEOF_LONG__
+#  define _NEED_IO_LONG_LONG
+# endif
+# ifdef _WANT_IO_POS_ARGS
+#  define _NEED_IO_POS_ARGS
+# endif
+# ifdef _WANT_IO_C99_FORMATS
+#  define _NEED_IO_C99_FORMATS
+# endif
+# ifdef _WANT_IO_PERCENT_B
+#  define _NEED_IO_PERCENT_B
+# endif
+#elif PRINTF_LEVEL == PRINTF_LLONG
+# if __SIZEOF_LONG_LONG__ > __SIZEOF_LONG__
+#  define _NEED_IO_LONG_LONG
+# endif
+# ifdef _WANT_IO_POS_ARGS
+#  define _NEED_IO_POS_ARGS
+# endif
+# ifdef _WANT_IO_C99_FORMATS
+#  define _NEED_IO_C99_FORMATS
+# endif
+# ifdef _WANT_IO_PERCENT_B
+#  define _NEED_IO_PERCENT_B
+# endif
+#elif PRINTF_LEVEL == PRINTF_FLT
+# if __SIZEOF_LONG_LONG__ > __SIZEOF_LONG__
+#  define _NEED_IO_LONG_LONG
+# endif
+# define _NEED_IO_POS_ARGS
+# define _NEED_IO_C99_FORMATS
+# ifdef _WANT_IO_PERCENT_B
+#  define _NEED_IO_PERCENT_B
+# endif
+# define _NEED_IO_FLOAT
+#elif PRINTF_LEVEL == PRINTF_DBL
+# if __SIZEOF_LONG_LONG__ > __SIZEOF_LONG__
+#  define _NEED_IO_LONG_LONG
+# endif
+# define _NEED_IO_POS_ARGS
+# define _NEED_IO_C99_FORMATS
+# ifdef _WANT_IO_PERCENT_B
+#  define _NEED_IO_PERCENT_B
+# endif
+# define _NEED_IO_DOUBLE
+# if defined(_WANT_IO_LONG_DOUBLE) && __SIZEOF_LONG_DOUBLE__ > __SIZEOF_DOUBLE__
+#  define _NEED_IO_LONG_DOUBLE
+# endif
+#else
+# error invalid PRINTF_LEVEL
 #endif
 
-#if ((PRINTF_LEVEL >= PRINTF_FLT) || defined(_WANT_IO_POS_ARGS))
-#define PRINTF_POSITIONAL
+#if PRINTF_LEVEL >= PRINTF_FLT
+#include "dtoa.h"
 #endif
 
-#ifdef PRINTF_LONGLONG
+#if defined(_NEED_IO_FLOAT_LONG_DOUBLE) &&  __SIZEOF_LONG_DOUBLE__ > __SIZEOF_DOUBLE__
+#define SKIP_FLOAT_ARG(flags, ap) do {                                  \
+        if ((flags & (FL_LONG | FL_REPD_TYPE)) == (FL_LONG | FL_REPD_TYPE)) \
+            (void) va_arg(ap, long double);                             \
+        else                                                            \
+            (void) va_arg(ap, double);                                  \
+    } while(0)
+#define FLOAT double
+#elif defined(_NEED_IO_FLOAT)
+#define SKIP_FLOAT_ARG(flags, ap) (void) va_arg(ap, uint32_t)
+#define FLOAT float
+#else
+#define SKIP_FLOAT_ARG(flags, ap) (void) va_arg(ap, double)
+#define FLOAT double
+#endif
+
+#ifdef _NEED_IO_LONG_LONG
 typedef unsigned long long ultoa_unsigned_t;
 typedef long long ultoa_signed_t;
 #define SIZEOF_ULTOA __SIZEOF_LONG_LONG__
@@ -156,13 +194,13 @@ typedef long ultoa_signed_t;
 #endif
 
 #if SIZEOF_ULTOA <= 4
-#ifdef _WANT_IO_PERCENT_B
+#ifdef _NEED_IO_PERCENT_B
 #define PRINTF_BUF_SIZE 32
 #else
 #define PRINTF_BUF_SIZE 11
 #endif
 #else
-#ifdef _WANT_IO_PERCENT_B
+#ifdef _NEED_IO_PERCENT_B
 #define PRINTF_BUF_SIZE 64
 #else
 #define PRINTF_BUF_SIZE 22
@@ -178,10 +216,17 @@ typedef long ultoa_signed_t;
 
 /* Order is relevant here and matches order in format string */
 
+#ifdef _NEED_IO_SHRINK
+#define FL_ZFILL	0x0000
+#define FL_PLUS		0x0000
+#define FL_SPACE	0x0000
+#define FL_LPAD		0x0000
+#else
 #define FL_ZFILL	0x0001
 #define FL_PLUS		0x0002
 #define FL_SPACE	0x0004
 #define FL_LPAD		0x0008
+#endif /* else _NEED_IO_SHRINK */
 #define FL_ALT		0x0010
 
 #define FL_WIDTH	0x0020
@@ -193,13 +238,61 @@ typedef long ultoa_signed_t;
 
 #define FL_NEGATIVE	0x0400
 
-#ifdef _WANT_IO_C99_FORMATS
+#ifdef _NEED_IO_C99_FORMATS
 #define FL_FLTHEX       0x0800
 #endif
 #define FL_FLTEXP	0x1000
 #define	FL_FLTFIX	0x2000
 
-#ifdef PRINTF_POSITIONAL
+#ifdef _NEED_IO_C99_FORMATS
+
+#define CHECK_INT_SIZE(c, flags, letter, type)          \
+    if (c == letter) {                                  \
+        if (sizeof(type) == sizeof(int))                \
+            ;                                           \
+        else if (sizeof(type) == sizeof(long))          \
+            flags |= FL_LONG;                           \
+        else if (sizeof(type) == sizeof(long long))     \
+            flags |= FL_LONG|FL_REPD_TYPE;              \
+        else if (sizeof(type) == sizeof(short))         \
+            flags |= FL_SHORT;                          \
+        continue;                                       \
+    }
+
+#define CHECK_C99_INT_SIZES(c, flags)           \
+    CHECK_INT_SIZE(c, flags, 'j', intmax_t);    \
+    CHECK_INT_SIZE(c, flags, 'z', size_t);      \
+    CHECK_INT_SIZE(c, flags, 't', ptrdiff_t);
+
+#else
+#define CHECK_C99_INT_SIZES(c, flags)
+#endif
+
+#define CHECK_INT_SIZES(c, flags) {             \
+        if (c == 'l') {                         \
+            if (flags & FL_LONG)                \
+                flags |= FL_REPD_TYPE;          \
+            flags |= FL_LONG;                   \
+            continue;                           \
+        }                                       \
+                                                \
+        if (c == 'h') {                         \
+            if (flags & FL_SHORT)               \
+                flags |= FL_REPD_TYPE;          \
+            flags |= FL_SHORT;                  \
+            continue;                           \
+        }                                       \
+                                                \
+        /* alias for 'll' */                    \
+        if (c == 'L') {                         \
+            flags |= FL_REPD_TYPE;              \
+            flags |= FL_LONG;                   \
+            continue;                           \
+        }                                       \
+        CHECK_C99_INT_SIZES(c, flags);          \
+    }
+
+#ifdef _NEED_IO_POS_ARGS
 
 typedef struct {
     va_list     ap;
@@ -292,63 +385,19 @@ skip_to_arg(const CHAR *fmt_orig, my_va_list *ap, int target_argno)
                 }
 	    }
 
-	    if (c == 'l') {
-		if (flags & FL_LONG)
-		    flags |= FL_REPD_TYPE;
-		flags |= FL_LONG;
-		continue;
-	    }
+            CHECK_INT_SIZES(c, flags);
 
-	    if (c == 'h') {
-		if (flags & FL_SHORT)
-		    flags |= FL_REPD_TYPE;
-		flags |= FL_SHORT;
-		continue;
-	    }
-
-            /* alias for 'll' */
-            if (c == 'L') {
-                flags |= FL_REPD_TYPE;
-		flags |= FL_LONG;
-		continue;
-            }
-
-#ifdef _WANT_IO_C99_FORMATS
-
-#define CHECK_LONGLONG(type) else if (sizeof(type) == sizeof(long long)) flags |= FL_LONG|FL_REPD_TYPE;
-
-#define CHECK_INT_SIZE(letter, type)			\
-	    if (c == letter) {				\
-		if (sizeof(type) == sizeof(int))	\
-		    ;                                   \
-		else if (sizeof(type) == sizeof(long))	\
-		    flags |= FL_LONG;                   \
-                CHECK_LONGLONG(type)                    \
-		else if (sizeof(type) == sizeof(short))	\
-		    flags |= FL_SHORT;			\
-                continue;                               \
-	    }
-
-	    CHECK_INT_SIZE('j', intmax_t);
-	    CHECK_INT_SIZE('z', size_t);
-	    CHECK_INT_SIZE('t', ptrdiff_t);
-#endif
 	    break;
 	} while ( (c = *fmt++) != 0);
         if (argno == 0)
             break;
         if (argno == current_argno) {
-            if ((TOLOW(c) >= 'e' && TOLOW(c) <= 'g')
-#ifdef _WANT_IO_C99_FORMATS
-                || TOLOW(c) == 'a'
+            if ((TOLOWER(c) >= 'e' && TOLOWER(c) <= 'g')
+#ifdef _NEED_IO_C99_FORMATS
+                || TOLOWER(c) == 'a'
 #endif
                 ) {
-#ifdef PICOLIBC_LONG_DOUBLE_PRINTF_SCANF
-                if ((flags & (FL_LONG | FL_REPD_TYPE)) == (FL_LONG | FL_REPD_TYPE))
-                    (void) va_arg(ap->ap, long double);
-                else
-#endif
-                    (void) PRINTF_FLOAT_ARG(ap->ap);
+                SKIP_FLOAT_ARG(flags, ap->ap);
             } else if (c == 'c') {
                 (void) va_arg (ap->ap, int);
             } else if (c == 's') {
@@ -373,7 +422,7 @@ int vfprintf (FILE * stream, const CHAR *fmt, va_list ap_orig)
     uint16_t flags;
     int width;
     int prec;
-#ifdef PRINTF_POSITIONAL
+#ifdef _NEED_IO_POS_ARGS
     int argno;
     my_va_list my_ap;
     const CHAR *fmt_orig = fmt;
@@ -385,16 +434,15 @@ int vfprintf (FILE * stream, const CHAR *fmt, va_list ap_orig)
 	char __buf[PRINTF_BUF_SIZE];	/* size for -1 in smallest base, without '\0'	*/
 #if PRINTF_LEVEL >= PRINTF_FLT
 	struct dtoa __dtoa;
-#ifdef PICOLIBC_LONG_DOUBLE_PRINTF_SCANF
-        struct ldtoa __ldtoa;
-#endif
 #endif
     } u;
     const char * pnt;
+#ifndef _NEED_IO_SHRINK
     size_t size;
+#endif
 
 #define buf	(u.__buf)
-#define _dtoa	(u.__dtoa)
+#define dtoa	(u.__dtoa)
 
     int stream_len = 0;
 
@@ -406,7 +454,7 @@ int vfprintf (FILE * stream, const CHAR *fmt, va_list ap_orig)
     if ((stream->flags & __SWR) == 0)
 	return EOF;
 
-#ifdef PRINTF_POSITIONAL
+#ifdef _NEED_IO_POS_ARGS
     va_copy(ap, ap_orig);
 #endif
 
@@ -425,7 +473,7 @@ int vfprintf (FILE * stream, const CHAR *fmt, va_list ap_orig)
 	flags = 0;
 	width = 0;
 	prec = 0;
-#ifdef PRINTF_POSITIONAL
+#ifdef _NEED_IO_POS_ARGS
         argno = 0;
 #endif
 
@@ -458,6 +506,7 @@ int vfprintf (FILE * stream, const CHAR *fmt, va_list ap_orig)
 
 	    if (flags < FL_LONG) {
 		if (c >= '0' && c <= '9') {
+#ifndef _NEED_IO_SHRINK
 		    c -= '0';
 		    if (flags & FL_PREC) {
 			prec = 10*prec + c;
@@ -465,10 +514,11 @@ int vfprintf (FILE * stream, const CHAR *fmt, va_list ap_orig)
 		    }
 		    width = 10*width + c;
 		    flags |= FL_WIDTH;
+#endif
 		    continue;
 		}
 		if (c == '*') {
-#ifdef PRINTF_POSITIONAL
+#ifdef _NEED_IO_POS_ARGS
                     /*
                      * Positional args must be used together, so wait
                      * for the value to appear before dealing with
@@ -479,13 +529,20 @@ int vfprintf (FILE * stream, const CHAR *fmt, va_list ap_orig)
 #endif
 		    if (flags & FL_PREC) {
 			prec = va_arg(ap, int);
+#ifdef _NEED_IO_SHRINK
+                        (void) prec;
+#endif
 		    } else {
 			width = va_arg(ap, int);
 			flags |= FL_WIDTH;
+#ifdef _NEED_IO_SHRINK
+                        (void) width;
+#else
 			if (width < 0) {
 			    width = -width;
 			    flags |= FL_LPAD;
 			}
+#endif
 		    }
 		    continue;
 		}
@@ -495,7 +552,7 @@ int vfprintf (FILE * stream, const CHAR *fmt, va_list ap_orig)
 		    flags |= FL_PREC;
 		    continue;
 		}
-#ifdef PRINTF_POSITIONAL
+#ifdef _NEED_IO_POS_ARGS
                 /* Check for positional args */
                 if (c == '$') {
                     /* Check if we've already got the arg position and
@@ -520,52 +577,12 @@ int vfprintf (FILE * stream, const CHAR *fmt, va_list ap_orig)
 #endif
 	    }
 
-	    if (c == 'l') {
-		if (flags & FL_LONG)
-		    flags |= FL_REPD_TYPE;
-		flags |= FL_LONG;
-		continue;
-	    }
-
-	    if (c == 'h') {
-		if (flags & FL_SHORT)
-		    flags |= FL_REPD_TYPE;
-		flags |= FL_SHORT;
-		continue;
-	    }
-
-            /* alias for 'll' */
-            if (c == 'L') {
-                flags |= FL_REPD_TYPE;
-		flags |= FL_LONG;
-		continue;
-            }
-
-#define CHECK_LONGLONG(type) else if (sizeof(type) == sizeof(long long)) flags |= FL_LONG|FL_REPD_TYPE;
-
-#ifdef _WANT_IO_C99_FORMATS
-
-#define CHECK_INT_SIZE(letter, type)			\
-	    if (c == letter) {				\
-		if (sizeof(type) == sizeof(int))	\
-		    ;                                   \
-		else if (sizeof(type) == sizeof(long))	\
-		    flags |= FL_LONG;                   \
-                CHECK_LONGLONG(type)                    \
-		else if (sizeof(type) == sizeof(short))	\
-		    flags |= FL_SHORT;			\
-                continue;                               \
-	    }
-
-	    CHECK_INT_SIZE('j', intmax_t);
-	    CHECK_INT_SIZE('z', size_t);
-	    CHECK_INT_SIZE('t', ptrdiff_t);
-#endif
+            CHECK_INT_SIZES(c, flags);
 
 	    break;
 	} while ( (c = *fmt++) != 0);
 
-#ifdef PRINTF_POSITIONAL
+#ifdef _NEED_IO_POS_ARGS
         /* Set arg pointers for positional args */
         if (argno) {
             va_end(ap);
@@ -574,6 +591,7 @@ int vfprintf (FILE * stream, const CHAR *fmt, va_list ap_orig)
         }
 #endif
 
+#ifndef _NEED_IO_SHRINK
 	/* This can happen only when prec is set via a '*'
 	 * specifier, in which case it works as if no precision
 	 * was specified. Set the precision to zero and clear the
@@ -583,18 +601,16 @@ int vfprintf (FILE * stream, const CHAR *fmt, va_list ap_orig)
 	    prec = 0;
 	    flags &= ~FL_PREC;
 	}
+#endif
 
 	/* Only a format character is valid.	*/
 
-#if	'F' != 'E'+1  ||  'G' != 'F'+1  ||  'f' != 'e'+1  ||  'g' != 'f'+1
-# error
-#endif
-
 #define TOCASE(c)       ((c) - case_convert)
 
-	if ((TOLOW(c) >= 'e' && TOLOW(c) <= 'g')
-#ifdef _WANT_IO_C99_FORMATS
-            || TOLOW(c) == 'a'
+#ifndef _NEED_IO_SHRINK
+	if ((TOLOWER(c) >= 'e' && TOLOWER(c) <= 'g')
+#ifdef _NEED_IO_C99_FORMATS
+            || TOLOWER(c) == 'a'
 #endif
             )
         {
@@ -607,10 +623,10 @@ int vfprintf (FILE * stream, const CHAR *fmt, va_list ap_orig)
 	    uint8_t ndigs_exp;		/* number of digis in exponent */
 
             /* deal with upper vs lower case */
-            case_convert = TOLOW(c) - c;
-            c = TOLOW(c);
+            case_convert = TOLOWER(c) - c;
+            c = TOLOWER(c);
 
-#ifdef PICOLIBC_LONG_DOUBLE_PRINTF_SCANF
+#ifdef _NEED_IO_LONG_DOUBLE
             if ((flags & (FL_LONG | FL_REPD_TYPE)) == (FL_LONG | FL_REPD_TYPE))
             {
                 long double fval;
@@ -618,110 +634,20 @@ int vfprintf (FILE * stream, const CHAR *fmt, va_list ap_orig)
 
                 ndigs = 0;
 
-#ifdef _WANT_IO_C99_FORMATS
+#ifdef _NEED_IO_C99_FORMATS
                 if (c == 'a') {
-                    _u128 fi;
-                    _u128 s;
 
                     c = 'p';
                     flags |= FL_FLTEXP | FL_FLTHEX;
 
-                    ndigs = (__LDBL_MANT_DIG__ + 3) / 4;
-                    fi = asuint128(fval);
-
-
-#if __LDBL_MANT_DIG__ == 64
-#define LEXP_BIAS       (__LDBL_MAX_EXP__ + 2)
-#define LEXP_INF        (__LDBL_MAX_EXP__ - 3)
-#define LSIG_BITS       (__LDBL_MANT_DIG__)
-#ifdef __m68k__
-#define LDENORM_EXP_BIAS 0
-#else
-#define LDENORM_EXP_BIAS 1
-#define LSIG_MSB_INF    _u128_lshift(to_u128(1), __LDBL_MANT_DIG__-1)
-#endif
-#if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
-#define LEXP_SHIFT       __LDBL_MANT_DIG__
-#define LSIGN_SHIFT        79
-#endif
-#if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
-#define LEXP_SHIFT       (__LDBL_MANT_DIG__ + 16)
-#define LSIGN_SHIFT        (79 + 16)
-#endif
-#else
-#define LDENORM_EXP_BIAS 1
-#define LSIGN_SHIFT        127
-#define LEXP_BIAS       (__LDBL_MAX_EXP__ - 1)
-#define LEXP_INF        (__LDBL_MAX_EXP__)
-#define LSIG_MSB        _u128_lshift(to_u128(1), __LDBL_MANT_DIG__-1)
-#define LSIG_BITS       (__LDBL_MANT_DIG__ - 1)
-#define LEXP_SHIFT      (__LDBL_MANT_DIG__ - 1)
-#endif
-#define LEXP_MASK        ((__LDBL_MAX_EXP__ - 1) + __LDBL_MAX_EXP__)
-#define LSIG_SHIFT       0
-#define LSIG_MASK        _u128_minus_64(_u128_lshift(to_u128(1), LSIG_BITS), 1)
-
-                    exp = _u128_and_64(_u128_rshift(fi, LEXP_SHIFT), LEXP_MASK);
-                    _dtoa.flags = 0;
-                    if (_u128_and_64(_u128_rshift(fi, LSIGN_SHIFT), 1))
-                        _dtoa.flags = DTOA_MINUS;
-                    s = fi = _u128_lshift(_u128_and(fi, LSIG_MASK), LSIG_SHIFT);
-                    if (!_u128_is_zero(s) || exp != 0) {
-                        if (exp == 0)
-                            exp = LDENORM_EXP_BIAS;
-                        else
-                        {
-#ifdef LSIG_MSB
-                            s = _u128_or(s, LSIG_MSB);
-#endif
-                        }
-                        exp -= LEXP_BIAS;
-                    }
-
                     if (!(flags & FL_PREC))
-                        prec = 0;
-                    else if (prec >= (ndigs - 1))
-                        prec = ndigs - 1;
-                    else {
-                        int     bits = ((ndigs - 1) - prec) << 2;
-                        _u128   half = _u128_lshift(to_u128(1), bits - 1);
-                        _u128   mask = _u128_not(_u128_minus_64(_u128_lshift(half, 1), 1));
-
-                        /* round even */
-                        if (_u128_gt(_u128_and(s, _u128_not(mask)), half) || _u128_and_64(_u128_rshift(s, bits), 1) != 0)
-                            s = _u128_plus(s, half);
-
-                        s = _u128_and(s, mask);
-                    }
-
-                    if (exp == LEXP_INF) {
-#ifdef LSIG_MSB_INF
-                        if (!_u128_eq(fi, LSIG_MSB_INF))
-#else
-                        if (!_u128_is_zero(fi))
-#endif
-                            _dtoa.flags |= DTOA_NAN;
-                        else
-                            _dtoa.flags |= DTOA_INF;
-                    } else {
-                        int8_t d;
-                        for (d = ndigs - 1; d >= 0; d--) {
-                            char dig = _u128_and_64(s, 0xf);
-                            s = _u128_rshift(s, 4);
-                            if (dig == 0 && d > prec)
-                                continue;
-                            if (dig <= 9)
-                                dig += '0';
-                            else
-                                dig += TOCASE('a' - 10);
-                            _dtoa.digits[d] = dig;
-                            if (prec < d)
-                                prec = d;
-                        }
-                    }
+                        prec = -1;
+                    prec = __lfloat_x_engine(fval, &dtoa, prec, case_convert);
+                    ndigs = prec + 1;
+                    exp = dtoa.exp;
                     ndigs_exp = 1;
                 } else
-#endif /* _WANT_IO_C99_FORMATS */
+#endif /* _NEED_IO_C99_FORMATS */
                 {
                     int ndecimal = 0;	        /* digits after decimal (for 'f' format) */
                     bool fmode = false;
@@ -732,7 +658,7 @@ int vfprintf (FILE * stream, const CHAR *fmt, va_list ap_orig)
                         ndigs = prec + 1;
                         flags |= FL_FLTEXP;
                     } else if (c == 'f') {
-                        ndigs = DTOA_MAX_DIG;
+                        ndigs = LONG_FLOAT_MAX_DIG;
                         ndecimal = prec;
                         flags |= FL_FLTFIX;
                         fmode = true;
@@ -742,105 +668,38 @@ int vfprintf (FILE * stream, const CHAR *fmt, va_list ap_orig)
                         if (ndigs < 1) ndigs = 1;
                     }
 
-                    if (ndigs > DTOA_MAX_DIG)
-                        ndigs = DTOA_MAX_DIG;
+                    if (ndigs > LONG_FLOAT_MAX_DIG)
+                        ndigs = LONG_FLOAT_MAX_DIG;
 
-                    ndigs = __dtoa_engine ((double) fval, &_dtoa, ndigs, fmode, ndecimal);
-                    exp = _dtoa.exp;
+                    ndigs = __lfloat_d_engine(fval, &dtoa, ndigs, fmode, ndecimal);
+
+                    exp = dtoa.exp;
                     ndigs_exp = 2;
                 }
             }
             else
 #endif
             {
-                printf_float_t fval;        /* value to print */
-
+                FLOAT fval;        /* value to print */
                 fval = PRINTF_FLOAT_ARG(ap);
 
                 ndigs = 0;
 
-#ifdef _WANT_IO_C99_FORMATS
+#ifdef _NEED_IO_C99_FORMATS
                 if (c == 'a') {
-                    printf_float_int_t fi;
-                    ultoa_signed_t      s;
 
                     c = 'p';
                     flags |= FL_FLTEXP | FL_FLTHEX;
 
-#ifdef PICOLIBC_FLOAT_PRINTF_SCANF
-                    ndigs = 7;
-#else
-                    ndigs = 14;
-#endif
-                    fi = ASUINT(fval);
-
-                    _dtoa.digits[0] = '0';
-#ifdef PICOLIBC_FLOAT_PRINTF_SCANF
-#define EXP_SHIFT       23
-#define EXP_MASK        0xff
-#define SIG_SHIFT       1
-#define SIG_MASK        0x7fffff
-#else
-#define EXP_SHIFT       52
-#define EXP_MASK        0x7ff
-#define SIG_SHIFT       0
-#define SIG_MASK        0xfffffffffffffLL
-#endif
-                    exp = ((fi >> EXP_SHIFT) & EXP_MASK);
-                    s = (fi & SIG_MASK) << SIG_SHIFT;
-                    if (s | exp) {
-                        if (!exp)
-                            exp = 1;
-                        else
-                            _dtoa.digits[0] = '1';
-                        exp -= EXP_BIAS;
-                    }
-                    _dtoa.flags = 0;
-                    if (fi < 0)
-                        _dtoa.flags = DTOA_MINUS;
-
                     if (!(flags & FL_PREC))
-                        prec = 0;
-                    else if (prec >= (ndigs - 1))
-                        prec = ndigs - 1;
-                    else {
-                        int                 bits = ((ndigs - 1) - prec) << 2;
-                        ultoa_signed_t      half = ((ultoa_signed_t) 1) << (bits - 1);
-                        ultoa_signed_t      mask = ~((half << 1) - 1);
+                        prec = -1;
 
-                        /* round even */
-                        if ((s & ~mask) > half || ((s >> bits) & 1) != 0)
-                            s += half;
-                        /* special case rounding first digit */
-                        if (s > (SIG_MASK << SIG_SHIFT))
-                            _dtoa.digits[0]++;
-                        s &= mask;
-                    }
-
-                    if (exp == EXP_BIAS + 1) {
-                        if (s)
-                            _dtoa.flags |= DTOA_NAN;
-                        else
-                            _dtoa.flags |= DTOA_INF;
-                    } else {
-                        uint8_t d;
-                        for (d = ndigs - 1; d; d--) {
-                            char dig = s & 0xf;
-                            s >>= 4;
-                            if (dig == 0 && d > prec)
-                                continue;
-                            if (dig <= 9)
-                                dig += '0';
-                            else
-                                dig += TOCASE('a' - 10);
-                            _dtoa.digits[d] = dig;
-                            if (prec < d)
-                                prec = d;
-                        }
-                    }
+                    prec = __float_x_engine(fval, &dtoa, prec, case_convert);
+                    ndigs = prec + 1;
+                    exp = dtoa.exp;
                     ndigs_exp = 1;
                 } else
-#endif /* _WANT_IO_C99_FORMATS */
+#endif /* _NEED_IO_C99_FORMATS */
                 {
                     int ndecimal = 0;	        /* digits after decimal (for 'f' format) */
                     bool fmode = false;
@@ -851,7 +710,7 @@ int vfprintf (FILE * stream, const CHAR *fmt, va_list ap_orig)
                         ndigs = prec + 1;
                         flags |= FL_FLTEXP;
                     } else if (c == 'f') {
-                        ndigs = DTOA_MAX_DIG;
+                        ndigs = FLOAT_MAX_DIG;
                         ndecimal = prec;
                         flags |= FL_FLTFIX;
                         fmode = true;
@@ -861,11 +720,11 @@ int vfprintf (FILE * stream, const CHAR *fmt, va_list ap_orig)
                         if (ndigs < 1) ndigs = 1;
                     }
 
-                    if (ndigs > DTOA_MAX_DIG)
-                        ndigs = DTOA_MAX_DIG;
+                    if (ndigs > FLOAT_MAX_DIG)
+                        ndigs = FLOAT_MAX_DIG;
 
-                    ndigs = __dtoa_engine (fval, &_dtoa, ndigs, fmode, ndecimal);
-                    exp = _dtoa.exp;
+                    ndigs = __float_d_engine (fval, &dtoa, ndigs, fmode, ndecimal);
+                    exp = dtoa.exp;
                     ndigs_exp = 2;
                 }
             }
@@ -873,24 +732,24 @@ int vfprintf (FILE * stream, const CHAR *fmt, va_list ap_orig)
 		    ndigs_exp = 2;
 	    if (exp < -99 || 99 < exp)
 		    ndigs_exp = 3;
-#ifndef PICOLIBC_FLOAT_PRINTF_SCANF
+#ifdef _NEED_IO_FLOAT64
 	    if (exp < -999 || 999 < exp)
 		    ndigs_exp = 4;
-#ifdef PICOLIBC_LONG_DOUBLE_PRINTF_SCANF
+#ifdef _NEED_IO_FLOAT_LARGE
 	    if (exp < -9999 || 9999 < exp)
 		    ndigs_exp = 5;
 #endif
 #endif
 
 	    sign = 0;
-	    if (_dtoa.flags & DTOA_MINUS)
+	    if (dtoa.flags & DTOA_MINUS)
 		sign = '-';
 	    else if (flags & FL_PLUS)
 		sign = '+';
 	    else if (flags & FL_SPACE)
 		sign = ' ';
 
-	    if (_dtoa.flags & (DTOA_NAN | DTOA_INF))
+	    if (dtoa.flags & (DTOA_NAN | DTOA_INF))
 	    {
 		ndigs = sign ? 4 : 3;
 		if (width > ndigs) {
@@ -906,7 +765,7 @@ int vfprintf (FILE * stream, const CHAR *fmt, va_list ap_orig)
 		if (sign)
 		    my_putc (sign, stream);
 		pnt = "inf";
-		if (_dtoa.flags & DTOA_NAN)
+		if (dtoa.flags & DTOA_NAN)
 		    pnt = "nan";
 		while ( (c = *pnt++) )
 		    my_putc (TOCASE(c), stream);
@@ -935,7 +794,7 @@ int vfprintf (FILE * stream, const CHAR *fmt, va_list ap_orig)
                      * when rounding to fewer digits than required for
                      * exact output, the imprecise code often emits them
                      */
-                    while (ndigs > 0 && _dtoa.digits[ndigs-1] == '0')
+                    while (ndigs > 0 && dtoa.digits[ndigs-1] == '0')
                         ndigs--;
 
                     /* Save requested precision */
@@ -985,7 +844,7 @@ int vfprintf (FILE * stream, const CHAR *fmt, va_list ap_orig)
                     n = (exp>0 ? exp+1 : 1);
                 else {
                     n = 3;                  /* 1e+ */
-#ifdef _WANT_IO_C99_FORMATS
+#ifdef _NEED_IO_C99_FORMATS
                     if (flags & FL_FLTHEX)
                         n += 2;             /* or 0x1p+ */
 #endif
@@ -1010,7 +869,7 @@ int vfprintf (FILE * stream, const CHAR *fmt, va_list ap_orig)
                 if (sign)
                     my_putc (sign, stream);
 
-#ifdef _WANT_IO_C99_FORMATS
+#ifdef _NEED_IO_C99_FORMATS
                 if ((flags & FL_FLTHEX)) {
                     my_putc('0', stream);
                     my_putc(TOCASE('x'), stream);
@@ -1029,7 +888,7 @@ int vfprintf (FILE * stream, const CHAR *fmt, va_list ap_orig)
 
                     /* At this point, we should have
                      *
-                     *	exp	exponent of leftmost digit in _dtoa.digits
+                     *	exp	exponent of leftmost digit in dtoa.digits
                      *	ndigs	number of buffer digits to print
                      *	prec	number of digits after decimal
                      *
@@ -1046,7 +905,7 @@ int vfprintf (FILE * stream, const CHAR *fmt, va_list ap_orig)
                          * otherwise use 0
                          */
                         if (0 <= exp - n && exp - n < ndigs)
-                            out = _dtoa.digits[exp - n];
+                            out = dtoa.digits[exp - n];
                         else
                             out = '0';
                         if (--n < -prec) {
@@ -1055,8 +914,8 @@ int vfprintf (FILE * stream, const CHAR *fmt, va_list ap_orig)
                         my_putc (out, stream);
                     } while (1);
                     if (n == exp
-                        && (_dtoa.digits[0] > '5'
-                            || (_dtoa.digits[0] == '5' && !(_dtoa.flags & DTOA_CARRY))) )
+                        && (dtoa.digits[0] > '5'
+                            || (dtoa.digits[0] == '5' && !(dtoa.flags & DTOA_CARRY))) )
                     {
                         out = '1';
                     }
@@ -1066,32 +925,32 @@ int vfprintf (FILE * stream, const CHAR *fmt, va_list ap_orig)
                 } else {				/* 'e(E)' format	*/
 
                     /* mantissa	*/
-                    if (_dtoa.digits[0] != '1')
-                        _dtoa.flags &= ~DTOA_CARRY;
-                    my_putc (_dtoa.digits[0], stream);
+                    if (dtoa.digits[0] != '1')
+                        dtoa.flags &= ~DTOA_CARRY;
+                    my_putc (dtoa.digits[0], stream);
                     if (prec > 0) {
                         my_putc ('.', stream);
-                        uint8_t pos = 1;
+                        int pos = 1;
                         for (pos = 1; pos < 1 + prec; pos++)
-                            my_putc (pos < ndigs ? _dtoa.digits[pos] : '0', stream);
+                            my_putc (pos < ndigs ? dtoa.digits[pos] : '0', stream);
                     } else if (flags & FL_ALT)
                         my_putc ('.', stream);
 
                     /* exponent	*/
                     my_putc (TOCASE(c), stream);
                     sign = '+';
-                    if (exp < 0 || (exp == 0 && (_dtoa.flags & DTOA_CARRY) != 0)) {
+                    if (exp < 0 || (exp == 0 && (dtoa.flags & DTOA_CARRY) != 0)) {
                         exp = -exp;
                         sign = '-';
                     }
                     my_putc (sign, stream);
-#ifndef PICOLIBC_FLOAT_PRINTF_SCANF
-#ifdef PICOLIBC_LONG_DOUBLE_PRINTF_SCANF
+#ifdef _NEED_IO_FLOAT_LARGE
                     if (ndigs_exp > 4) {
 			my_putc(exp / 10000 + '0', stream);
 			exp %= 10000;
                     }
 #endif
+#ifdef _NEED_IO_FLOAT64
                     if (ndigs_exp > 3) {
 			my_putc(exp / 1000 + '0', stream);
 			exp %= 1000;
@@ -1109,13 +968,15 @@ int vfprintf (FILE * stream, const CHAR *fmt, va_list ap_orig)
                 }
 	    }
 #else		/* to: PRINTF_LEVEL >= PRINTF_FLT */
-	    (void) PRINTF_FLOAT_ARG(ap);
+            SKIP_FLOAT_ARG(flags, ap);
 	    pnt = "*float*";
 	    size = sizeof ("*float*") - 1;
 	    goto str_lpad;
 #endif
-        } else {
-            int len, buf_len;
+        } else
+#endif /* ifndef PRINT_SHRINK */
+        {
+            int buf_len;
 #ifdef WIDE_CHARS
             CHAR *wstr = NULL;
             CHAR c_arg;
@@ -1129,12 +990,18 @@ int vfprintf (FILE * stream, const CHAR *fmt, va_list ap_orig)
                 if (!(flags & FL_LONG))
                     c_arg = (char) c_arg;
                 wstr = &c_arg;
+                size = 1;
+                goto str_lpad;
+#else
+#ifdef _NEED_IO_SHRINK
+                my_putc(va_arg(ap, int), stream);
 #else
                 buf[0] = va_arg (ap, int);
                 pnt = buf;
-#endif
                 size = 1;
                 goto str_lpad;
+#endif
+#endif
             } else if (c == 's') {
 #ifdef WIDE_CHARS
                 if (flags & FL_LONG) {
@@ -1148,6 +1015,11 @@ int vfprintf (FILE * stream, const CHAR *fmt, va_list ap_orig)
                     pnt = va_arg (ap, char *);
                 if (!pnt)
                     pnt = "(null)";
+#ifdef _NEED_IO_SHRINK
+                char c;
+                while ( (c = *pnt++) )
+                    my_putc(c, stream);
+#else
                 size = strnlen (pnt, (flags & FL_PREC) ? (size_t) prec : SIZE_MAX);
 
             str_lpad:
@@ -1166,6 +1038,7 @@ int vfprintf (FILE * stream, const CHAR *fmt, va_list ap_orig)
 #endif
                         my_putc (*pnt++, stream);
                 }
+#endif
 
             } else {
                 if (c == 'd' || c == 'i') {
@@ -1180,9 +1053,11 @@ int vfprintf (FILE * stream, const CHAR *fmt, va_list ap_orig)
 
                     flags &= ~FL_ALT;
 
+#ifndef _NEED_IO_SHRINK
                     if (x_s == 0 && (flags & FL_PREC) && prec == 0)
                         buf_len = 0;
                     else
+#endif
                         buf_len = __ultoa_invert (x_s, buf, 10) - buf;
                 } else {
                     int base;
@@ -1200,12 +1075,10 @@ int vfprintf (FILE * stream, const CHAR *fmt, va_list ap_orig)
                         c = 'x';
                         if (sizeof(void *) > sizeof(int))
                             flags |= FL_LONG;
-                    } else if (TOLOW(c) == 'x') {
-                        base = 16;
-                        if (c == 'X')
-                            base = 16 | XTOA_UPPER;
-#ifdef _WANT_IO_PERCENT_B
-                    } else if (TOLOW(c) == 'b') {
+                    } else if (TOLOWER(c) == 'x') {
+                        base = ('x' - c) | 16;
+#ifdef _NEED_IO_PERCENT_B
+                    } else if (TOLOWER(c) == 'b') {
                         base = 2;
 #endif
                     } else {
@@ -1222,13 +1095,16 @@ int vfprintf (FILE * stream, const CHAR *fmt, va_list ap_orig)
                     if (x == 0)
                         flags &= ~FL_ALT;
 
+#ifndef _NEED_IO_SHRINK
                     if (x == 0 && (flags & FL_PREC) && prec == 0)
                         buf_len = 0;
                     else
+#endif
                         buf_len = __ultoa_invert (x, buf, base) - buf;
                 }
 
-                len = buf_len;
+#ifndef _NEED_IO_SHRINK
+                int len = buf_len;
 
                 /* Specified precision */
                 if (flags & FL_PREC) {
@@ -1296,6 +1172,14 @@ int vfprintf (FILE * stream, const CHAR *fmt, va_list ap_orig)
                     my_putc ('0', stream);
                     prec--;
                 }
+#else
+                if (flags & FL_ALT) {
+                    my_putc ('0', stream);
+                    if (c != '\0')
+                        my_putc (c, stream);
+                } else if (flags & FL_NEGATIVE)
+                    my_putc('-', stream);
+#endif
 
                 /* Output value */
                 while (buf_len)
@@ -1303,29 +1187,31 @@ int vfprintf (FILE * stream, const CHAR *fmt, va_list ap_orig)
             }
         }
 
+#ifndef _NEED_IO_SHRINK
 	/* Tail is possible.	*/
 	while (width-- > 0) {
 	    my_putc (' ', stream);
 	}
+#endif
     } /* for (;;) */
 
   ret:
-#ifdef PRINTF_POSITIONAL
+#ifdef _NEED_IO_POS_ARGS
     va_end(ap);
 #endif
     return stream_len;
 #undef my_putc
 #undef ap
   fail:
+    stream->flags |= __SERR;
     stream_len = -1;
     goto ret;
 }
 
-#if defined(FORMAT_DEFAULT_DOUBLE) && !defined(vfprintf)
+#if defined(_FORMAT_DEFAULT_DOUBLE) && !defined(vfprintf)
 #ifdef _HAVE_ALIAS_ATTRIBUTE
 __strong_reference(vfprintf, __d_vfprintf);
 #else
 int __d_vfprintf (FILE * stream, const char *fmt, va_list ap) { return vfprintf(stream, fmt, ap); }
-#endif
 #endif
 #endif

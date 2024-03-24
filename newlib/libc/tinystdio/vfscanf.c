@@ -32,26 +32,14 @@
 
 /* $Id: vfscanf.c 2191 2010-11-05 13:45:57Z arcanum $ */
 
-#include <ctype.h>
-#include <limits.h>
-#include <math.h>
-#include <stdarg.h>
-#include <stddef.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 #include "stdio_private.h"
 #include "scanf_private.h"
 
-#ifndef SCANF_LONGLONG
-# define SCANF_LONGLONG	(SCANF_FLOAT || defined(_WANT_IO_LONG_LONG))
-#endif
+/*
+ * Compute which features are required
+ */
 
-#if defined(SCANF_FLOAT) || defined(_WANT_IO_POS_ARGS)
-#define SCANF_POSITIONAL
-#endif
-
-#ifdef SCANF_LONGLONG
+#ifdef _NEED_IO_LONG_LONG
 typedef unsigned long long uint_scanf_t;
 typedef long long int_scanf_t;
 #else
@@ -60,7 +48,6 @@ typedef long int_scanf_t;
 #endif
 
 #ifdef WIDE_CHARS
-#include <wchar.h>
 #define INT wint_t
 #define CHAR wchar_t
 #define UCHAR wchar_t
@@ -102,7 +89,7 @@ putval (void *addr, int_scanf_t val, uint16_t flags)
     if (addr) {
 	if (flags & FL_CHAR)
 	    *(char *)addr = val;
-#ifdef SCANF_LONGLONG
+#ifdef _NEED_IO_LONG_LONG
         else if (flags & FL_LONGLONG)
             *(long long *)addr = val;
 #endif
@@ -141,11 +128,11 @@ conv_int (FILE *stream, int *lenp, width_t width, void *addr, uint16_t flags, un
 
         flags |= FL_ANY;
 
-        if (TOLOW(i) == 'x' && (base == 0 || base == 16)) {
+        if (TOLOWER(i) == 'x' && (base == 0 || base == 16)) {
             base = 16;
             if (!--width || IS_EOF(i = scanf_getc (stream, lenp)))
 		goto putval;
-#ifdef _WANT_IO_PERCENT_B
+#ifdef _NEED_IO_PERCENT_B
         } else if (i == 'b' && base <= 2) {
             base = 2;
             if (!--width || IS_EOF(i = scanf_getc (stream, lenp)))
@@ -179,7 +166,7 @@ conv_int (FILE *stream, int *lenp, width_t width, void *addr, uint16_t flags, un
     return 0;
 }
 
-#if  SCANF_BRACKET
+#ifdef _NEED_IO_BRACKET
 static const CHAR *
 conv_brk (FILE *stream, int *lenp, width_t width, CHAR *addr, const CHAR *fmt)
 {
@@ -257,12 +244,12 @@ conv_brk (FILE *stream, int *lenp, width_t width, CHAR *addr, const CHAR *fmt)
         return fmt;
     }
 }
-#endif	/* SCANF_BRACKET */
+#endif	/* _NEED_IO_BRACKET */
 
-#if  SCANF_FLOAT
+#if defined(_NEED_IO_FLOAT) || defined(_NEED_IO_DOUBLE)
 #define FLT_STREAM      FILE
 #include "conv_flt.c"
-#endif	/* SCANF_FLOAT	*/
+#endif
 
 static INT skip_spaces (FILE *stream, int *lenp)
 {
@@ -270,12 +257,12 @@ static INT skip_spaces (FILE *stream, int *lenp)
     do {
 	if (IS_EOF(i = scanf_getc (stream, lenp)))
 	    return i;
-    } while (ISSPACE (i));
+    } while (isspace (i));
     scanf_ungetc (i, stream, lenp);
     return i;
 }
 
-#ifdef SCANF_POSITIONAL
+#ifdef _NEED_IO_POS_ARGS
 
 typedef struct {
     va_list     ap;
@@ -437,7 +424,7 @@ int vfscanf (FILE * stream, const CHAR *fmt, va_list ap_orig)
     UCHAR c;
     width_t width;
     void *addr;
-#ifdef SCANF_POSITIONAL
+#ifdef _NEED_IO_POS_ARGS
     my_va_list my_ap;
 #define ap my_ap.ap
     va_copy(ap, ap_orig);
@@ -456,7 +443,7 @@ int vfscanf (FILE * stream, const CHAR *fmt, va_list ap_orig)
        to the begin.	*/
     while ((c = *fmt++) != 0) {
 
-	if (ISSPACE (c)) {
+	if (isspace (c)) {
 	    skip_spaces (stream, lenp);
 
 	} else if (c != '%'
@@ -487,7 +474,7 @@ int vfscanf (FILE * stream, const CHAR *fmt, va_list ap_orig)
                 }
                 c += '0';
                 if (flags & FL_WIDTH) {
-#ifdef SCANF_POSITIONAL
+#ifdef _NEED_IO_POS_ARGS
                     if (c == '$') {
                         flags &= ~FL_WIDTH;
                         va_end(ap);
@@ -518,26 +505,22 @@ int vfscanf (FILE * stream, const CHAR *fmt, va_list ap_orig)
 	      case 'l':
 		flags |= FL_LONG;
 		c = *fmt++;
-#ifdef SCANF_LONGLONG
                 if (c == 'l') {
                     flags |= FL_LONGLONG;
                     c = *fmt++;
                 }
-#endif
 		break;
-#ifdef SCANF_LONGLONG
               case 'L':
-                flags |= FL_LONGLONG;
+                flags |= FL_LONG|FL_LONGLONG;
                 c = *fmt++;
                 break;
-#endif
-#ifdef _WANT_IO_C99_FORMATS
-#ifdef SCANF_LONGLONG
+#ifdef _NEED_IO_C99_FORMATS
+#ifdef _NEED_IO_LONG_LONG
 #define CHECK_LONGLONG(type)                                    \
                 else if (sizeof(type) == sizeof(long long))     \
                     flags |= FL_LONGLONG
 #else
-#define CHECK_LONGLONG(type
+#define CHECK_LONGLONG(type)
 #endif
 
 #define CHECK_INT_SIZE(letter, type)				\
@@ -558,18 +541,18 @@ int vfscanf (FILE * stream, const CHAR *fmt, va_list ap_orig)
 #endif
 	    }
 
-#ifdef _WANT_IO_PERCENT_B
+#ifdef _NEED_IO_PERCENT_B
 #define CNV_BASE	"cdinopsuxXb"
 #else
 #define CNV_BASE	"cdinopsuxX"
 #endif
 
-#if	SCANF_BRACKET
+#ifdef _NEED_IO_BRACKET
 # define CNV_BRACKET	"["
 #else
 # define CNV_BRACKET	""
 #endif
-#if	SCANF_FLOAT
+#if defined(_NEED_IO_FLOAT) || defined(_NEED_IO_DOUBLE)
 # define CNV_FLOAT	"efgEFG"
 #else
 # define CNV_FLOAT	""
@@ -605,7 +588,7 @@ int vfscanf (FILE * stream, const CHAR *fmt, va_list ap_orig)
 		} while (--width);
 		c = 1;			/* no matter with smart GCC	*/
 
-#if  SCANF_BRACKET
+#ifdef _NEED_IO_BRACKET
 	    } else if (c == '[') {
 		fmt = conv_brk (stream, lenp, width, addr, fmt);
 		c = (fmt != 0);
@@ -625,7 +608,7 @@ int vfscanf (FILE * stream, const CHAR *fmt, va_list ap_orig)
 		    do {
 			if (IS_EOF(i = scanf_getc (stream, lenp)))
 			    break;
-			if (ISSPACE (i)) {
+			if (isspace (i)) {
 			    scanf_ungetc (i, stream, lenp);
 			    break;
 			}
@@ -653,7 +636,7 @@ int vfscanf (FILE * stream, const CHAR *fmt, va_list ap_orig)
 		    c = 1;		/* no matter with smart GCC	*/
 		    break;
 
-#if  SCANF_FLOAT
+#if defined(_NEED_IO_FLOAT) || defined(_NEED_IO_DOUBLE)
 	          case 'p':
                       if (sizeof(void *) > sizeof(int))
                           flags |= FL_LONG;
@@ -663,7 +646,7 @@ int vfscanf (FILE * stream, const CHAR *fmt, va_list ap_orig)
                     base = 16;
 		    goto conv_int;
 
-#ifdef _WANT_IO_PERCENT_B
+#ifdef _NEED_IO_PERCENT_B
                   case 'b':
                     base = 2;
                     goto conv_int;
@@ -690,7 +673,7 @@ int vfscanf (FILE * stream, const CHAR *fmt, va_list ap_orig)
                     base = 10;
 		    goto conv_int;
 
-#ifdef _WANT_IO_PERCENT_B
+#ifdef _NEED_IO_PERCENT_B
                   case 'b':
                     base = 2;
                     goto conv_int;
@@ -722,20 +705,20 @@ int vfscanf (FILE * stream, const CHAR *fmt, va_list ap_orig)
 	    if (!(flags & FL_STAR)) nconvs += 1;
 	} /* else */
     } /* while */
-#ifdef SCANF_POSITIONAL
+#ifdef _NEED_IO_POS_ARGS
     va_end(ap);
 #endif
     return nconvs;
 
   eof:
-#ifdef SCANF_POSITIONAL
+#ifdef _NEED_IO_POS_ARGS
     va_end(ap);
 #endif
 #undef ap
     return nconvs ? nconvs : EOF;
 }
 
-#if defined(FORMAT_DEFAULT_DOUBLE) && !defined(vfscanf)
+#if defined(_FORMAT_DEFAULT_DOUBLE) && !defined(vfscanf)
 #ifdef _HAVE_ALIAS_ATTRIBUTE
 __strong_reference(vfscanf, __d_vfscanf);
 #else

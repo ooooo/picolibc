@@ -90,6 +90,8 @@ srcs_stdlib = [
     'arc4random.c',
     'arc4random_uniform.c',
     'assert.c',
+    'assert_func.c',
+    'assert_no_arg.c',
     'atof.c',
     'atoff.c',
     'atoi.c',
@@ -226,7 +228,6 @@ hdrs_stdlib = [
     'local.h',
     'mbctype.h',
     'mprec.h',
-    'on_exit_args.h',
     'rand48.h',
     'std.h',
 ]
@@ -266,6 +267,6 @@ foreach target : targets
 			      srcs_stdlib_malloc_use,
 			      pic: false,
 			      include_directories: inc,
-			      c_args: value[1] + ['-DINTERNAL_NEWLIB'] + c_args_malloc))
+			      c_args: value[1] + c_args + c_args_malloc))
 
 endforeach

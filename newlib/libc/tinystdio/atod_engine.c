@@ -30,7 +30,13 @@
   POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include "dtoa_engine.h"
+#include "stdio_private.h"
+
+#ifdef FLOAT64
+
+#define _NEED_IO_DOUBLE
+
+#include "dtoa.h"
 
 #if __GNUC__ == 12 && __GNUC_MINOR__ == 2 && __GNUC_PATCHLEVEL__ == 1 && __OPTIMIZE_SIZE__
 /*
@@ -41,10 +47,10 @@
 #pragma GCC optimize("O2")
 #endif
 
-double
+FLOAT64
 __atod_engine(uint64_t u64, int exp)
 {
-    double flt = u64;
+    FLOAT64 flt = u64;
 
     while (exp < 0) {
         flt *= 1e-1;
@@ -56,3 +62,5 @@ __atod_engine(uint64_t u64, int exp)
     }
     return flt;
 }
+
+#endif
