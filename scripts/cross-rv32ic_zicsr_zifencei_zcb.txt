@@ -14,7 +14,7 @@ cpu = 'riscv32'
 endian = 'little'
 
 [properties]
-c_args = ['-msave-restore', '-fshort-enums', '-march=rv32ic_zicsr_zifencei', '-mabi=ilp32']
+c_args = ['-msave-restore', '-fshort-enums', '-march=rv32ic_zicsr_zifencei_zcb', '-mabi=ilp32']
 c_link_args = ['-msave-restore', '-fshort-enums', '-march=rv32ic', '-mabi=ilp32']
 skip_sanity_check = true
 default_flash_addr = '0x00000000'
