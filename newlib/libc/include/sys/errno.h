@@ -42,6 +42,12 @@ extern "C" {
    Use strerror instead. */
 extern __IMPORT const char * const _sys_errlist[];
 extern __IMPORT int _sys_nerr;
+#if __GNU_VISIBLE
+char *
+_user_strerror (int errnum,
+                int internal,
+                int *errptr);
+#endif
 #ifdef __CYGWIN__
 extern __IMPORT const char * const sys_errlist[];
 extern __IMPORT int sys_nerr;
@@ -211,10 +217,6 @@ extern NEWLIB_THREAD_LOCAL_ERRNO int errno;
 #define ENOTSUP 134     	/* Not supported */
 #ifdef __LINUX_ERRNO_EXTENSIONS__
 #define ENOMEDIUM 135   	/* No medium found */
-#endif
-#ifdef __CYGWIN__
-#define ENOSHARE 136    	/* No such host or network path */
-#define ECASECLASH 137  	/* Filename exists with different case */
 #endif
 #define EILSEQ 138		/* Illegal byte sequence */
 #define EOVERFLOW 139		/* Value too large for defined data type */

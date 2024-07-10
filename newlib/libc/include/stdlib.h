@@ -41,7 +41,7 @@ SUCH DAMAGE.
 #define _STDLIB_H_
 
 #include <machine/ieeefp.h>
-#include "_ansi.h"
+#include <_ansi.h>
 
 #define __need_size_t
 #define __need_wchar_t
@@ -277,11 +277,13 @@ char *	gcvtl(long double, int, char *);
 #endif
 
 #endif
+#ifndef __CYGWIN__
 char *	__itoa (int, char *, int);
 char *	__utoa (unsigned, char *, int);
-#if __MISC_VISIBLE
+# if __MISC_VISIBLE
 char *	itoa (int, char *, int);
 char *	utoa (unsigned, char *, int);
+# endif
 #endif
 #if __POSIX_VISIBLE
 int	rand_r (unsigned *__seed);

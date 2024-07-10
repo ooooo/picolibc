@@ -58,7 +58,6 @@ SUCH DAMAGE.
 typedef __WINT_TYPE__ wint_t;
 #endif
 
-#include <newlib.h>
 #include <sys/config.h>
 #include <machine/_types.h>
 
@@ -168,10 +167,8 @@ typedef long _fpos_t;		/* XXX must match off_t in <sys/types.h> */
 				/* (and must be `long' for now) */
 #endif
 
-#ifdef __LARGE64_FILES
 #ifndef __machine_fpos64_t_defined
 typedef _off64_t _fpos64_t;
-#endif
 #endif
 
 /* Defined by GCC provided <stddef.h> */

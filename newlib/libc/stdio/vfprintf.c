@@ -119,7 +119,6 @@ static char *rcsid = "$Id$";
  * This code is large and complicated...
  */
 #define _DEFAULT_SOURCE
-#include <newlib.h>
 
 #ifdef INTEGER_ONLY
 # ifdef STRING_ONLY
@@ -176,20 +175,16 @@ static char *rcsid = "$Id$";
 
 # ifdef _FVWRITE_IN_STREAMIO
 #  define __SPRINT __ssprint
-   int __ssprint (FILE *, register struct __suio *);
 # else
 #  define __SPRINT __ssputs
-   int __ssputs (FILE *, const char *, size_t);
 # endif
 
 #else /* !STRING_ONLY */
 
 # ifdef _FVWRITE_IN_STREAMIO
 #  define __SPRINT __sprint
-   int __sprint (FILE *, register struct __suio *);
 # else
 #  define __SPRINT __sfputs
-   int __sfputs (FILE *, const char *buf, size_t);
 # endif
 
 #ifdef _UNBUF_STREAM_OPT

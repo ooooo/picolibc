@@ -143,9 +143,8 @@ No supporting OS subroutines are required.
  * SUCH DAMAGE.
  */
 
-#define _DEFAULT_SOURCE
+#define _GNU_SOURCE
 #define _PICOLIBC_CTYPE_SMALL 0
-#include <newlib.h>
 #include <errno.h>
 #include <string.h>
 #include <limits.h>
@@ -460,8 +459,6 @@ currentlocale (void)
       }
   return global_locale_string;
 }
-
-extern void __set_ctype (struct __locale_t *, const char *charset);
 
 char *
 __loadlocale (struct __locale_t *loc, int category, char *new_locale)

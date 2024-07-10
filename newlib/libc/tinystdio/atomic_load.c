@@ -1,7 +1,7 @@
 /*
  * SPDX-License-Identifier: BSD-3-Clause
  *
- * Copyright © 2019 Keith Packard
+ * Copyright © 2024 Keith Packard
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -32,13 +32,17 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-        .global sys_semihost
-        .balign 16
-        .option push
-        .option norvc
-sys_semihost:
-        slli zero, zero, 0x1f
-        ebreak
-        srai zero, zero, 0x7
-        ret
-        .option pop
+
+#include "stdio_private.h"
+
+#if defined(ATOMIC_UNGETC) && !defined(PICOLIBC_HAVE_SYNC_COMPARE_AND_SWAP)
+
+__ungetc_t
+__picolibc_non_atomic_load_ungetc(const volatile __ungetc_t *p)
+{
+	return __non_atomic_load_ungetc(p);
+}
+
+__weak_reference(__picolibc_non_atomic_load_ungetc, __atomic_load_ungetc);
+
+#endif

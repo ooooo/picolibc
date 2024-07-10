@@ -103,7 +103,7 @@ extern "C" {
  * _DEFAULT_SOURCE (or none of the above)
  * 	POSIX-1.2008 with BSD and SVr4 extensions
  *
- * _FORTIFY_SOURCE = 1 or 2
+ * _FORTIFY_SOURCE = 1, 2 or 3
  * 	Object Size Checking function wrappers
  *
  * _ZEPHYR_SOURCE
@@ -129,6 +129,8 @@ extern "C" {
 #define	_XOPEN_SOURCE		700
 #undef _XOPEN_SOURCE_EXTENDED
 #define	_XOPEN_SOURCE_EXTENDED	1
+#undef _LARGEFILE64_SOURCE
+#define _LARGEFILE64_SOURCE     1
 #endif /* _GNU_SOURCE */
 
 /* When building for Zephyr, set _ZEPHYR_SOURCE unless some other API
@@ -258,6 +260,9 @@ extern "C" {
  * __LARGEFILE_VISIBLE
  *	fseeko, ftello; enabled with _LARGEFILE_SOURCE or _XOPEN_SOURCE >= 500.
  *
+ * __LARGEFILE64_VISIBLE
+ *      additional large file extensions; enabled with _LARGEFILE64_SOURCE.
+ *
  * __BSD_VISIBLE
  * 	BSD extensions; enabled by default, or with _BSD_SOURCE.
  *
@@ -273,7 +278,7 @@ extern "C" {
  * 	GNU extensions; enabled with _GNU_SOURCE.
  *
  * __SSP_FORTIFY_LEVEL
- * 	Object Size Checking; defined to 0 (off), 1, or 2.
+ * 	Object Size Checking; defined to 0 (off), 1, 2 or 3.
  *
  * __ZEPHYR_VISIBLE
  *      Zephyr extensions; enabled with _ZEPHYR_SOURCE.
@@ -325,6 +330,12 @@ extern "C" {
 #define	__LARGEFILE_VISIBLE	0
 #endif
 
+#ifdef _LARGEFILE64_SOURCE
+#define __LARGEFILE64_VISIBLE   1
+#else
+#define __LARGEFILE64_VISIBLE   0
+#endif
+
 #ifdef _DEFAULT_SOURCE
 #define	__MISC_VISIBLE		1
 #else
@@ -370,7 +381,13 @@ extern "C" {
 #if _FORTIFY_SOURCE > 0 && !defined(__cplusplus) && !defined(__lint__) && \
    (__OPTIMIZE__ > 0 || defined(__clang__)) && __GNUC_PREREQ__(4, 1) && \
    !defined(_LIBC)
-#  if _FORTIFY_SOURCE > 1
+#  if _FORTIFY_SOURCE > 2 && defined(__has_builtin)
+#    if __has_builtin(__builtin_dynamic_object_size)
+#      define __SSP_FORTIFY_LEVEL 3
+#    else
+#      define __SSP_FORTIFY_LEVEL 2
+#    endif
+#  elif _FORTIFY_SOURCE > 1
 #    define __SSP_FORTIFY_LEVEL 2
 #  else
 #    define __SSP_FORTIFY_LEVEL 1
