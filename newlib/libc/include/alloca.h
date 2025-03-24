@@ -7,11 +7,11 @@
 #ifndef _NEWLIB_ALLOCA_H
 #define _NEWLIB_ALLOCA_H
 
-#include "_ansi.h"
+#include <sys/cdefs.h>
 
 #undef alloca
 
-#ifdef _HAVE_BUILTIN_ALLOCA
+#if __HAVE_BUILTIN_ALLOCA
 #define alloca(size) __builtin_alloca(size)
 #else
 void * alloca (size_t);

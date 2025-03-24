@@ -20,7 +20,7 @@ SYNOPSIS
 			 mbstate_t *__restrict <[ps]>);
 
 	#include <wchar.h>
-	size_t mbsnrtowcs(wchar_t *__ restrict <[dst]>, 
+	size_t mbsnrtowcs(wchar_t *__ restrict <[dst]>,
 			  const char **__restrict <[src]>, size_t <[nms]>,
 			  size_t <[len]>, mbstate_t *__restrict <[ps]>);
 
@@ -75,10 +75,10 @@ mbsnrtowcs (
   size_t count = 0;
   int bytes;
 
-#ifdef _MB_CAPABLE
+#ifdef __MB_CAPABLE
   if (ps == NULL)
     {
-      static NEWLIB_THREAD_LOCAL mbstate_t _mbsrtowcs_state;
+      static mbstate_t _mbsrtowcs_state;
       ps = &_mbsrtowcs_state;
     }
 #endif
@@ -90,8 +90,8 @@ mbsnrtowcs (
       len = (size_t)-1;
       tmp_src = *src;
       src = &tmp_src;
-    }      
-  
+    }
+
   max = len;
   while (len > 0)
     {
@@ -117,7 +117,7 @@ mbsnrtowcs (
       else
 	{
 	  ps->__count = 0;
-	  _REENT_ERRNO(r) = EILSEQ;
+	  errno = EILSEQ;
 	  return (size_t)-1;
 	}
     }

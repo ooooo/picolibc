@@ -103,7 +103,6 @@ static char sccsid[] = "%W% (Berkeley) %G%";
 #endif /* LIBC_SCCS and not lint */
 
 #define _DEFAULT_SOURCE
-#include <_ansi.h>
 #include <stdio.h>
 #include <errno.h>
 #include <unistd.h>
@@ -131,9 +130,7 @@ fopen (
     {
       _newlib_sfp_lock_start (); 
       fp->_flags = 0;		/* release */
-#ifndef __SINGLE_THREAD__
       __lock_close_recursive (fp->_lock);
-#endif
       _newlib_sfp_lock_end (); 
       return NULL;
     }

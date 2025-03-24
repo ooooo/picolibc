@@ -25,13 +25,13 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-#include <sys/cdefs.h>
-__RCSID("$NetBSD: cprojl.c,v 1.7 2014/10/10 00:48:18 christos Exp $");
 
 #include <complex.h>
 #include <math.h>
 
 #include "../common/fdlibm.h"
+
+#ifdef __HAVE_LONG_DOUBLE
 
 /*
  * cprojl(long double complex z)
@@ -62,3 +62,5 @@ cprojl(long double complex z)
 
 	return (w.z);
 }
+
+#endif /* __HAVE_LONG_DOUBLE */

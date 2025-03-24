@@ -72,7 +72,6 @@ Supporting OS subroutines required: <<close>>, <<fstat>>, <<isatty>>,
 */
 
 #define _GNU_SOURCE
-#include <_ansi.h>
 #include <stdio.h>
 #include <string.h>
 #include "fvwrite.h"
@@ -91,7 +90,7 @@ fputs (
        char const *__restrict s,
        FILE *__restrict fp)
 {
-#ifdef _FVWRITE_IN_STREAMIO
+#ifdef __FVWRITE_IN_STREAMIO
   int result;
   struct __suio uio;
   struct __siov iov;
@@ -101,7 +100,7 @@ fputs (
   uio.uio_iov = &iov;
   uio.uio_iovcnt = 1;
 
-  CHECK_INIT(ptr, fp);
+  CHECK_INIT();
 
   _newlib_flockfile_start (fp);
   if (ORIENT (fp, -1) != -1)
@@ -113,7 +112,7 @@ fputs (
 #else
   const char *p = s;
 
-  CHECK_INIT(ptr, fp);
+  CHECK_INIT();
 
   _newlib_flockfile_start (fp);
   /* Make sure we can write.  */

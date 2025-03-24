@@ -13,7 +13,6 @@
  *
  */
 
-//__FBSDID("$FreeBSD: src/lib/msun/src/e_atan2l.c,v 1.3 2008/08/02 19:17:00 das Exp $");
 
 /*
  * See comments in e_atan2.c.
@@ -104,8 +103,8 @@ atan2l(long double y, long double x)
 }
 
 #if __LDBL_MANT_DIG__ == 113
-#if defined(_HAVE_ALIAS_ATTRIBUTE)
-#ifndef __clang__
+#ifdef __strong_reference
+#if defined(__GNUCLIKE_PRAGMA_DIAGNOSTIC) && !defined(__clang__)
 #pragma GCC diagnostic ignored "-Wmissing-attributes"
 #endif
 __strong_reference(atan2l, __atan2ieee128);

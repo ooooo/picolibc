@@ -17,7 +17,6 @@
 /* doc in swprintf.c */
 
 #define _DEFAULT_SOURCE
-#include <_ansi.h>
 #include <stdio.h>
 #include <wchar.h>
 #include <stdarg.h>
@@ -29,9 +28,8 @@ wprintf (const wchar_t *__restrict fmt, ...)
   int ret;
   va_list ap;
 
-  _REENT_SMALL_CHECK_INIT (ptr);
   va_start (ap, fmt);
-  ret = vfwprintf ( _stdout_r (ptr), fmt, ap);
+  ret = vfwprintf ( stdout, fmt, ap);
   va_end (ap);
   return ret;
 }

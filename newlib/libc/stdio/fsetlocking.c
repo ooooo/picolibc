@@ -60,7 +60,6 @@ No supporting OS subroutines are required.
 #ifndef __rtems__
 
 #define _DEFAULT_SOURCE
-#include <_ansi.h>
 #include <stdio.h>
 #include <stdio_ext.h>
 #include "local.h"
@@ -70,7 +69,7 @@ __fsetlocking (FILE * fp,
        int type)
 {
   int result;
-  CHECK_INIT(_REENT, fp);
+  CHECK_INIT();
   result = (fp->_flags2 & __SNLK) ? FSETLOCKING_BYCALLER : FSETLOCKING_INTERNAL;
   switch (type)
     {

@@ -21,25 +21,29 @@
 #ifndef _SYS_SCHED_H_
 #define _SYS_SCHED_H_
 
+#include <sys/cdefs.h>
+#include <sys/_types.h>
 #include <sys/_timespec.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+_BEGIN_STD_C
 
 /* Scheduling Policies */
 /* Open Group Specifications Issue 6 */
-#if defined(__CYGWIN__)
-#define SCHED_OTHER    3
-#else
 #define SCHED_OTHER    0
-#endif
 
 #define SCHED_FIFO     1
 #define SCHED_RR       2
 
 #if defined(_POSIX_SPORADIC_SERVER)
 #define SCHED_SPORADIC 4
+#endif
+
+#if __GNU_VISIBLE
+#define SCHED_IDLE     5
+#define SCHED_BATCH    6
+
+/* Flag to drop realtime policies and negative nice values on fork(). */
+#define SCHED_RESET_ON_FORK     0x40000000
 #endif
 
 /* Scheduling Parameters */
@@ -60,9 +64,7 @@ struct sched_param {
 #endif
 };
 
-#ifdef __cplusplus
-}
-#endif
+_END_STD_C
 
 #endif
 /* end of include file */

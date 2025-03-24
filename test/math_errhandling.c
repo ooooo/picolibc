@@ -43,10 +43,16 @@
 #include <limits.h>
 #include <stdbool.h>
 
-#ifdef _HAVE_ATTRIBUTE_ALWAYS_INLINE
-#define ALWAYS_INLINE __inline__ __attribute__((__always_inline__))
+#if __has_attribute(__always_inline__)
+#define ALWAYS_INLINE __inline __attribute__((__always_inline__))
 #else
-#define ALWAYS_INLINE __inline__
+#define ALWAYS_INLINE __inline
+#endif
+
+#ifdef __sh__
+#if !(defined(__SH4__) || defined(__SH4_SINGLE__) || defined(__SH4_SINGLE_ONLY__))
+#define GDB_SIMULATOR
+#endif
 #endif
 
 static ALWAYS_INLINE float
@@ -190,7 +196,7 @@ e_to_str(int e)
 /* Tests with long doubles */
 #ifdef _TEST_LONG_DOUBLE
 
-#if defined(__PICOLIBC__) && !defined(_HAVE_LONG_DOUBLE_MATH)
+#if defined(__PICOLIBC__) && !defined(__HAVE_LONG_DOUBLE_MATH)
 #define SIMPLE_MATH_ONLY
 #define NO_NEXTTOWARD
 #endif
@@ -350,5 +356,11 @@ int main(void)
 #endif
 	printf("Float tests:\n");
 	result += run_testsf();
+#ifdef __RX__
+        if (result) {
+            printf("Expected failure on RX target, ignoring\n");
+            result = 77;
+        }
+#endif
 	return result;
 }

@@ -79,7 +79,6 @@ PORTABILITY
 */
 
 #define _DEFAULT_SOURCE
-#include <_ansi.h>
 #include <stdio.h>
 #include <wchar.h>
 #include "local.h"
@@ -92,6 +91,5 @@ PORTABILITY
 wint_t
 putwchar (wchar_t wc)
 {
-  _REENT_SMALL_CHECK_INIT (_REENT);
   return fputwc (wc, stdout);
 }

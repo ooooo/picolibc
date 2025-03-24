@@ -32,12 +32,10 @@ Author: Joel Schopp <jschopp@austin.ibm.com>
 
 #include <picolibc.h>
 
-#include <_ansi.h>
 #include <stdio.h>
 
 #include "c99ppe.h"
 
-#ifndef _REENT_ONLY
 
 typedef struct
 {
@@ -67,4 +65,3 @@ fwrite (const void *__restrict buf,
 
   return __send_to_ppe(SPE_C99_SIGNALCODE, SPE_C99_FWRITE, &args);
 }
-#endif /* ! _REENT_ONLY */

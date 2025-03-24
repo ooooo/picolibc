@@ -65,7 +65,6 @@ static char sccsid[] = "%W% (Berkeley) %G%";
  */
 
 #define _DEFAULT_SOURCE
-#include <_ansi.h>
 #include <stdio.h>
 #include "local.h"
 
@@ -75,6 +74,5 @@ int
 getchar (void)
 {
   /* CHECK_INIT is called (eventually) by __srefill_r.  */
-  _REENT_SMALL_CHECK_INIT (_REENT);
   return getc ( stdin );
 }

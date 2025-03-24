@@ -80,8 +80,8 @@ cos64(__float64 x)
     }
 }
 
-#if defined(_HAVE_ALIAS_ATTRIBUTE)
-#ifndef __clang__
+#ifdef __strong_reference
+#if defined(__GNUCLIKE_PRAGMA_DIAGNOSTIC) && !defined(__clang__)
 #pragma GCC diagnostic ignored "-Wmissing-attributes"
 #endif
 __strong_reference(_NAME_64(cos), _NAME_64(_cos));

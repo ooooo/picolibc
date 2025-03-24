@@ -18,7 +18,6 @@
  */
 
 #define _DEFAULT_SOURCE
-#include <_ansi.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdarg.h>
@@ -47,8 +46,4 @@ vsscanf (
   return _ssvfscanf ( &f, fmt, ap);
 }
 
-#ifdef _NANO_FORMATTED_IO
-int __nonnull((1)) _NOTHROW
-vsiscanf (const char *, const char *, __VALIST)
-       _ATTRIBUTE ((__alias__("vsscanf")));
-#endif
+__nano_reference(vsscanf, vsiscanf);

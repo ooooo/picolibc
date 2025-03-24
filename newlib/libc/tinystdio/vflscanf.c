@@ -33,14 +33,14 @@
 #include "stdio_private.h"
 
 #define SCANF_LEVEL SCANF_LLONG
-#ifndef _FORMAT_DEFAULT_LONG_LONG
+#ifndef __IO_DEFAULT_LONG_LONG
 #define vfscanf __l_vfscanf
 #endif
 
 #include "vfscanf.c"
 
-#ifdef _FORMAT_DEFAULT_LONG_LONG
-#ifdef _HAVE_ALIAS_ATTRIBUTE
+#ifdef __IO_DEFAULT_LONG_LONG
+#ifdef __strong_reference
 __strong_reference(vfscanf, __l_vfscanf);
 #else
 int __l_vfscanf (FILE * stream, const char *fmt, va_list ap) { return vfscanf(stream, fmt, ap); }

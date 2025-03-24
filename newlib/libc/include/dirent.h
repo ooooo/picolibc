@@ -42,7 +42,7 @@
 #define MAXNAMLEN 1024
 #endif
 
-__BEGIN_DECLS
+_BEGIN_STD_C
 #if __MISC_VISIBLE || __POSIX_VISIBLE >= 200809 || __XSI_VISIBLE >= 700
 int	 alphasort(const struct dirent **, const struct dirent **);
 int	 dirfd(DIR *);
@@ -80,9 +80,9 @@ int	 scandirat(int, const char *, struct dirent ***,
 	    const struct dirent **));
 int	 versionsort(const struct dirent **, const struct dirent **);
 #endif
-#if __POSIX_VISIBLE >= 200809
+#if __POSIX_VISIBLE >= 202405
 ssize_t	posix_getdents(int, void *, size_t, int);
-#endif /* __POSIX_VISIBLE >= 200809 */
-__END_DECLS
+#endif /* __POSIX_VISIBLE >= 202405 */
+_END_STD_C
 
 #endif /*_DIRENT_H_*/

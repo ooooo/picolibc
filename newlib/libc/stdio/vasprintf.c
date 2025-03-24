@@ -18,7 +18,6 @@
 /* doc in vfprintf.c */
 
 #define _GNU_SOURCE
-#include <_ansi.h>
 #include <stdio.h>
 #include <limits.h>
 #include <stdarg.h>
@@ -48,8 +47,4 @@ vasprintf (
   return ret;
 }
 
-#ifdef _NANO_FORMATTED_IO
-int
-vasiprintf (char **, const char *, __VALIST)
-       _ATTRIBUTE ((__alias__("vasprintf")));
-#endif
+__nano_reference(vasprintf, vasiprintf);

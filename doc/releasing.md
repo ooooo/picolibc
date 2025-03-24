@@ -27,7 +27,11 @@ picolibc:
 
     * Enables errno in the math functions using -Dwant-math-errno=true
 
-    * Enables long-double io for RISC-V compiles using -Dio-long-double=true
+    * Enables long-double io for RISC-V compiles using
+      -Dio-long-double=true
+
+    * Enables full locale support with -Dmb-capable=true and
+      -Dmb-extended-charsets=true
 
     * Builds and installs minsize and release builds
 
@@ -55,7 +59,7 @@ picolibc:
 
  10. Tag release
 
-	$ git tag -m'Version <version>' <version> main
+	$ git tag -s -m'Version <version>' <version> main
 
  11. Use arm configuration to build bits for the Arm embedded toolkit:
 
@@ -120,7 +124,7 @@ how to build debian packages:
 
  10. Tag release
 
-	$ git tag -m'debian: Version <version>-1' <version>-1 debian
+	$ git tag -s -m'debian: Version <version>-1' <version>-1 debian
 
  11. Push tags and branches to salsa
 

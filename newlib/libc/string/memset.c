@@ -53,14 +53,14 @@ QUICKREF
 #undef memset
 
 void *
-__inhibit_loop_to_libcall
+__no_builtin
 memset (void *m,
 	int c,
 	size_t n)
 {
   char *s = (char *) m;
 
-#if !defined(PREFER_SIZE_OVER_SPEED) && !defined(__OPTIMIZE_SIZE__)
+#if !defined(__PREFER_SIZE_OVER_SPEED) && !defined(__OPTIMIZE_SIZE__)
   unsigned int i;
   unsigned long buffer;
   unsigned long *aligned_addr;
@@ -106,7 +106,7 @@ memset (void *m,
       s = (char*)aligned_addr;
     }
 
-#endif /* not PREFER_SIZE_OVER_SPEED */
+#endif /* not __PREFER_SIZE_OVER_SPEED */
 
   while (n--)
     *s++ = (char) c;

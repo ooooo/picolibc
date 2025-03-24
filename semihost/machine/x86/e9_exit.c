@@ -37,7 +37,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-void  _ATTRIBUTE((__noreturn__))
+__noreturn void
 _exit(int code)
 {
         char buf[15];

@@ -33,10 +33,12 @@
 # OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 picolibc_sources(
+  asnprintf.c
   asprintf.c
   atold_engine.c
   bufio.c
   clearerr.c
+  compare_exchange.c
   dtox_engine.c
   ecvt.c
   ecvtf.c
@@ -44,6 +46,7 @@ picolibc_sources(
   ecvtl.c
   ecvtl_r.c
   ecvt_r.c
+  exchange.c
   fclose.c
   fcvt.c
   fcvtf.c
@@ -52,6 +55,7 @@ picolibc_sources(
   fcvtl_r.c
   fcvt_r.c
   fdevopen.c
+  fdopen.c
   feof.c
   ferror.c
   fflush.c
@@ -66,12 +70,14 @@ picolibc_sources(
   filewstrget.c
   flockfile.c
   fmemopen.c
+  fopen.c
   fprintf.c
   fputc.c
   fputs.c
   fputwc.c
   fputws.c
   fread.c
+  freopen.c
   fscanf.c
   fseek.c
   fseeko.c
@@ -142,6 +148,7 @@ picolibc_sources(
   tmpnam.c
   ungetc.c
   ungetwc.c
+  vasnprintf.c
   vasprintf.c
   vffprintf.c
   vffscanf.c
@@ -166,20 +173,12 @@ picolibc_sources(
   vwscanf.c
   wprintf.c
   wscanf.c
+  sprintf_s.c
+  vfprintf_s.c
+  vsnprintf_s.c
   )
 
-picolibc_sources(
-  compare_exchange.c
-  exchange.c
-  )  
-
-picolibc_sources(
-  fdopen.c
-  fopen.c
-  freopen.c
-  )
-
-if(_IO_FLOAT_EXACT)
+if(__IO_FLOAT_EXACT)
   picolibc_sources(
     atod_ryu.c
     atof_ryu.c

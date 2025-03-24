@@ -27,17 +27,15 @@ OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 SUCH DAMAGE.
  */
 #ifndef	_SYS_TIMES_H
-#ifdef __cplusplus
-extern "C" {
-#endif
 #define	_SYS_TIMES_H
 
-#include <_ansi.h>
+#include <sys/cdefs.h>
 #include <sys/_types.h>
 
-#if !defined(__clock_t_defined) && !defined(_CLOCK_T_DECLARED)
+_BEGIN_STD_C
+
+#ifndef _CLOCK_T_DECLARED
 typedef	_CLOCK_T_	clock_t;
-#define	__clock_t_defined
 #define	_CLOCK_T_DECLARED
 #endif
 
@@ -50,11 +48,7 @@ struct tms {
 };
 
 clock_t times (struct tms *);
-#ifdef _LIBC
-clock_t _times (struct tms *);
-#endif
 
-#ifdef __cplusplus
-}
-#endif
+_END_STD_C
+
 #endif	/* !_SYS_TIMES_H */

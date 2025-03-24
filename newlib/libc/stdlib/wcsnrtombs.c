@@ -70,11 +70,11 @@ PORTABILITY
 #include <stdio.h>
 #include <errno.h>
 #include "local.h"
-#include "../locale/setlocale.h"
+#include "local.h"
 
 size_t
 _wcsnrtombs_l (char *dst, const wchar_t **src, size_t nwc,
-	       size_t len, mbstate_t *ps, struct __locale_t *loc)
+	       size_t len, mbstate_t *ps, locale_t loc)
 {
   char *ptr = dst;
   char buff[10];
@@ -82,10 +82,10 @@ _wcsnrtombs_l (char *dst, const wchar_t **src, size_t nwc,
   size_t n;
   int i;
 
-#ifdef _MB_CAPABLE
+#ifdef __MB_CAPABLE
   if (ps == NULL)
     {
-      static NEWLIB_THREAD_LOCAL mbstate_t _wcsrtombs_state;
+      static mbstate_t _wcsrtombs_state;
       ps = &_wcsrtombs_state;
     }
 #endif
@@ -101,10 +101,10 @@ _wcsnrtombs_l (char *dst, const wchar_t **src, size_t nwc,
     {
       int count = ps->__count;
       wint_t wch = ps->__value.__wch;
-      int bytes = loc->wctomb (buff, *pwcs, ps);
+      int bytes = __WCTOMB_L(loc) (buff, *pwcs, ps);
       if (bytes == -1)
 	{
-	  _REENT_ERRNO(r) = EILSEQ;
+	  errno = EILSEQ;
 	  ps->__count = 0;
 	  return (size_t)-1;
 	}
@@ -135,7 +135,7 @@ _wcsnrtombs_l (char *dst, const wchar_t **src, size_t nwc,
     }
 
   return n;
-} 
+}
 
 size_t
 wcsnrtombs (char *__restrict dst,

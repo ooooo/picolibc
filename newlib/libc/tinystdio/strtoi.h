@@ -31,8 +31,9 @@
 */
 
 #include "stdio_private.h"
+#include <inttypes.h>
 
-#if defined(_HAVE_BUILTIN_MUL_OVERFLOW) && defined(_HAVE_BUILTIN_ADD_OVERFLOW) && !defined(strtoi_signed)
+#if __HAVE_BUILTIN_MUL_OVERFLOW && __HAVE_BUILTIN_ADD_OVERFLOW && !defined(strtoi_signed)
 #define USE_OVERFLOW
 #endif
 
@@ -66,7 +67,7 @@ strtoi(const char *__restrict nptr, char **__restrict endptr, int ibase)
     switch (i) {
     case '-':
         flags = FLAG_NEG;
-	__PICOLIBC_FALLTHROUGH;
+	__fallthrough;
     case '+':
         i = *s++;
     }

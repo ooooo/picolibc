@@ -32,9 +32,11 @@
  * m = message to print on failure (with formats for r & x)
 **/
 
+#if ((__GNUC__ == 4 && __GNUC_MINOR__ >= 2) || __GNUC__ > 4)
 #pragma GCC diagnostic ignored "-Wpragmas"
 #pragma GCC diagnostic ignored "-Wunknown-warning-option"
 #pragma GCC diagnostic ignored "-Wformat-extra-args"
+#endif
 
 #define TEST(r, f, x, m) ( \
 msg = #f, ((r) = (f)) == (x) || \
@@ -59,7 +61,7 @@ static int test_strtod(void)
 		TEST(d2, strtod(buf, 0), d, "round trip fail %a != %a (%a)");
 	}
 
-#if defined(__PICOLIBC__) && !defined(TINY_STDIO) && __SIZEOF_DOUBLE__ != 8
+#if defined(__PICOLIBC__) && !defined(__TINY_STDIO) && __SIZEOF_DOUBLE__ != 8
         /* skip strtod tests for legacy stdio on systems with atypical doubles */
 #else
 	TEST(d, strtod("0x1p4", 0), 16.0, "hex float %a != %a");

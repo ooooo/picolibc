@@ -58,19 +58,14 @@ ANSI C requires <<gmtime>>.
 <<gmtime>> requires no supporting OS subroutines.
 */
 
+#define _DEFAULT_SOURCE
 #include <stdlib.h>
 #include <time.h>
 
-#define _GMT_OFFSET 0
-
-#ifndef _REENT_ONLY
-
-extern NEWLIB_THREAD_LOCAL struct tm _localtime_buf;
+extern __THREAD_LOCAL struct tm _localtime_buf;
 
 struct tm *
 gmtime (const time_t * tim_p)
 {
   return gmtime_r (tim_p, &_localtime_buf);
 }
-
-#endif

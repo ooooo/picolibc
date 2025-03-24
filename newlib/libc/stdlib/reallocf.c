@@ -27,10 +27,8 @@
 /* Documented in malloc.c.  */
 
 #define _DEFAULT_SOURCE
-#include <sys/cdefs.h>
 #include <stdlib.h>
 
-#ifndef _REENT_ONLY
 void *
 reallocf (void *ptr,
 	size_t size)
@@ -43,4 +41,3 @@ reallocf (void *ptr,
 	return (nptr);
 }
 
-#endif

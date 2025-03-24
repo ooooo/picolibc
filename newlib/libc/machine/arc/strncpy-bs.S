@@ -1,5 +1,5 @@
 /*
-   Copyright (c) 2015, Synopsys, Inc. All rights reserved.
+   Copyright (c) 2015-2024, Synopsys, Inc. All rights reserved.
 
    Redistribution and use in source and binary forms, with or without
    modification, are permitted provided that the following conditions are met:
@@ -32,8 +32,8 @@
    implementation of this function from newlib/libc/string/strncpy.c will be
    used.  */
 #include <picolibc.h>
-
-#if !defined (__OPTIMIZE_SIZE__) && !defined (PREFER_SIZE_OVER_SPEED)
+#if !defined (__OPTIMIZE_SIZE__) && !defined (__PREFER_SIZE_OVER_SPEED) \
+    && !defined (__ARC_RF16__)
 
 #include "asm.h"
 
@@ -170,4 +170,4 @@ ENTRY (strncpy)
 ENDFUNC (strncpy)
 #endif /* !__ARC601__ && __ARC_BARREL_SHIFTER__ */
 
-#endif /* !__OPTIMIZE_SIZE__ && !PREFER_SIZE_OVER_SPEED */
+#endif /* !__OPTIMIZE_SIZE__ && !__PREFER_SIZE_OVER_SPEED */

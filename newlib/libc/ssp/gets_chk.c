@@ -28,8 +28,6 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-#include <sys/cdefs.h>
-__RCSID("$NetBSD: gets_chk.c,v 1.7 2013/10/04 20:49:16 christos Exp $");
 
 /*LINTLIBRARY*/
 
@@ -51,7 +49,7 @@ __gets_chk(char * __restrict str, size_t slen)
                 case EOF:
                         if (ferror(stdin) || cp == str)
                                 return NULL;
-                        __PICOLIBC_FALLTHROUGH;
+                        __fallthrough;
                 case '\n':
                         if (slen == 0)
                                 __chk_fail();

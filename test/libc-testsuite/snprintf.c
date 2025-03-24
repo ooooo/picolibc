@@ -28,12 +28,14 @@
 #include <limits.h>
 #include <math.h>
 
+#if ((__GNUC__ == 4 && __GNUC_MINOR__ >= 2) || __GNUC__ > 4)
 #pragma GCC diagnostic ignored "-Wpragmas"
 #pragma GCC diagnostic ignored "-Wunknown-warning-option"
 #pragma GCC diagnostic ignored "-Wformat-extra-args"
 #pragma GCC diagnostic ignored "-Wformat"
 #pragma GCC diagnostic ignored "-Wformat-truncation"
 #pragma GCC diagnostic ignored "-Woverflow"
+#endif
 
 #define DISABLE_SLOW_TESTS
 
@@ -67,7 +69,7 @@ static const struct {
 	{ "%.0d", 0, "" },
 	{ "%.0o", 0, "" },
 	{ "%#.0d", 0, "" },
-#ifdef TINY_STDIO
+#ifdef __TINY_STDIO
 	{ "%#.0o", 0, "" },
 #endif
 	{ "%#.0x", 0, "" },
@@ -113,7 +115,7 @@ static const struct {
 	{ "%.2f", 1.375, "1.38" },
 	{ "%.1f", 1.375, "1.4" },
 	{ "%.15f", 1.1, "1.100000000000000" },
-#ifdef TINY_STDIO
+#ifdef __TINY_STDIO
 	{ "%.16f", 1.1, "1.1000000000000000" },
 	{ "%.17f", 1.1, "1.10000000000000000" },
 #else
@@ -144,7 +146,7 @@ static const struct {
 
 	/* pi in double precision, printed to a few extra places */
 	{ "%.15f", M_PI, "3.141592653589793" },
-#ifdef TINY_STDIO
+#ifdef __TINY_STDIO
 	{ "%.18f", M_PI, "3.141592653589793000" },
 #else
         /* legacy stdio adds non-zero digits beyond needed precision */
@@ -152,7 +154,7 @@ static const struct {
 #endif
 
 	/* exact conversion of large integers */
-#ifdef TINY_STDIO
+#ifdef __TINY_STDIO
 	{ "%.0f", 340282366920938463463374607431768211456.0,
 	         "340282366920938500000000000000000000000" },
 #else
@@ -180,7 +182,7 @@ static int test_snprintf(void)
 	TEST(i, b[5], 'x', "buffer overrun");
 
 #if __SIZEOF_DOUBLE__ == 8
-#if defined(TINY_STDIO) || (!defined(NO_FLOATING_POINT) && (!defined(_WANT_IO_LONG_DOUBLE) || defined(_LDBL_EQ_DBL)))
+#if defined(__TINY_STDIO) || (!defined(__IO_NO_FLOATING_POINT) && (!defined(__IO_LONG_DOUBLE) || defined(_LDBL_EQ_DBL)))
 	/* Perform ascii arithmetic to test printing tiny doubles */
 	TEST(i, snprintf(b, sizeof b, "%.1022f", 0x1p-1021), 1024, "%d != %d");
 	b[1] = '0';
@@ -197,6 +199,33 @@ static int test_snprintf(void)
 #endif
 #endif
 
+#if !defined(__TINY_STDIO) || defined(__IO_PERCENT_N)
+        /* Tests for %hhn, %hn, %n, %ln, %lln */
+        int len;
+        short slen;
+        char clen;
+        long llen;
+	int n = 123;
+
+        TEST(i, snprintf(b, sizeof b, "%d%n456", n, &len), 6, "length for %n");
+        TEST_S(b, "123456", "incorrect output");
+        TEST(i, len, 3, "incorrect len");
+        TEST(i, snprintf(b, sizeof b, "%d%hn456", n, &slen), 6, "length for %hn");
+        TEST_S(b, "123456", "incorrect output");
+        TEST(i, slen, 3, "incorrect len");
+        TEST(i, snprintf(b, sizeof b, "%d%hhn456", n, &clen), 6, "length for %hhn");
+        TEST_S(b, "123456", "incorrect output");
+        TEST(i, clen, 3, "incorrect len");
+        TEST(i, snprintf(b, sizeof b, "%d%ln456", n, &llen), 6, "length for %ln");
+        TEST_S(b, "123456", "incorrect output");
+        TEST(i, llen, 3, "incorrect len");
+#if !defined(__PICOLIBC__) || defined(__TINY_STDIO) || defined(__IO_LONG_LONG)
+        long long lllen;
+        TEST(i, snprintf(b, sizeof b, "%d%lln456", n, &lllen), 6, "length for %lln");
+        TEST_S(b, "123456", "incorrect output");
+        TEST(i, lllen, 3, "incorrect len");
+#endif
+#endif
 
 #ifndef DISABLE_SLOW_TESTS
 	errno = 0;
@@ -212,7 +241,7 @@ static int test_snprintf(void)
 
         (void) fp_tests;
         (void) k;
-#if !defined(NO_FLOATING_POINT) && defined(_IO_FLOAT_EXACT) && __SIZEOF_DOUBLE__ == 8
+#if !defined(__IO_NO_FLOATING_POINT) && defined(__IO_FLOAT_EXACT) && __SIZEOF_DOUBLE__ == 8
 	for (j=0; fp_tests[j].fmt; j++) {
 		TEST(i, snprintf(b, sizeof b, fp_tests[j].fmt, fp_tests[j].f), (int) strlen(b), "%d != %d");
 		TEST_S(b, fp_tests[j].expect, "bad floating point conversion");

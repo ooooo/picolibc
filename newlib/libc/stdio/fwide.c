@@ -69,7 +69,6 @@ C99, POSIX.1-2001.
 */
 
 #define _DEFAULT_SOURCE
-#include <_ansi.h>
 #include <wchar.h>
 #include "local.h"
 
@@ -80,7 +79,7 @@ fwide (
 {
   int ret;
 
-  CHECK_INIT(ptr, fp);
+  CHECK_INIT();
 
   _newlib_flockfile_start (fp);
   if (mode != 0) {

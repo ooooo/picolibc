@@ -30,13 +30,12 @@ THIS SOFTWARE.
  * with " at " changed at "@" and " dot " changed to ".").	*/
 
 #define _DEFAULT_SOURCE
-#include <_ansi.h>
 #include <string.h>
 #include <locale.h>
 #include "mprec.h"
 #include "gdtoa.h"
 
-#if !defined(PREFER_SIZE_OVER_SPEED) && !defined(__OPTIMIZE_SIZE__) && !defined(_SMALL_HEXDIG)
+#if !defined(__PREFER_SIZE_OVER_SPEED) && !defined(__OPTIMIZE_SIZE__) && !defined(_SMALL_HEXDIG)
 const unsigned char __hexdig[256]=
 {
 	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
@@ -56,7 +55,7 @@ const unsigned char __hexdig[256]=
 	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 };
-#else /* !defined(PREFER_SIZE_OVER_SPEED) && !defined(__OPTIMIZE_SIZE__) && !defined(_SMALL_HEXDIG) */
+#else /* !defined(__PREFER_SIZE_OVER_SPEED) && !defined(__OPTIMIZE_SIZE__) && !defined(_SMALL_HEXDIG) */
 unsigned char
 __hexdig_fun (unsigned char c)
 {
@@ -65,7 +64,7 @@ __hexdig_fun (unsigned char c)
 	else if(c>='A' && c<='F') return c-'A'+0x10+10;
 	else return 0;
 }
-#endif /* !defined(PREFER_SIZE_OVER_SPEED) && !defined(__OPTIMIZE_SIZE__) && !defined(_SMALL_HEXDIG) */
+#endif /* !defined(__PREFER_SIZE_OVER_SPEED) && !defined(__OPTIMIZE_SIZE__) && !defined(_SMALL_HEXDIG) */
 
 static void
 rshift (_Bigint *b,
@@ -156,17 +155,17 @@ gethex (const char **sp, const FPI *fpi,
 	int esign, havedig, irv, k, n, nbits, up, zret;
 	__ULong L, lostbits, *x;
 	Long e, e1;
-#ifdef __HAVE_LOCALE_INFO__
+#ifdef DECIMAL_POINT_L
 	const unsigned char *decimalpoint = (const unsigned char *)
-				      __get_numeric_locale(loc)->decimal_point;
+				      DECIMAL_POINT_L(loc);
 	const size_t decp_len = strlen ((const char *) decimalpoint);
 	const unsigned char decp_end = decimalpoint[decp_len - 1];
 #else
 	const unsigned char *decimalpoint = (const unsigned char *) ".";
 	const size_t decp_len = 1;
 	const unsigned char decp_end = (unsigned char) '.';
-        (void) loc;
 #endif
+        (void) loc;
 
 	havedig = 0;
 	s0 = *(const unsigned char **)sp + 2;
@@ -212,7 +211,7 @@ gethex (const char **sp, const FPI *fpi,
 		switch(*++s) {
 		  case '-':
 			esign = 1;
-			__PICOLIBC_FALLTHROUGH;
+			__fallthrough;
 		  case '+':
 			s++;
 		  }

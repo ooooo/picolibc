@@ -38,15 +38,17 @@
 #include <math.h>
 #include <string.h>
 
-#if defined (TINY_STDIO) || !defined(__PICOLIBC__)
+#if defined (__TINY_STDIO) || !defined(__PICOLIBC__)
 #define FULL_TESTS
 #endif
 
+#if ((__GNUC__ == 4 && __GNUC_MINOR__ >= 2) || __GNUC__ > 4)
 #pragma GCC diagnostic ignored "-Wpragmas"
 #pragma GCC diagnostic ignored "-Wunknown-warning-option"
 #pragma GCC diagnostic ignored "-Wunused-value"
 #pragma GCC diagnostic ignored "-Woverflow"
 #pragma GCC diagnostic ignored "-Wliteral-range"
+#endif
 
 static const struct {
     char        *string;
@@ -57,6 +59,12 @@ static const struct {
 } tests[] = {
     { "1e2@", 100.0, 100.0f, 100.0l, "@" },
 #ifdef FULL_TESTS
+#if !defined(__TINY_STDIO) || defined(__IO_FLOAT_EXACT)
+    { "3752432815e-39%", 0x1.306efbp-98, 0x1.306efcp-98f, 3752432815e-39l, "%" },
+    { "3.752432815e-30%", 0x1.306efbp-98, 0x1.306efcp-98f, 3752432815e-39l, "%" },
+    { "3752432814e-39^", 3752432814e-39, 0x1.306efap-98f, 3752432814e-39l, "^" },
+    { "3.752432814e-30^", 3752432814e-39, 0x1.306efap-98f, 3752432814e-39l, "^" },
+#endif
     { "0x10.000@", 16.0, 16.0f, 16.0l, "@" },
     { "0x10.000p@", 16.0, 16.0f, 16.0l, "p@" },
     { "0x10.000p+@", 16.0, 16.0f, 16.0l, "p+@" },
@@ -158,9 +166,18 @@ int main(void)
                    tests[i].string, end, tests[i].end_test);
             ret = 1;
         }
+        if (tests[i].end_test[0] == '%') {
+            if ((float) d != f) {
+                printf("strtof(\"%s\") got %a strtod got %a\n", tests[i].string, (double) f, d);
+                ret = 1;
+            }
+        }
 #ifdef _TEST_LONG_DOUBLE
 #ifdef FULL_TESTS
-        if (sizeof(long double) > sizeof(double)) {
+        if (sizeof(long double) > sizeof(double)
+            && tests[i].end_test[0] != '%'
+            && tests[i].end_test[0] != '^')
+        {
             ld = strtold(tests[i].string, &end);
             if (ld != tests[i].ldvalue) {
                 printf("strtold(\"%s\"): got %.17Le %La want %.17Le %La\n", tests[i].string,

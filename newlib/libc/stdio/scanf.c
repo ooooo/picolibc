@@ -16,7 +16,6 @@
  */
 
 #define _DEFAULT_SOURCE
-#include <_ansi.h>
 #include <stdio.h>
 #include <stdarg.h>
 #include "local.h"
@@ -27,15 +26,10 @@ scanf(const char *__restrict fmt, ...)
   int ret;
   va_list ap;
 
-  _REENT_SMALL_CHECK_INIT (reent);
   va_start (ap, fmt);
   ret = vfscanf (stdin, fmt, ap);
   va_end (ap);
   return ret;
 }
 
-#ifdef _NANO_FORMATTED_IO
-int __nonnull((1))
-iscanf (const char *, ...)
-       _ATTRIBUTE ((__alias__("scanf")));
-#endif
+__nano_reference(scanf, iscanf);

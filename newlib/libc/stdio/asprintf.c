@@ -18,7 +18,6 @@
 /* doc in sprintf.c */
 
 #define _GNU_SOURCE
-#include <_ansi.h>
 #include <stdio.h>
 #include <stdarg.h>
 #include <limits.h>
@@ -49,8 +48,4 @@ asprintf (char **__restrict strp,
   return (ret);
 }
 
-#ifdef _NANO_FORMATTED_IO
-int
-asiprintf (char **, const char *, ...)
-       _ATTRIBUTE ((__alias__("asprintf")));
-#endif
+__nano_reference(asprintf, asiprintf);

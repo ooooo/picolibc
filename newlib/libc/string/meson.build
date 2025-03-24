@@ -53,6 +53,7 @@ srcs_string = [
     'mempcpy.c',
     'memrchr.c',
     'memset.c',
+    'memset_explicit.c',
     'rawmemchr.c',
     'rindex.c',
     'stpcpy.c',
@@ -97,7 +98,6 @@ srcs_string = [
     'swab.c',
     'timingsafe_bcmp.c',
     'timingsafe_memcmp.c',
-    'u_strerr.c',
     'wcpcpy.c',
     'wcpncpy.c',
     'wcscasecmp.c',
@@ -135,11 +135,22 @@ srcs_string = [
     'wmempcpy.c',
     'wmemset.c',
     'xpg_strerror_r.c',
+    'memcpy_s.c',
+    'memmove_s.c',
+    'memset_s.c',
+    'strcat_s.c',
+    'strcpy_s.c',
+    'strerror_s.c',
+    'strerrorlen_s.c',
+    'strncat_s.c',
+    'strncpy_s.c',
+    'strnlen_s.c',
 ]
 
 hdrs_string = [
     'local.h',
     'str-two-way.h',
+    'string_private.h',
 ]
 
 srcs_strcmp = [
@@ -181,14 +192,17 @@ src_string = files(srcs_string_use)
 # Need a sub-library to pass custom cflags to strcmp
 
 if srcs_strcmp_use != []
-  foreach target : targets
-    value = get_variable('target_' + target)
+  foreach params : targets
+    target = params['name']
+    target_dir = params['dir']
+    target_c_args = params['c_args']
+    target_lib_prefix = params['lib_prefix']
 
     set_variable('lib_string' + target,
 		 static_library('strcmp' + target,
 				srcs_strcmp_use,
 				pic: false,
-				c_args: value[1] + c_args + cargs_strcmp,
+				c_args: target_c_args + c_args + cargs_strcmp,
 				include_directories: inc))
   endforeach
 endif

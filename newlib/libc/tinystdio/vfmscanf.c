@@ -33,14 +33,14 @@
 #include "stdio_private.h"
 
 #define SCANF_LEVEL SCANF_MIN
-#ifndef _FORMAT_DEFAULT_MINIMAL
+#ifndef __IO_DEFAULT_MINIMAL
 #define vfscanf __m_vfscanf
 #endif
 
 #include "vfscanf.c"
 
-#ifdef _FORMAT_DEFAULT_MINIMAL
-#ifdef _HAVE_ALIAS_ATTRIBUTE
+#ifdef __IO_DEFAULT_MINIMAL
+#ifdef __strong_reference
 __strong_reference(vfscanf, __m_vfscanf);
 #else
 int __m_vfscanf (FILE * stream, const char *fmt, va_list ap) { return vfscanf(stream, fmt, ap); }

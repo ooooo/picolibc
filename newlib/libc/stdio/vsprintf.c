@@ -21,7 +21,6 @@ static char sccsid[] = "%W% (Berkeley) %G%";
 #endif /* LIBC_SCCS and not lint */
 
 #define _DEFAULT_SOURCE
-#include <_ansi.h>
 #include <stdio.h>
 #include <limits.h>
 #include <stdarg.h>
@@ -49,8 +48,4 @@ vsprintf (
   return ret;
 }
 
-#ifdef _NANO_FORMATTED_IO
-int __nonnull((1)) _NOTHROW
-vsiprintf (char *, const char *, __VALIST)
-       _ATTRIBUTE ((__alias__("vsprintf")));
-#endif
+__nano_reference(vsprintf, vsiprintf);

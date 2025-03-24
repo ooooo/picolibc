@@ -11,7 +11,7 @@
 
 #include <picolibc.h>
 
-#if defined(PREFER_SIZE_OVER_SPEED) || defined(__OPTIMIZE_SIZE__)
+#if defined(__PREFER_SIZE_OVER_SPEED) || defined(__OPTIMIZE_SIZE__)
 //memcpy defined in memcpy-asm.S
 #else
 
@@ -24,7 +24,7 @@
 #undef memcpy
 
 void *
-__inhibit_loop_to_libcall
+__no_builtin
 memcpy(void *__restrict aa, const void *__restrict bb, size_t n)
 {
   #define BODY(a, b, t) { \

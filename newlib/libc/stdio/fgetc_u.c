@@ -25,7 +25,6 @@
  */
 
 #define _DEFAULT_SOURCE
-#include <_ansi.h>
 #include <stdio.h>
 #include "local.h"
 
@@ -33,6 +32,6 @@ int
 fgetc_unlocked (
        FILE * fp)
 {
-  CHECK_INIT(ptr, fp);
+  CHECK_INIT();
   return _sgetc ( fp);
 }

@@ -32,7 +32,6 @@ Author: Joel Schopp <jschopp@austin.ibm.com>
 
 #include <picolibc.h>
 
-#include <_ansi.h>
 #include <stdio.h>
 
 #include "c99ppe.h"
@@ -52,7 +51,6 @@ typedef struct
   va_list ap;
 } c99_vfprintf_t;
 
-#ifndef _REENT_ONLY
 
 int
 vfprintf (FILE *__restrict fp,
@@ -70,4 +68,3 @@ vfprintf (FILE *__restrict fp,
   return __send_to_ppe(SPE_C99_SIGNALCODE, SPE_C99_VFPRINTF, &args);
 }
 
-#endif /* ! _REENT_ONLY */

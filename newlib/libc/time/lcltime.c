@@ -52,17 +52,14 @@ ANSI C requires <<localtime>>.
 <<localtime>> requires no supporting OS subroutines.
 */
 
+#define _DEFAULT_SOURCE
 #include <stdlib.h>
 #include <time.h>
 
-#ifndef _REENT_ONLY
-
-extern NEWLIB_THREAD_LOCAL struct tm _localtime_buf;
+extern __THREAD_LOCAL struct tm _localtime_buf;
 
 struct tm *
 localtime (const time_t * tim_p)
 {
   return localtime_r (tim_p, &_localtime_buf);
 }
-
-#endif

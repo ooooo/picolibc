@@ -42,7 +42,6 @@ QUICKREF
 	strlen ansi pure
 */
 
-#include <_ansi.h>
 #include <string.h>
 #include <limits.h>
 #include <stdint.h>
@@ -70,8 +69,8 @@ strlen (const char *str)
 {
   const char *start = str;
 
-#if !defined(PREFER_SIZE_OVER_SPEED) && !defined(__OPTIMIZE_SIZE__) && \
-    !defined(PICOLIBC_NO_OUT_OF_BOUNDS_READS)
+#if !defined(__PREFER_SIZE_OVER_SPEED) && !defined(__OPTIMIZE_SIZE__) && \
+    !defined(_PICOLIBC_NO_OUT_OF_BOUNDS_READS)
   unsigned long *aligned_addr;
 
   /* Align the pointer, so we can search a word at a time.  */
@@ -92,7 +91,7 @@ strlen (const char *str)
      precise position of the null.  */
   str = (char *) aligned_addr;
 
-#endif /* not PREFER_SIZE_OVER_SPEED */
+#endif /* not __PREFER_SIZE_OVER_SPEED */
 
   while (*str)
     str++;

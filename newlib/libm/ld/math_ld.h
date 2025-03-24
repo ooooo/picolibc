@@ -36,11 +36,11 @@
 #include "fdlibm.h"
 #include <math.h>
 
-#if defined(_HAVE_LONG_DOUBLE_MATH) && defined(_NEED_FLOAT_HUGE)
-#define _HAVE_LD_SUPPORT
+#if defined(__HAVE_LONG_DOUBLE_MATH) && defined(_NEED_FLOAT_HUGE)
+#define __HAVE_LD_SUPPORT
 #endif
 
-#ifdef _HAVE_LD_SUPPORT
+#ifdef __HAVE_LD_SUPPORT
 
 typedef uint32_t u_int32_t;
 typedef uint64_t u_int64_t;
@@ -78,11 +78,3 @@ long double __kernel_tanl(long double, long double, int);
 #endif
 
 #include "math_private_openbsd.h"
-
-#ifndef EXT_FRACLMBITS
-#define EXT_FRACLMBITS 0
-#endif
-
-#ifndef EXT_FRACHMBITS
-#define EXT_FRACHMBITS 0
-#endif

@@ -47,7 +47,7 @@ freopen(const char *pathname, const char *mode, FILE *stream)
         if (!(stream->flags & __SBUF))
             return NULL;
 
-	stdio_flags = __posix_sflags(mode, &open_flags);
+	stdio_flags = __stdio_flags(mode, &open_flags);
 	if (stdio_flags == 0)
 		return NULL;
 
@@ -59,6 +59,7 @@ freopen(const char *pathname, const char *mode, FILE *stream)
 
         __bufio_lock(stream);
         close((int)(intptr_t) (pf->ptr));
+        (void) __atomic_exchange_ungetc(&stream->unget, 0);
         stream->flags = (stream->flags & ~(__SRD|__SWR|__SERR|__SEOF)) | stdio_flags;
         pf->pos = 0;
         pf->ptr = (void *) (intptr_t) (fd);

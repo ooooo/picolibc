@@ -1,5 +1,5 @@
 /*
-   Copyright (c) 2015, Synopsys, Inc. All rights reserved.
+   Copyright (c) 2015-2024, Synopsys, Inc. All rights reserved.
 
    Redistribution and use in source and binary forms, with or without
    modification, are permitted provided that the following conditions are met:
@@ -33,7 +33,8 @@
    used.  */
 #include <picolibc.h>
 
-#if !defined (__OPTIMIZE_SIZE__) && !defined (PREFER_SIZE_OVER_SPEED)
+#if !defined (__OPTIMIZE_SIZE__) && !defined (__PREFER_SIZE_OVER_SPEED) \
+    && !defined (__ARC_RF16__)
 
 #include "asm.h"
 
@@ -80,7 +81,7 @@ ENTRY (memset)
 	brls	r2,SMALL,.Ltiny
 #endif
 .Lnot_tiny:
-	add_s	r12,r2,r0
+	add_s	r12,r2,r3
 	stb	r1,[r12,-1]
 	bclr_l	r12,r12,0
 	stw	r1,[r12,-2]
@@ -153,4 +154,4 @@ ENDFUNC (memset)
 #endif
 #endif /* !__ARC601__ && __ARC_BARREL_SHIFTER__ */
 
-#endif /* !__OPTIMIZE_SIZE__ && !PREFER_SIZE_OVER_SPEED */
+#endif /* !__OPTIMIZE_SIZE__ && !__PREFER_SIZE_OVER_SPEED */

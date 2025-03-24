@@ -22,7 +22,6 @@
  */
 
 #define _DEFAULT_SOURCE
-#include <_ansi.h>
 #include <stdlib.h>
 
 static const char R64_ARRAY[] = "./0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
@@ -34,7 +33,7 @@ l64a (long value)
   char *result;
   int i, index;
   unsigned long tmp = (unsigned long)value & 0xffffffff;
-  static NEWLIB_THREAD_LOCAL char _l64a_buf[8];
+  static __THREAD_LOCAL char _l64a_buf[8];
 
   result = _l64a_buf;
   ptr = result;

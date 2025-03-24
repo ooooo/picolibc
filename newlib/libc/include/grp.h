@@ -41,13 +41,12 @@
 
 #include <sys/cdefs.h>
 #include <sys/types.h>
-#ifdef __CYGWIN__
-#include <cygwin/grp.h>
-#endif
 
 #if __BSD_VISIBLE
 #define	_PATH_GROUP		"/etc/group"
 #endif
+
+_BEGIN_STD_C
 
 struct group {
 	char	*gr_name;		/* group name */
@@ -55,10 +54,6 @@ struct group {
 	gid_t	gr_gid;			/* group id */
 	char	**gr_mem;		/* group members */
 };
-
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 #ifndef __INSIDE_CYGWIN__
 struct group	*getgrgid (gid_t);
@@ -79,8 +74,6 @@ int		 initgroups (const char *, gid_t);
 #endif /* __BSD_VISIBLE */
 #endif /* !__INSIDE_CYGWIN__ */
 
-#ifdef __cplusplus
-}
-#endif
+_END_STD_C
 
 #endif /* !_GRP_H_ */

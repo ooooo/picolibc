@@ -55,7 +55,6 @@ Supporting OS subroutines required: <<close>>, <<fstat>>, <<getpid>>,
 */
 
 #define _DEFAULT_SOURCE
-#include <_ansi.h>
 #include <stdio.h>
 #include <errno.h>
 #include <fcntl.h>
@@ -82,14 +81,14 @@ tmpfile (void)
       fd = open (f, O_RDWR | O_CREAT | O_EXCL | O_BINARY,
 		    S_IRUSR | S_IWUSR);
     }
-  while (fd < 0 && _REENT_ERRNO(ptr) == EEXIST);
+  while (fd < 0 && errno == EEXIST);
   if (fd < 0)
     return NULL;
   fp = fdopen ( fd, "wb+");
-  e = _REENT_ERRNO(ptr);
+  e = errno;
   if (!fp)
     close (fd);
   (void) remove (f);
-  _REENT_ERRNO(ptr) = e;
+  errno = e;
   return fp;
 }

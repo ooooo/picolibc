@@ -21,39 +21,6 @@ Files: scripts/GeneratePicolibcCrossFile.sh
 Copyright: 2022 R. Diez - Licensed under the GNU AGPLv3
 License: AGPL3-1
 
-Files: newlib/libc/iconv/ccs/ccs.h
- newlib/libc/iconv/ces/us-ascii.c
- newlib/libc/iconv/lib/aliasesi.c
- newlib/libc/iconv/lib/encoding.deps
- newlib/libc/iconv/lib/endian.h
- newlib/libc/iconv/lib/iconvnls.c
- newlib/libc/iconv/lib/iconvnls.h
- newlib/libc/iconv/lib/local.h
-Copyright: 2003-2004, Artem B. Bityuckiy
-License: BSD2-1
-
-Files: newlib/libc/iconv/ccs/mktbl.pl
- newlib/libc/iconv/ces/mkdeps.pl
-Copyright: 2003-2004, Artem B. Bityuckiy, SoftMine Corporation.
-License: BSD2-1
-
-Files: newlib/libc/iconv/ces/euc.c
- newlib/libc/iconv/ces/table.c
- newlib/libc/iconv/ces/ucs-2-internal.c
- newlib/libc/iconv/ces/ucs-2.c
- newlib/libc/iconv/ces/ucs-4-internal.c
- newlib/libc/iconv/ces/ucs-4.c
- newlib/libc/iconv/ces/utf-16.c
- newlib/libc/iconv/ces/utf-8.c
- newlib/libc/iconv/lib/conv.h
- newlib/libc/iconv/lib/iconv.c
- newlib/libc/iconv/lib/nullconv.c
- newlib/libc/iconv/lib/ucsconv.c
- newlib/libc/iconv/lib/ucsconv.h
-Copyright: 2003-2004, Artem B. Bityuckiy
- 1999,2000, Konstantin Chuguev.
-License: BSD2-1
-
 Files: newlib/libc/include/devctl.h
 Copyright: 2016,2019 Joel Sherrill <joel@rtems.org>.
 License: BSD2-1
@@ -64,8 +31,6 @@ License: BSD2-1
 
 Files: newlib/libc/include/langinfo.h
  newlib/libc/include/wchar.h
- newlib/libc/locale/lmessages.c
- newlib/libc/locale/nl_langinfo.c
 Copyright: 2001 Alexey Zelkin <phantom@FreeBSD.org>
 License: BSD2-1
 
@@ -94,20 +59,6 @@ Files: newlib/libc/include/threads.h
 Copyright: 2011 Ed Schouten <ed@FreeBSD.org>
 License: BSD2-1
 
-Files: newlib/libc/locale/lctype.c
-Copyright: 2010 Corinna Vinschen <corinna@vinschen.de>
-License: BSD2-1
-
-Files: newlib/libc/locale/lmonetary.c
- newlib/libc/locale/lnumeric.c
-Copyright: 2000, 2001 Alexey Zelkin <phantom@FreeBSD.org>
-License: BSD2-1
-
-Files: newlib/libc/locale/timelocal.c
-Copyright: 2001 Alexey Zelkin <phantom@FreeBSD.org>
- 1997 FreeBSD Inc.
-License: BSD2-1
-
 Files: newlib/libc/machine/aarch64/machine/_fpmath.h
  newlib/libc/machine/riscv/machine/_fpmath.h
 Copyright: 2002, 2003 David Schultz <das@FreeBSD.ORG>
@@ -115,14 +66,14 @@ Copyright: 2002, 2003 David Schultz <das@FreeBSD.ORG>
 License: BSD2-1
 
 Files: newlib/libc/machine/aarch64/machine/fenv-fp.h
- newlib/libc/machine/aarch64/sys/fenv.h
- newlib/libc/machine/arm/sys/fenv.h
+ newlib/libc/machine/aarch64/machine/fenv.h
+ newlib/libc/machine/arm/machine/fenv.h
  newlib/libc/machine/mips/machine/fenv-fp.h
- newlib/libc/machine/mips/sys/fenv.h
+ newlib/libc/machine/mips/machine/fenv.h
  newlib/libc/machine/powerpc/machine/fenv-fp.h
- newlib/libc/machine/powerpc/sys/fenv.h
- newlib/libc/machine/sh/sys/fenv.h
- newlib/libc/machine/sparc/sys/fenv.h
+ newlib/libc/machine/powerpc/machine/fenv.h
+ newlib/libc/machine/sh/machine/fenv.h
+ newlib/libc/machine/sparc/machine/fenv.h
  newlib/libm/ld/common/s_frexpl.c
 Copyright: 2004-2005 David Schultz <das@FreeBSD.ORG>
 License: BSD2-1
@@ -131,12 +82,18 @@ Files: newlib/libc/machine/lm32/setjmp.S
 Copyright: 2008 Jon Beniston <jon@beniston.com>
 License: BSD2-1
 
+Files: newlib/libc/machine/loongarch/machine/_fpmath.h
+Copyright: 2002, 2003 David Schultz <das@FreeBSD.ORG>
+ 2014 The FreeBSD Foundation
+ 2024 Jiaxun Yang <jiaxun.yang@flygoat.com>
+License: BSD2-1
+
 Files: newlib/libc/machine/sh/machine/fenv-fp.h
 Copyright: 2004-2005 David Schultz <das@FreeBSD.ORG>
  2013 Andrew Turner <andrew@FreeBSD.ORG>
 License: BSD2-1
 
-Files: newlib/libc/machine/x86/sys/fenv.h
+Files: newlib/libc/machine/x86/machine/fenv.h
 Copyright: 2010-2019 Red Hat, Inc.
 License: BSD2-1
 
@@ -263,6 +220,7 @@ Files: newlib/libm/ld/common/s_fdiml.c
  newlib/libm/ld/common/s_isnanl.c
  newlib/libm/ld/common/s_scalbl.c
  newlib/libm/ld/common/s_scalbln.c
+ newlib/libm/ld/common/s_signbitl.c
 Copyright: 2004 David Schultz <das@FreeBSD.ORG>
 License: BSD2-1
 
@@ -287,8 +245,13 @@ Files: test/t_fmemopen.c
 Copyright: 2010 Takehiko NOZAKI,
 License: BSD2-1
 
-Files: newlib/libc/iconv/ces/table-pcs.c
-Copyright: 2003-2004, Artem B. Bityuckiy
+Files: newlib/libc/include/machine/fenv.h
+Copyright: 2019 Joel Sherrill <joel@rtems.org
+ 2019 Craig Howlang <craig.howland@caci.com>
+License: BSD2-2
+
+Files: newlib/libm/fenv/fe_dfl_env.c
+Copyright: 2019 Joel Sherrill <joel@rtems.org
 License: BSD2-2
 
 Files: newlib/libc/include/ssp/ssp.h
@@ -394,18 +357,9 @@ Files: newlib/libm/complex/conjl.c
 Copyright: 2010 The NetBSD Foundation, Inc.
 License: BSD2-3
 
-Files: newlib/libc/include/sys/fenv.h
-Copyright: 2019 Joel Sherrill <joel@rtems.org
- 2019 Craig Howlang <craig.howland@caci.com>
-License: BSD2-4
-
-Files: newlib/libm/fenv/fe_dfl_env.c
-Copyright: 2019 Joel Sherrill <joel@rtems.org
-License: BSD2-4
-
 Files: newlib/libc/include/sys/tree.h
 Copyright: 2002 Niels Provos <provos@citi.umich.edu>
-License: BSD2-5
+License: BSD2-4
 
 Files: newlib/libc/machine/pru/setjmp.s
  newlib/libm/machine/pru/fpclassify.c
@@ -419,71 +373,48 @@ Files: newlib/libc/machine/pru/setjmp.s
  newlib/libm/machine/pru/isnormal.c
  newlib/libm/machine/pru/isnormalf.c
 Copyright: 2018-2019 Dimitar Dimitrov <dimitar@dinux.eu>
-License: BSD2-5
-
-Files: newlib/libc/locale/nl_langinfo.3
-Copyright: 2001 Alexey Zelkin <phantom@FreeBSD.org>
-License: BSD2-6
-
-Files: newlib/libc/posix/namespace.h
- newlib/libc/posix/un-namespace.h
-Copyright: 2001 Daniel Eischen <deischen@FreeBSD.org>.
-License: BSD2-6
-
-Files: newlib/libc/locale/setlocale.h
-Copyright: 1997 Andrey A. Chernov, Moscow, Russia.
-License: BSD2-7
-
-Files: newlib/libc/posix/collcmp.c
-Copyright: 1996 Andrey A. Chernov, Moscow, Russia.
-License: BSD2-7
+License: BSD2-4
 
 Files: newlib/libc/machine/or1k/setjmp.S
 Copyright: 2014, Hesham ALMatary
-License: BSD2-8
+License: BSD2-5
 
 Files: newlib/libc/machine/sparc/machine/fenv-fp.h
 Copyright: 2004-2005 David Schultz <das@FreeBSD.ORG>
-License: BSD2-9
+License: BSD2-6
 
 Files: newlib/libc/machine/xtensa/machine/fenv-fp.h
- newlib/libc/machine/xtensa/sys/fenv.h
- newlib/libc/sys/xtensa/include/fenv.h
+ newlib/libc/machine/xtensa/machine/fenv.h
 Copyright: 2011 Tensilica Inc.
-License: BSD2-10
+License: BSD2-7
 
-Files: newlib/libc/posix/collate.c
- newlib/libc/posix/collate.h
+Files: newlib/libc/posix/collate.h
 Copyright: 1995 Alex Tatmanjants <alex@elvisti.kiev.ua> at Electronni Visti IA, Kiev, Ukraine.
-License: BSD2-11
+License: BSD2-8
+
+Files: newlib/libc/posix/collcmp.c
+Copyright: 1996 Andrey A. Chernov, Moscow, Russia.
+License: BSD2-9
 
 Files: newlib/libc/signal/sig2str.c
 Copyright: 2021 Matthew Joyce
-License: BSD2-12
-
-Files: newlib/libc/sys/xtensa/clibrary_init.c
-Copyright: 2003-2006 Tensilica Inc.
-License: BSD2-13
-
-Files: newlib/libc/sys/xtensa/sys/file.h
-Copyright: 2005-2006 Tensilica Inc.
-License: BSD2-13
+License: BSD2-10
 
 Files: newlib/libm/ld/common/e_sqrtl.c
  newlib/libm/ld/common/s_cosl.c
  newlib/libm/ld/common/s_sinl.c
  newlib/libm/ld/common/s_tanl.c
 Copyright: 2007 Steven G. Kargl
-License: BSD2-14
+License: BSD2-11
 
 Files: newlib/libm/ld/common/s_roundl.c
 Copyright: 2003, Steven G. Kargl
-License: BSD2-14
+License: BSD2-11
 
 Files: newlib/libm/ld/ld128/s_nanl.c
  newlib/libm/ld/ld80/s_nanl.c
 Copyright: 2007 David Schultz
-License: BSD2-15
+License: BSD2-12
 
 Files: CMakeLists.txt
  cmake/picolibc.cmake
@@ -492,11 +423,6 @@ Files: CMakeLists.txt
  newlib/libc/argz/CMakeLists.txt
  newlib/libc/ctype/CMakeLists.txt
  newlib/libc/errno/CMakeLists.txt
- newlib/libc/iconv/CMakeLists.txt
- newlib/libc/iconv/ccs/CMakeLists.txt
- newlib/libc/iconv/ccs/iconv_data/CMakeLists.txt
- newlib/libc/iconv/ces/CMakeLists.txt
- newlib/libc/iconv/lib/CMakeLists.txt
  newlib/libc/include/CMakeLists.txt
  newlib/libc/include/arpa/CMakeLists.txt
  newlib/libc/include/byteswap.h
@@ -505,60 +431,54 @@ Files: CMakeLists.txt
  newlib/libc/include/rpc/meson.build
  newlib/libc/include/ssp/CMakeLists.txt
  newlib/libc/include/sys/CMakeLists.txt
- newlib/libc/locale/CMakeLists.txt
  newlib/libc/machine/CMakeLists.txt
  newlib/libc/machine/aarch64/CMakeLists.txt
  newlib/libc/machine/aarch64/machine/CMakeLists.txt
  newlib/libc/machine/aarch64/machine/math.h
  newlib/libc/machine/aarch64/machine/meson.build
- newlib/libc/machine/aarch64/sys/CMakeLists.txt
  newlib/libc/machine/arc/CMakeLists.txt
  newlib/libc/machine/arc/meson.build
+ newlib/libc/machine/arc64/CMakeLists.txt
+ newlib/libc/machine/arc64/meson.build
  newlib/libc/machine/arm/CMakeLists.txt
  newlib/libc/machine/arm/machine/CMakeLists.txt
- newlib/libc/machine/arm/sys/CMakeLists.txt
  newlib/libc/machine/avr/meson.build
  newlib/libc/machine/m68k/machine/CMakeLists.txt
- newlib/libc/machine/m68k/sys/CMakeLists.txt
  newlib/libc/machine/mips/CMakeLists.txt
  newlib/libc/machine/mips/machine/CMakeLists.txt
  newlib/libc/machine/mips/machine/meson.build
  newlib/libc/machine/mips/meson.build
- newlib/libc/machine/mips/sys/CMakeLists.txt
- newlib/libc/machine/mips/sys/meson.build
  newlib/libc/machine/msp430/meson.build
  newlib/libc/machine/nios2/CMakeLists.txt
  newlib/libc/machine/nios2/meson.build
  newlib/libc/machine/powerpc/CMakeLists.txt
  newlib/libc/machine/powerpc/machine/CMakeLists.txt
  newlib/libc/machine/powerpc/machine/meson.build
- newlib/libc/machine/powerpc/sys/CMakeLists.txt
- newlib/libc/machine/powerpc/sys/meson.build
  newlib/libc/machine/riscv/CMakeLists.txt
  newlib/libc/machine/riscv/machine/CMakeLists.txt
- newlib/libc/machine/riscv/sys/CMakeLists.txt
  newlib/libc/machine/sparc/CMakeLists.txt
  newlib/libc/machine/sparc/machine/CMakeLists.txt
  newlib/libc/machine/sparc/machine/meson.build
  newlib/libc/machine/sparc/meson.build
- newlib/libc/machine/sparc/sys/CMakeLists.txt
- newlib/libc/machine/sparc/sys/meson.build
  newlib/libc/machine/x86/CMakeLists.txt
  newlib/libc/machine/x86/machine/CMakeLists.txt
- newlib/libc/machine/x86/sys/CMakeLists.txt
  newlib/libc/machine/xtensa/CMakeLists.txt
  newlib/libc/machine/xtensa/machine/CMakeLists.txt
- newlib/libc/machine/xtensa/sys/CMakeLists.txt
  newlib/libc/misc/CMakeLists.txt
  newlib/libc/misc/ubsan.c
  newlib/libc/picolib/CMakeLists.txt
  newlib/libc/picolib/machine/CMakeLists.txt
+ newlib/libc/picolib/machine/aarch64/CMakeLists.txt
  newlib/libc/picolib/machine/arc/CMakeLists.txt
  newlib/libc/picolib/machine/arc/tls.c
+ newlib/libc/picolib/machine/arc64/CMakeLists.txt
  newlib/libc/picolib/machine/arm/CMakeLists.txt
  newlib/libc/picolib/machine/mips/tls.c
  newlib/libc/picolib/machine/msp430/CMakeLists.txt
+ newlib/libc/picolib/machine/or1k/CMakeLists.txt
  newlib/libc/picolib/machine/riscv/CMakeLists.txt
+ newlib/libc/picolib/machine/rx/CMakeLists.txt
+ newlib/libc/picolib/machine/sh/CMakeLists.txt
  newlib/libc/picolib/machine/sparc/CMakeLists.txt
  newlib/libc/picolib/machine/xtensa/CMakeLists.txt
  newlib/libc/picolib/machine/xtensa/tls.c
@@ -567,8 +487,6 @@ Files: CMakeLists.txt
  newlib/libc/signal/CMakeLists.txt
  newlib/libc/ssp/CMakeLists.txt
  newlib/libc/stdlib/CMakeLists.txt
- newlib/libc/stdlib/nano-malloc-getpagesize.c
- newlib/libc/stdlib/nano-malloc-posix_memalign.c
  newlib/libc/string/CMakeLists.txt
  newlib/libc/time/CMakeLists.txt
  newlib/libc/tinystdio/CMakeLists.txt
@@ -692,6 +610,7 @@ Files: CMakeLists.txt
  newlib/testsuite/newlib.time/meson.build
  picocrt/CMakeLists.txt
  picocrt/machine/arc/CMakeLists.txt
+ picocrt/machine/arc64/CMakeLists.txt
  picocrt/machine/arm/CMakeLists.txt
  picocrt/machine/powerpc/crt0.S
  picocrt/machine/powerpc/powerpc_crt.h
@@ -704,6 +623,7 @@ Files: CMakeLists.txt
  semihost/fake/meson.build
  semihost/getentropy.c
  semihost/machine/arc/CMakeLists.txt
+ semihost/machine/arc64/CMakeLists.txt
  semihost/machine/arm/CMakeLists.txt
  semihost/machine/powerpc/opal.h
  semihost/machine/powerpc/opal_call.S
@@ -726,28 +646,22 @@ Files: cmake/TC-arm-none-eabi.ld
  cmake/TC-microbit.ld
  hello-world/hello-worldpp.cpp
  newlib/libc/errno/errno.c
- newlib/libc/iconv/ccs/iconv_data/meson.build
  newlib/libc/include/machine/math.h
  newlib/libc/include/ssp/meson.build
  newlib/libc/include/sys/auxv.h
- newlib/libc/machine/aarch64/sys/meson.build
  newlib/libc/machine/arm/machine/meson.build
- newlib/libc/machine/arm/sys/meson.build
  newlib/libc/machine/csky/meson.build
- newlib/libc/machine/m68k/sys/meson.build
  newlib/libc/machine/riscv/machine/math.h
  newlib/libc/machine/riscv/machine/meson.build
- newlib/libc/machine/sh/sys/meson.build
  newlib/libc/machine/x86/machine/meson.build
- newlib/libc/machine/xtensa/sys/meson.build
  newlib/libc/picolib/getauxval.c
  newlib/libc/picolib/machine/aarch64/tls.c
  newlib/libc/picolib/machine/arm/arm_tls.h
- newlib/libc/picolib/machine/arm/read_tp.S
  newlib/libc/posix/meson.build
  newlib/libc/stdio/nano-svfprintf.c
  newlib/libc/stdio/nano-svfscanf.c
  newlib/libc/stdio64/meson.build
+ newlib/libc/tinystdio/asnprintf.c
  newlib/libc/tinystdio/asprintf.c
  newlib/libc/tinystdio/compare_exchange.c
  newlib/libc/tinystdio/ecvt.c
@@ -770,6 +684,7 @@ Files: cmake/TC-arm-none-eabi.ld
  newlib/libc/tinystdio/strtod_l.c
  newlib/libc/tinystdio/strtof_l.c
  newlib/libc/tinystdio/strtold_l.c
+ newlib/libc/tinystdio/vasnprintf.c
  newlib/libc/tinystdio/vasprintf.c
  newlib/libm/machine/arm/s_fma_arm.c
  newlib/libm/machine/arm/sf_fma_arm.c
@@ -785,6 +700,7 @@ Files: cmake/TC-arm-none-eabi.ld
  scripts/run-mips
  scripts/run-msp430
  scripts/run-nios2
+ scripts/run-or1k
  scripts/run-sh
  scripts/run-sparc
  scripts/run-x86
@@ -844,19 +760,75 @@ Files: cmake/TC-arm-none-eabi.ld
 Copyright: 2020 Keith Packard
 License: BSD3-1
 
+Files: cmake/TC-rx.ld
+ newlib/libc/ctype/iswspace_l.c
+ newlib/libc/ctype/mkctype-extended.py
+ newlib/libc/iconv/CMakeLists.txt
+ newlib/libc/iconv/iconv.c
+ newlib/libc/iconv/iconv_close.c
+ newlib/libc/iconv/iconv_open.c
+ newlib/libc/iconv/iconv_private.h
+ newlib/libc/iconv/meson.build
+ newlib/libc/locale/CMakeLists.txt
+ newlib/libc/locale/duplocale.c
+ newlib/libc/locale/freelocale.c
+ newlib/libc/locale/getlocalename_l.c
+ newlib/libc/locale/locale_ctype_ptr.c
+ newlib/libc/locale/locale_ctype_ptr_l.c
+ newlib/libc/locale/locale_mb_cur_max.c
+ newlib/libc/locale/locale_names.c
+ newlib/libc/locale/locale_private.h
+ newlib/libc/locale/localeconv.c
+ newlib/libc/locale/localedata.c
+ newlib/libc/locale/meson.build
+ newlib/libc/locale/newlocale.c
+ newlib/libc/locale/nl_langinfo.c
+ newlib/libc/locale/posix_locale.c
+ newlib/libc/locale/setlocale.c
+ newlib/libc/locale/timedata.c
+ newlib/libc/locale/uselocale.c
+ newlib/libc/picolib/machine/loongarch/CMakeLists.txt
+ newlib/libc/picolib/machine/loongarch/tls.c
+ newlib/libc/picolib/machine/m68k/meson.build
+ newlib/libc/picolib/machine/m68k/read_tp.s
+ newlib/libc/picolib/machine/m68k/set_tls.c
+ newlib/libc/picolib/machine/m68k/tls-local.h
+ newlib/libc/picolib/machine/m68k/tls.c
+ newlib/libc/picolib/machine/or1k/meson.build
+ newlib/libc/picolib/machine/or1k/tls.c
+ newlib/libc/picolib/machine/powerpc/CMakeLists.txt
+ newlib/libc/picolib/machine/powerpc/meson.build
+ newlib/libc/picolib/machine/powerpc/tls.c
+ newlib/libc/picolib/machine/sh/tls.c
+ newlib/libc/stdlib/mk-sb-charsets.py
+ newlib/libc/stdlib/sb_charsets.h
+ picocrt/machine/lm32/crt0.S
+ picocrt/machine/or1k/crt0.S
+ picocrt/machine/or1k/crt0.c
+ picocrt/machine/rx/crt0.c
+ semihost/machine/lm32/lm32_errno.c
+ semihost/machine/rx/rx_iob.c
+ semihost/machine/rx/rx_semihost.h
+ test/test-scmpu.c
+ test/test-wcase.c
+ test/test-wctomb.c
+Copyright: 2025 Keith Packard
+License: BSD3-1
+
 Files: doc/printf-sample/Makefile
  doc/printf-sample/printf.c
  dummyhost/exit.c
  newlib/libc/machine/arm/machine/fenv-fp.h
  newlib/libc/machine/m68k/CMakeLists.txt
  newlib/libc/machine/m68k/machine/fenv-fp.h
- newlib/libc/machine/m68k/sys/fenv.h
+ newlib/libc/machine/m68k/machine/fenv.h
  newlib/libc/tinystdio/dtox_engine.c
  newlib/libc/tinystdio/ftox_engine.c
  newlib/libc/tinystdio/getdelim.c
  newlib/libc/tinystdio/ldtox_engine.c
  newlib/libc/tinystdio/swprintf.c
  newlib/libc/tinystdio/vswprintf.c
+ newlib/testsuite/newlib.time/asctime.c
  picocrt/machine/m68k/crt0.c
  picocrt/machine/mips/crt0.c
  picocrt/machine/msp430/crt0.c
@@ -884,8 +856,6 @@ Files: doc/printf-sample/Makefile
  semihost/machine/m68k/m68k_stat.c
  semihost/machine/m68k/m68k_unlink.c
  semihost/machine/m68k/m68k_write.c
- semihost/machine/mips/mips-semihost.h
- semihost/machine/mips/mips_iob.c
  semihost/machine/msp430/msp430-iob.c
  semihost/machine/msp430/msp430-semihost.h
  semihost/machine/nios2/nios2_close.c
@@ -899,9 +869,13 @@ Files: doc/printf-sample/Makefile
  semihost/machine/nios2/nios2_stat.c
  semihost/machine/nios2/nios2_unlink.c
  semihost/machine/nios2/nios2_write.c
+ semihost/machine/or1k/or1k_iob.c
+ semihost/machine/or1k/or1k_semihost.h
  semihost/machine/sh/sh_semihost.h
  semihost/machine/sparc/sparc-semihost.h
  semihost/machine/sparc/sparc_iob.c
+ semihost/machine/xtensa/xtensa-iob.c
+ semihost/machine/xtensa/xtensa-semihost.h
  test/test-fma.c
  test/test-fread-fwrite.c
  test/test-gets.c
@@ -926,10 +900,6 @@ Files: dummyhost/iob.c
  newlib/libc/argz/meson.build
  newlib/libc/ctype/meson.build
  newlib/libc/errno/meson.build
- newlib/libc/iconv/ccs/meson.build
- newlib/libc/iconv/ces/meson.build
- newlib/libc/iconv/lib/meson.build
- newlib/libc/iconv/meson.build
  newlib/libc/include/arpa/meson.build
  newlib/libc/include/endian.h
  newlib/libc/include/machine/meson.build
@@ -937,23 +907,20 @@ Files: dummyhost/iob.c
  newlib/libc/include/newlib.h
  newlib/libc/include/picotls.h
  newlib/libc/include/sys/meson.build
- newlib/libc/locale/meson.build
  newlib/libc/machine/arm/meson.build
  newlib/libc/machine/riscv/meson.build
- newlib/libc/machine/riscv/sys/meson.build
  newlib/libc/machine/x86/meson.build
  newlib/libc/meson.build
  newlib/libc/misc/meson.build
  newlib/libc/picolib/dso_handle.c
  newlib/libc/picolib/inittls.c
+ newlib/libc/picolib/machine/aarch64/interrupt.c
  newlib/libc/picolib/machine/arm/interrupt.c
- newlib/libc/picolib/machine/arm/tls.c
  newlib/libc/picolib/machine/riscv/tls.c
  newlib/libc/picolib/machine/sparc/interrupt.S
  newlib/libc/picolib/machine/sparc/tls.c
  newlib/libc/picolib/meson.build
  newlib/libc/picolib/picosbrk.c
- newlib/libc/reent/meson.build
  newlib/libc/search/meson.build
  newlib/libc/signal/meson.build
  newlib/libc/ssp/meson.build
@@ -980,22 +947,11 @@ Files: dummyhost/iob.c
  newlib/libc/stdlib/malloc-malloc_usable_size.c
  newlib/libc/stdlib/malloc-mallopt.c
  newlib/libc/stdlib/malloc-memalign.c
+ newlib/libc/stdlib/malloc-posix_memalign.c
  newlib/libc/stdlib/malloc-pvalloc.c
  newlib/libc/stdlib/malloc-realloc.c
  newlib/libc/stdlib/malloc-valloc.c
  newlib/libc/stdlib/meson.build
- newlib/libc/stdlib/nano-malloc-calloc.c
- newlib/libc/stdlib/nano-malloc-cfree.c
- newlib/libc/stdlib/nano-malloc-free.c
- newlib/libc/stdlib/nano-malloc-mallinfo.c
- newlib/libc/stdlib/nano-malloc-malloc.c
- newlib/libc/stdlib/nano-malloc-malloc_stats.c
- newlib/libc/stdlib/nano-malloc-malloc_usable_size.c
- newlib/libc/stdlib/nano-malloc-mallopt.c
- newlib/libc/stdlib/nano-malloc-memalign.c
- newlib/libc/stdlib/nano-malloc-pvalloc.c
- newlib/libc/stdlib/nano-malloc-realloc.c
- newlib/libc/stdlib/nano-malloc-valloc.c
  newlib/libc/string/meson.build
  newlib/libc/time/meson.build
  newlib/libc/tinystdio/bufio.c
@@ -1054,16 +1010,22 @@ Files: dummyhost/iob.c
  picocrt/meson.build
  picocrt/shared/crt0.c
  scripts/do-aarch64-configure
+ scripts/do-aarch64-zephyr-configure
  scripts/do-aarch64-zephyr-elf-configure
  scripts/do-arc-configure
  scripts/do-arc64-configure
  scripts/do-arm-configure
  scripts/do-avr-configure
+ scripts/do-clang-aarch64-configure
+ scripts/do-clang-aarch64-fvp-configure
  scripts/do-clang-arm-configure
  scripts/do-clang-msp430-configure
  scripts/do-clang-riscv-configure
  scripts/do-clang-rv32imafdc-configure
+ scripts/do-clang-thumb-configure
  scripts/do-clang-thumbv6m-configure
+ scripts/do-clang-thumbv7-a-configure
+ scripts/do-clang-thumbv7e+dp-configure
  scripts/do-clang-thumbv7e+fp-configure
  scripts/do-clang-thumbv7m-configure
  scripts/do-configure
@@ -1074,11 +1036,14 @@ Files: dummyhost/iob.c
  scripts/do-lx106-configure
  scripts/do-mips-configure
  scripts/do-mips-zephyr-configure
+ scripts/do-mips64-configure
  scripts/do-mipsel-configure
  scripts/do-msp430-configure
  scripts/do-msp430-unknown-elf-configure
  scripts/do-native-configure
+ scripts/do-native-m32-configure
  scripts/do-nios2-configure
+ scripts/do-or1k-configure
  scripts/do-riscv-configure
  scripts/do-rv32imac-configure
  scripts/do-sh-unknown-elf-configure
@@ -1089,6 +1054,7 @@ Files: dummyhost/iob.c
  scripts/do-x86-configure
  scripts/do-x86_64-configure
  scripts/do-x86_64-zephyr-configure
+ scripts/do-xtensa-dc233c-configure
  scripts/do-xtensa-espressif_esp32-configure
  scripts/do-xtensa-espressif_esp32s2-configure
  scripts/do-xtensa-intel_apl_adsp-configure
@@ -1110,7 +1076,7 @@ Files: dummyhost/iob.c
  semihost/lseek64.c
  semihost/machine/aarch64/semihost-aarch64.S
  semihost/machine/arm/semihost-arm.S
- semihost/machine/riscv/semihost-riscv.s
+ semihost/machine/riscv/semihost-riscv.S
  semihost/meson.build
  semihost/open.c
  semihost/read.c
@@ -1157,19 +1123,22 @@ License: BSD3-1
 
 Files: newlib/empty.c
  newlib/libc/machine/arm/memmove.c
- newlib/libc/machine/x86/sys/meson.build
  newlib/libc/machine/xtensa/machine/meson.build
  newlib/libc/picolib/machine/aarch64/meson.build
  newlib/libc/picolib/machine/arc/meson.build
+ newlib/libc/picolib/machine/arc64/meson.build
  newlib/libc/picolib/machine/arm/meson.build
+ newlib/libc/picolib/machine/loongarch/meson.build
  newlib/libc/picolib/machine/mips/meson.build
  newlib/libc/picolib/machine/msp430/meson.build
  newlib/libc/picolib/machine/riscv/meson.build
+ newlib/libc/picolib/machine/sh/meson.build
  newlib/libc/picolib/machine/sparc/meson.build
  newlib/libc/picolib/machine/xtensa/meson.build
  newlib/libc/stdlib/pico-atexit.c
  newlib/libc/stdlib/pico-cxa-atexit.c
  newlib/libc/stdlib/pico-exit.c
+ newlib/libc/stdlib/pico-exitprocs.c
  newlib/libc/stdlib/pico-onexit.c
  newlib/libc/stdlib/pico-onexit.h
  newlib/libc/tinystdio/atold_engine.c
@@ -1192,15 +1161,19 @@ Files: newlib/empty.c
  newlib/libm/test/scalbn_vec.c
  picocrt/machine/aarch64/meson.build
  picocrt/machine/arc/meson.build
+ picocrt/machine/arc64/meson.build
  picocrt/machine/arm/meson.build
+ picocrt/machine/lm32/meson.build
  picocrt/machine/m68k/meson.build
  picocrt/machine/mips/meson.build
  picocrt/machine/msp430/meson.build
  picocrt/machine/nios2/meson.build
+ picocrt/machine/or1k/meson.build
  picocrt/machine/powerpc/meson.build
  picocrt/machine/riscv/meson.build
  picocrt/machine/sh/meson.build
  picocrt/machine/sparc/meson.build
+ picocrt/machine/x86/CMakeLists.txt
  picocrt/machine/x86/meson.build
  scripts/do-power9-configure
  scripts/do-power9-fp128-configure
@@ -1210,23 +1183,28 @@ Files: newlib/empty.c
  semihost/machine/aarch64/meson.build
  semihost/machine/arc/arc_stub.c
  semihost/machine/arc/meson.build
+ semihost/machine/arc64/meson.build
  semihost/machine/arm/meson.build
  semihost/machine/m68k/m68k_stub.c
  semihost/machine/m68k/meson.build
- semihost/machine/mips/meson.build
- semihost/machine/mips/mips_exit.c
- semihost/machine/mips/mips_stub.c
  semihost/machine/msp430/meson.build
  semihost/machine/msp430/msp430-exit.c
  semihost/machine/msp430/msp430-stub.c
  semihost/machine/nios2/meson.build
  semihost/machine/nios2/nios2_stub.c
+ semihost/machine/or1k/meson.build
+ semihost/machine/or1k/or1k_exit.c
+ semihost/machine/or1k/or1k_stub.c
  semihost/machine/powerpc/meson.build
  semihost/machine/powerpc/powerpc_exit.c
  semihost/machine/powerpc/powerpc_io.c
  semihost/machine/powerpc/powerpc_kill.c
  semihost/machine/powerpc/powerpc_stub.c
  semihost/machine/riscv/meson.build
+ semihost/machine/rx/CMakeLists.txt
+ semihost/machine/rx/meson.build
+ semihost/machine/rx/rx_exit.c
+ semihost/machine/rx/rx_stub.c
  semihost/machine/sh/meson.build
  semihost/machine/sh/sh_exit.c
  semihost/machine/sh/sh_stub.c
@@ -1239,6 +1217,9 @@ Files: newlib/empty.c
  semihost/machine/x86/e9_kill.c
  semihost/machine/x86/e9_stub.c
  semihost/machine/x86/meson.build
+ semihost/machine/xtensa/meson.build
+ semihost/machine/xtensa/xtensa-exit.c
+ semihost/machine/xtensa/xtensa-stub.c
  test/atexit.c
  test/constructor-skip.c
  test/constructor.c
@@ -1248,12 +1229,84 @@ Files: newlib/empty.c
  test/on_exit.c
  test/rounding-mode-sub.c
  test/rounding-mode.c
+ test/rounding-mode.h
  test/test-memset.c
  test/test-put.c
  test/test-strchr.c
  test/timegm.c
  test/timegm.h
 Copyright: 2021 Keith Packard
+License: BSD3-1
+
+Files: newlib/libc/ctype/ctype_extended.h
+ newlib/libc/ctype/ctype_table.c
+ newlib/libc/ctype/ctype_table.h
+ newlib/libc/ctype/mkctype.py
+ newlib/libc/include/stdnoreturn.h
+ newlib/libc/include/sys/_initfini.h
+ newlib/libc/include/uchar.h
+ newlib/libc/machine/m68k/machine/meson.build
+ newlib/libc/machine/rx/CMakeLists.txt
+ newlib/libc/machine/sh/CMakeLists.txt
+ newlib/libc/machine/sh/machine/CMakeLists.txt
+ newlib/libc/machine/sh/machine/meson.build
+ newlib/libc/picolib/machine/arc/vector_table.c
+ newlib/libc/picolib/machine/m68k/interrupt.c
+ newlib/libc/posix/fpathconf.c
+ newlib/libc/posix/pathconf.c
+ newlib/libc/stdio/flockfile.c
+ newlib/libc/stdio/funlockfile.c
+ newlib/libc/string/memset_explicit.c
+ newlib/libc/tinystdio/atomic_load.c
+ newlib/libc/tinystdio/flockfile.c
+ newlib/libc/tinystdio/ftrylockfile.c
+ newlib/libc/tinystdio/funlockfile.c
+ newlib/libc/tinystdio/funopen.c
+ newlib/libc/uchar/CMakeLists.txt
+ newlib/libc/uchar/c16rtomb.c
+ newlib/libc/uchar/c32rtomb.c
+ newlib/libc/uchar/c8rtomb.c
+ newlib/libc/uchar/mbrtoc16.c
+ newlib/libc/uchar/mbrtoc32.c
+ newlib/libc/uchar/mbrtoc8.c
+ newlib/libc/uchar/meson.build
+ newlib/libc/uchar/uchar-local.h
+ newlib/libm/fenv/fenv.c
+ picocrt/crt0-none.c
+ picocrt/machine/xtensa/crt0.S
+ picocrt/machine/xtensa/crt1.c
+ picocrt/machine/xtensa/meson.build
+ scripts/do-clang-x86-configure
+ scripts/do-clang-x86_64-configure
+ scripts/run-xtensa-dc233c
+ scripts/validate-cdefs
+ semihost/machine/lm32/lm32_close.c
+ semihost/machine/lm32/lm32_exit.c
+ semihost/machine/lm32/lm32_lseek.c
+ semihost/machine/lm32/lm32_open.c
+ semihost/machine/lm32/lm32_read.c
+ semihost/machine/lm32/lm32_scall.c
+ semihost/machine/lm32/lm32_semihost.h
+ semihost/machine/lm32/lm32_stub.c
+ semihost/machine/lm32/lm32_unlink.c
+ semihost/machine/lm32/lm32_write.c
+ semihost/machine/lm32/meson.build
+ semihost/machine/xtensa/simcall.S
+ semihost/machine/xtensa/simcall.c
+ semihost/machine/xtensa/simcall.h
+ semihost/machine/xtensa/xtensa-close.c
+ semihost/machine/xtensa/xtensa-lseek.c
+ semihost/machine/xtensa/xtensa-open.c
+ semihost/machine/xtensa/xtensa-read.c
+ semihost/machine/xtensa/xtensa-unlink.c
+ semihost/machine/xtensa/xtensa-write.c
+ test/test-cplusplus.cpp
+ test/test-ctype.c
+ test/test-encode.c
+ test/test-funopen.c
+ test/test-uchar.c
+ test/test-wctype.c
+Copyright: 2024 Keith Packard
 License: BSD3-1
 
 Files: newlib/libc/machine/aarch64/meson.build
@@ -1268,13 +1321,27 @@ Copyright: 2020 Keith Packard
  2011, 2012 ARM Ltd.
 License: BSD3-1
 
-Files: newlib/libc/machine/m68k/machine/meson.build
- newlib/libc/machine/sh/CMakeLists.txt
- newlib/libc/machine/sh/machine/CMakeLists.txt
- newlib/libc/machine/sh/machine/meson.build
- newlib/libc/machine/sh/sys/CMakeLists.txt
- newlib/libm/fenv/fenv.c
-Copyright: 2024 Keith Packard,
+Files: newlib/libc/machine/lm32/meson.build
+ newlib/libc/machine/loongarch/asm.h
+ newlib/libc/machine/loongarch/machine/fenv.h
+ picocrt/machine/lm32/crt0.c
+ scripts/do-lm32-unknown-elf-configure
+Copyright: 2024 Jiaxun Yang <jiaxun.yang@flygoat.com>
+License: BSD3-1
+
+Files: newlib/libc/machine/loongarch/machine/math.h
+ semihost/machine/loongarch/semihost-loongarch.S
+Copyright: 2024 Jiaxun Yang <jiaxun.yang@flygoat.com>
+License: BSD3-1
+
+Files: newlib/libc/machine/loongarch/machine/meson.build
+Copyright: 2020 Keith Packard
+ 2024 Jiaxun Yang <jiaxun.yang@flygoat.com>
+License: BSD3-1
+
+Files: newlib/libc/machine/loongarch/meson.build
+Copyright: 2019 Keith Packard
+ 2024 Jiaxun Yang <jiaxun.yang@flygoat.com>
 License: BSD3-1
 
 Files: newlib/libc/machine/m68k/meson.build
@@ -1290,8 +1357,23 @@ Copyright: 2023 Advanced Micro Devices, Inc. (AMD)
  2023 Alp Sayin
 License: BSD3-1
 
+Files: newlib/libc/machine/or1k/CMakeLists.txt
+ newlib/libc/machine/or1k/meson.build
+Copyright: 2025 NVIDIA Corporation <jholdsworth@nvidia.com>
+License: BSD3-1
+
 Files: newlib/libc/machine/powerpc/meson.build
 Copyright: 2019 Ash Logan, Keith Packard
+License: BSD3-1
+
+Files: newlib/libc/machine/rx/meson.build
+ newlib/libc/picolib/machine/rx/interrupt.c
+ newlib/libc/picolib/machine/rx/meson.build
+ picocrt/machine/rx/CMakeLists.txt
+ picocrt/machine/rx/meson.build
+ scripts/do-rx-zephyr-elf-configure
+ scripts/run-rx
+Copyright: 2025 Renesas Electronics Corporation
 License: BSD3-1
 
 Files: newlib/libc/machine/sh/meson.build
@@ -1300,6 +1382,52 @@ License: BSD3-1
 
 Files: newlib/libc/machine/xtensa/meson.build
 Copyright: 2019 Jonathan McDowell
+License: BSD3-1
+
+Files: newlib/libc/picolib/machine/arm/read_tp.S
+Copyright: 2020 Keith Packard
+ 2024 Stephen Street
+License: BSD3-1
+
+Files: newlib/libc/picolib/machine/arm/set_tls.c
+ newlib/libc/picolib/machine/arm/tls.c
+Copyright: 2019 Keith Packard
+ 2024 Stephen Street
+License: BSD3-1
+
+Files: newlib/libc/stdlib/ignore_handler_s.c
+ newlib/libc/stdlib/local_s.h
+ newlib/libc/stdlib/set_constraint_handler_s.c
+ newlib/libc/string/memcpy_s.c
+ newlib/libc/string/memmove_s.c
+ newlib/libc/string/memset_s.c
+ newlib/libc/string/strcat_s.c
+ newlib/libc/string/strcpy_s.c
+ newlib/libc/string/strerror_s.c
+ newlib/libc/string/strerrorlen_s.c
+ newlib/libc/string/string_private.h
+ newlib/libc/string/strncat_s.c
+ newlib/libc/string/strncpy_s.c
+ newlib/libc/string/strnlen_s.c
+ newlib/libc/tinystdio/sprintf_s.c
+ newlib/libc/tinystdio/vfprintf_s.c
+ newlib/libc/tinystdio/vsnprintf_s.c
+ test/test-fgetc.c
+ test/test-fgets-eof.c
+ test/test-memcpy_s.c
+ test/test-memmove_s.c
+ test/test-memset_s.c
+ test/test-sprintf_s.c
+ test/test-strcat_s.c
+ test/test-strcpy_s.c
+ test/test-strerror_s.c
+ test/test-strerrorlen_s.c
+ test/test-strncat_s.c
+ test/test-strncpy_s.c
+ test/test-strnlen_s.c
+ test/test-vfprintf_s.c
+ test/test-vsnprintf_s.c
+Copyright: 2024, Synopsys Inc.
 License: BSD3-1
 
 Files: newlib/libm/machine/riscv/s_copysign.c
@@ -1329,6 +1457,16 @@ Files: newlib/libm/machine/riscv/s_copysign.c
 Copyright: 2020 Kito Cheng
 License: BSD3-1
 
+Files: picocrt/machine/loongarch/crt0.c
+Copyright: 2024 Jiaxun Yang <<jiaxun.yang@flygoat.com>
+License: BSD3-1
+
+Files: picocrt/machine/loongarch/meson.build
+ semihost/machine/loongarch/meson.build
+Copyright: 2024 Jiaxun Yang <jiaxun.yang@flygoat.com>
+ 2021 Keith Packard
+License: BSD3-1
+
 Files: picocrt/machine/powerpc/cstart.c
  picocrt/machine/riscv/crt0.c
 Copyright: 2020 Sebastian Meyer
@@ -1339,8 +1477,62 @@ Files: picocrt/machine/x86/crt0-32.S
 Copyright: 2021 Mike Haertel and Keith Packard
 License: BSD3-1
 
+Files: scripts/do-coreboot-arm-eabi-configure
+ scripts/do-coreboot-i386-elf-configure
+ scripts/do-coreboot-riscv-elf-configure
+ scripts/do-coreboot-x86_64-elf-configure
+Copyright: 2024 The ChromiumOS Authors
+License: BSD3-1
+
 Files: scripts/do-freedom-tools-package
 Copyright: 2020 SiFive Inc.
+License: BSD3-1
+
+Files: scripts/do-loongarch64-configure
+Copyright: 2024 Jiaxun Yang <jiaxun.yang@flygoat.com>
+ 2019 Keith Packard
+License: BSD3-1
+
+Files: scripts/run-aarch64-fvp
+Copyright: 2024 Arm Limited and/or its affiliates <open-source-office@arm.com>
+License: BSD3-1
+
+Files: scripts/run-loongarch64
+Copyright: 2024 Jiaxun Yang <jiaxun.yang@flygoat.com>
+ 2020 Keith Packard
+License: BSD3-1
+
+Files: semihost/machine/mips/meson.build
+Copyright: 2021 Keith Packard
+ 2025 Jiaxun Yang <jiaxun.yang@flygoat.com>
+License: BSD3-1
+
+Files: semihost/machine/mips/mips_close.c
+ semihost/machine/mips/mips_exit.c
+ semihost/machine/mips/mips_fstat.c
+ semihost/machine/mips/mips_lseek.c
+ semihost/machine/mips/mips_open.c
+ semihost/machine/mips/mips_read.c
+ semihost/machine/mips/mips_semihost.h
+ semihost/machine/mips/mips_stub.c
+ semihost/machine/mips/mips_unlink.c
+ semihost/machine/mips/mips_write.c
+Copyright: 2025 Jiaxun Yang <jiaxun.yang@flygoat.com>
+License: BSD3-1
+
+Files: test/test-sprintf-percent-n.c
+ test/test-vfscanf-percent-a.c
+ test/test-wchar.c
+Copyright: 2024, Synopsys Inc.
+ 2024, Solid Sands B.V.
+License: BSD3-1
+
+Files: test/test-tmpnam.c
+Copyright: 2024 Mostafa Salmaan
+License: BSD3-1
+
+Files: test/test-ungetc-ftell.c
+Copyright: 2024 Hana Ashour
 License: BSD3-1
 
 Files: test/time-tests.c
@@ -1348,6 +1540,7 @@ Copyright: 2021 R. Diez
 License: BSD3-1
 
 Files: newlib/libc/ctype/ctype_.c
+ newlib/libc/ctype/ctype_wide.c
  newlib/libc/ctype/isalnum.c
  newlib/libc/ctype/isalpha.c
  newlib/libc/ctype/isascii.c
@@ -1381,8 +1574,10 @@ Files: newlib/libc/include/ndbm.h
 Copyright: 1990, 1993 The Regents of the University of California.
 License: BSD3-2
 
-Files: newlib/libc/include/sys/_timespec.h
+Files: newlib/libc/include/sys/_select.h
+ newlib/libc/include/sys/_timespec.h
  newlib/libc/include/sys/_types.h
+ newlib/libc/include/sys/_wait.h
  newlib/libc/include/sys/config.h
  newlib/libc/include/sys/dirent.h
  newlib/libc/include/sys/errno.h
@@ -1391,7 +1586,6 @@ Files: newlib/libc/include/sys/_timespec.h
  newlib/libc/include/sys/param.h
  newlib/libc/include/sys/resource.h
  newlib/libc/include/sys/select.h
- newlib/libc/include/sys/signal.h
  newlib/libc/include/sys/stat.h
  newlib/libc/include/sys/time.h
  newlib/libc/include/sys/timeb.h
@@ -1462,8 +1656,6 @@ Files: newlib/libc/stdio/nano-vfprintf.c
  newlib/libc/stdlib/strtoll.c
  newlib/libc/stdlib/wcstol.c
  newlib/libc/stdlib/wcstoll.c
- newlib/libc/stdlib/wcstoll_r.c
- newlib/libc/stdlib/wcstoull_r.c
 Copyright: 1990 The Regents of the University of California.
 License: BSD3-2
 
@@ -1481,6 +1673,7 @@ Copyright: 1990, 1991, 1993 The Regents of the University of California.
 License: BSD3-2
 
 Files: newlib/libc/string/strtok_r.c
+ newlib/libc/string/strtok_r.h
  newlib/libc/string/wcstok.c
 Copyright: 1988 Regents of the University of California.
 License: BSD3-2
@@ -1525,8 +1718,7 @@ Files: newlib/libc/stdlib/environ.c
 Copyright: 1995, 1996, 2002 Red Hat Incorporated.
 License: BSD3-3
 
-Files: newlib/libc/include/_ansi.h
- newlib/libc/include/_syslist.h
+Files: newlib/libc/include/_syslist.h
  newlib/libc/include/ar.h
  newlib/libc/include/assert.h
  newlib/libc/include/ctype.h
@@ -1573,22 +1765,6 @@ Files: newlib/libc/include/sys/timespec.h
 Copyright: 1982, 1986, 1993 The Regents of the University of California.
 License: BSD3-5
 
-Files: newlib/libc/locale/duplocale.c
- newlib/libc/locale/freelocale.c
- newlib/libc/locale/locale.c
- newlib/libc/locale/locale.tex
- newlib/libc/locale/localeconv.c
- newlib/libc/locale/newlocale.c
- newlib/libc/locale/uselocale.c
-Copyright: 1996 - 2002 FreeBSD Project
- 1991, 1993 The Regents of the University of California.
-License: BSD3-5
-
-Files: newlib/libc/misc/__dprintf.c
- newlib/libc/stdio/vfwprintf.c
-Copyright: 1990 The Regents of the University of California.
-License: BSD3-5
-
 Files: newlib/libc/posix/engine.c
  newlib/libc/posix/regcomp.c
  newlib/libc/posix/regerror.c
@@ -1609,6 +1785,10 @@ License: BSD3-5
 
 Files: newlib/libc/posix/sysexits.h
 Copyright: 1987, 1993 The Regents of the University of California.
+License: BSD3-5
+
+Files: newlib/libc/stdio/vfwprintf.c
+Copyright: 1990 The Regents of the University of California.
 License: BSD3-5
 
 Files: newlib/libc/string/strcasestr.c
@@ -1679,12 +1859,6 @@ Files: newlib/libc/machine/aarch64/setjmp.S
 Copyright: 2011, 2012 ARM Ltd
 License: BSD3-8
 
-Files: newlib/libc/machine/arm/aeabi_memcpy-armv7a.S
- newlib/libc/machine/arm/machine/acle-compat.h
- newlib/libc/machine/arm/strcmp-armv6m.S
-Copyright: 2014 ARM Ltd
-License: BSD3-8
-
 Files: newlib/libc/machine/arm/aeabi_memset.c
  newlib/libc/machine/arm/bzero.c
  newlib/libc/machine/arm/machine/_endian.h
@@ -1702,6 +1876,11 @@ License: BSD3-8
 
 Files: newlib/libc/machine/arm/arm_asm.h
 Copyright: 2009 ARM Ltd
+License: BSD3-8
+
+Files: newlib/libc/machine/arm/machine/acle-compat.h
+ newlib/libc/machine/arm/strcmp-armv6m.S
+Copyright: 2014 ARM Ltd
 License: BSD3-8
 
 Files: newlib/libc/machine/arm/memcpy-armv7m.S
@@ -1732,7 +1911,20 @@ Files: newlib/libc/machine/arm/strlen.c
 Copyright: 2008-2015 ARM Ltd
 License: BSD3-8
 
-Files: newlib/libc/stdlib/nano-mallocr.c
+Files: newlib/libc/stdlib/nano-calloc.c
+ newlib/libc/stdlib/nano-free.c
+ newlib/libc/stdlib/nano-getpagesize.c
+ newlib/libc/stdlib/nano-mallinfo.c
+ newlib/libc/stdlib/nano-malloc-stats.c
+ newlib/libc/stdlib/nano-malloc-usable-size.c
+ newlib/libc/stdlib/nano-malloc.c
+ newlib/libc/stdlib/nano-malloc.h
+ newlib/libc/stdlib/nano-mallopt.c
+ newlib/libc/stdlib/nano-memalign.c
+ newlib/libc/stdlib/nano-posix-memalign.c
+ newlib/libc/stdlib/nano-pvalloc.c
+ newlib/libc/stdlib/nano-realloc.c
+ newlib/libc/stdlib/nano-valloc.c
 Copyright: 2012, 2013 ARM Ltd
 License: BSD3-8
 
@@ -1800,7 +1992,11 @@ Copyright: 2013, 2014, 2015, 2020-2023 ARM Ltd.
 License: BSD3-10
 
 Files: newlib/libc/machine/arc/asm.h
- newlib/libc/machine/arc/memcmp-bs-norm.S
+ newlib/libc/machine/arc/strchr.S
+Copyright: 2015, Synopsys, Inc.
+License: BSD3-11
+
+Files: newlib/libc/machine/arc/memcmp-bs-norm.S
  newlib/libc/machine/arc/memcmp-stub.c
  newlib/libc/machine/arc/memcmp.S
  newlib/libc/machine/arc/memcpy-archs.S
@@ -1815,7 +2011,6 @@ Files: newlib/libc/machine/arc/asm.h
  newlib/libc/machine/arc/strchr-bs-norm.S
  newlib/libc/machine/arc/strchr-bs.S
  newlib/libc/machine/arc/strchr-stub.c
- newlib/libc/machine/arc/strchr.S
  newlib/libc/machine/arc/strcmp-archs.S
  newlib/libc/machine/arc/strcmp-stub.c
  newlib/libc/machine/arc/strcmp.S
@@ -1823,14 +2018,26 @@ Files: newlib/libc/machine/arc/asm.h
  newlib/libc/machine/arc/strcpy-bs.S
  newlib/libc/machine/arc/strcpy-stub.c
  newlib/libc/machine/arc/strcpy.S
- newlib/libc/machine/arc/strlen-bs-norm.S
- newlib/libc/machine/arc/strlen-bs.S
- newlib/libc/machine/arc/strlen-stub.c
- newlib/libc/machine/arc/strlen.S
  newlib/libc/machine/arc/strncpy-bs.S
  newlib/libc/machine/arc/strncpy-stub.c
  newlib/libc/machine/arc/strncpy.S
-Copyright: 2015, Synopsys, Inc.
+Copyright: 2015-2024, Synopsys, Inc.
+License: BSD3-11
+
+Files: newlib/libc/machine/arc64/memchr.S
+ newlib/libc/machine/arc64/memcmp-stub.c
+ newlib/libc/machine/arc64/memcmp.S
+ newlib/libc/machine/arc64/memcpy-stub.c
+ newlib/libc/machine/arc64/memcpy.S
+ newlib/libc/machine/arc64/memmove.S
+ newlib/libc/machine/arc64/memset-stub.c
+ newlib/libc/machine/arc64/memset.S
+ newlib/libc/machine/arc64/setjmp.S
+ newlib/libc/machine/arc64/strcat.S
+ newlib/libc/machine/arc64/strcmp.S
+ newlib/libc/machine/arc64/strlen.S
+ newlib/libc/machine/arc64/sys/asm.h
+Copyright: 2024, Synopsys, Inc.
 License: BSD3-11
 
 Files: newlib/libc/machine/arm/memchr.S
@@ -1982,35 +2189,44 @@ Files: newlib/libc/machine/epiphany/setjmp.S
 Copyright: 2011, Adapteva, Inc.
 License: BSD3-14
 
+Files: newlib/libc/machine/loongarch/machine/fenv-fp.h
+Copyright: 2017 Michael R. Neilly
+ 2024 Jiaxun Yang <jiaxun.yang@flygoat.com>
+License: BSD3-15
+
+Files: newlib/libc/machine/riscv/machine/fenv-fp.h
+Copyright: 2017 Michael R. Neilly
+License: BSD3-15
+
 Files: newlib/libc/machine/microblaze/abort.c
  newlib/libc/machine/microblaze/longjmp.S
  newlib/libc/machine/microblaze/setjmp.S
 Copyright: 2001, 2009 Xilinx, Inc.
-License: BSD3-15
+License: BSD3-16
 
 Files: newlib/libc/machine/microblaze/strcmp.c
  newlib/libc/machine/microblaze/strcpy.c
  newlib/libc/machine/microblaze/strlen.c
 Copyright: 2009 Xilinx, Inc.
-License: BSD3-15
+License: BSD3-16
 
 Files: newlib/libc/machine/mips/machine/asm.h
  newlib/libc/machine/mips/machine/regdef.h
 Copyright: 1996-2007 MIPS Technologies, Inc.
  2009 CodeSourcery, LLC. 
-License: BSD3-16
+License: BSD3-17
 
 Files: newlib/libc/machine/mips/memcpy.S
 Copyright: 2012-2015 MIPS Technologies, Inc., California.
-License: BSD3-17
+License: BSD3-18
 
 Files: newlib/libc/machine/mips/memset.S
 Copyright: 2013 MIPS Technologies, Inc., California.
-License: BSD3-17
+License: BSD3-18
 
 Files: newlib/libc/machine/mips/strcmp.S
 Copyright: 2014 Imagination Technologies Limited.
-License: BSD3-18
+License: BSD3-19
 
 Files: newlib/libc/machine/nds32/abort.c
  newlib/libc/machine/nds32/memcpy.S
@@ -2019,19 +2235,15 @@ Files: newlib/libc/machine/nds32/abort.c
  newlib/libc/machine/nds32/strcmp.S
  newlib/libc/machine/nds32/strcpy.S
 Copyright: 2013 Andes Technology Corporation.
-License: BSD3-19
+License: BSD3-20
 
 Files: newlib/libm/machine/nds32/w_sqrt.S
  newlib/libm/machine/nds32/wf_sqrt.S
 Copyright: 2013-2014 Andes Technology Corporation.
-License: BSD3-19
+License: BSD3-20
 
 Files: newlib/libc/machine/nios2/setjmp.s
 Copyright: 2003 Altera Corporation
-License: BSD3-20
-
-Files: newlib/libc/machine/riscv/machine/fenv-fp.h
-Copyright: 2017 Michael R. Neilly
 License: BSD3-21
 
 Files: newlib/libc/machine/sparc/setjmp.S
@@ -2126,6 +2338,7 @@ Files: newlib/libc/machine/spu/fdopen.c
  newlib/libm/common/nanl.c
  newlib/libm/common/scalbnl.c
  newlib/libm/ld/s_isinfl.c
+ newlib/libm/ld/s_signbitl.c
 Copyright: IBM Corp. 2009 
 License: BSD3-23
 
@@ -2184,7 +2397,7 @@ Copyright: 2007 TOSHIBA CORPORATION
 License: BSD3-24
 
 Files: newlib/libc/machine/spu/include/fenv.h
- newlib/libc/machine/spu/sys/fenv.h
+ newlib/libc/machine/spu/machine/fenv.h
 Copyright: 2006, 2007 International Business Machines Corporation, Sony Computer Entertainment, Incorporated, Toshiba Corporation, 
 License: BSD3-25
 
@@ -2453,26 +2666,22 @@ Copyright: 1992, 1993 The Regents of the University of California.
  2011 The FreeBSD Foundation
 License: BSD3-31
 
-Files: newlib/libc/sys/rtems/include/sys/poll.h
-Copyright: 1997 Peter Wemm <peter@freebsd.org>
-License: BSD3-32
-
 Files: newlib/libc/time/strptime.c
 Copyright: 1999 Kungliga Tekniska Högskolan Royal Institute of Technology, Stockholm, Sweden).
-License: BSD3-33
+License: BSD3-32
 
 Files: newlib/libc/tinystdio/ftoa_engine.c
 Copyright: 2005, Dmitry Xmelkov
-License: BSD3-34
+License: BSD3-33
 
 Files: newlib/libm/common/nexttoward.c
  newlib/libm/common/nexttowardl.c
 Copyright: 2014 Mentor Graphics, Inc.
-License: BSD3-35
+License: BSD3-34
 
 Files: newlib/libm/ld/common/s_fabsl.c
 Copyright: 2003 Dag-Erling Coïdan Smørgrav
-License: BSD3-36
+License: BSD3-35
 
 Files: newlib/libm/machine/spu/headers/acos.h
  newlib/libm/machine/spu/headers/acosd2.h
@@ -2597,7 +2806,7 @@ Files: newlib/libm/machine/spu/headers/acos.h
  newlib/libm/machine/spu/wf_sqrt.c
  newlib/libm/machine/spu/wf_tgamma.c
 Copyright: 2006,2008, International Business Machines Corporation
-License: BSD3-37
+License: BSD3-36
 
 Files: newlib/libm/machine/spu/headers/acosf4.h
  newlib/libm/machine/spu/headers/asinf4.h
@@ -2633,7 +2842,7 @@ Files: newlib/libm/machine/spu/headers/acosf4.h
  newlib/libm/machine/spu/headers/truncd2.h
  newlib/libm/machine/spu/headers/truncf4.h
 Copyright: 2001,2008, International Business Machines Corporation, Sony Computer Entertainment, Incorporated, Toshiba Corporation, 
-License: BSD3-37
+License: BSD3-36
 
 Files: newlib/libm/machine/spu/headers/acoshd2.h
  newlib/libm/machine/spu/headers/acoshf4.h
@@ -2665,32 +2874,37 @@ Files: newlib/libm/machine/spu/headers/acoshd2.h
  newlib/libm/machine/spu/headers/tgammad2.h
  newlib/libm/machine/spu/headers/tgammaf4.h
 Copyright: 2007,2008, International Business Machines Corporation
-License: BSD3-37
+License: BSD3-36
 
 Files: newlib/libm/machine/spu/headers/nearbyintf4.h
  newlib/libm/machine/spu/headers/rintf4.h
  newlib/libm/machine/spu/headers/scalbnf4.h
 Copyright: 2006,2008, International Business Machines Corporation, Sony Computer Entertainment, Incorporated, Toshiba Corporation, 
-License: BSD3-37
+License: BSD3-36
 
 Files: .clang-format
  .editorconfig
  .gitattributes
  .github/Dockerfile
+ .github/Dockerfile-coreboot
  .github/Dockerfile-zephyr
  .github/do-build
  .github/do-cmake-test
  .github/do-linux
  .github/do-many
  .github/do-test
+ .github/do-test-noopt
  .github/do-zephyr
+ .github/linux-files.txt
  .github/linux-packages.txt
  .github/workflows/Makefile
+ .github/workflows/coreboot.yml
  .github/workflows/head
+ .github/workflows/head-coreboot
  .github/workflows/head-zephyr
  .github/workflows/linux.yml
- .github/workflows/macos.yml
  .github/workflows/make-workflow
+ .github/workflows/make-workflow-coreboot
  .github/workflows/make-workflow-zephyr
  .github/workflows/steps-head
  .github/workflows/variants
@@ -2702,6 +2916,7 @@ Files: .clang-format
  README.md
  cmake/TC-clang-thumbv6m.cmake
  cmake/TC-clang-thumbv7m.cmake
+ cmake/TC-rx.cmake
  cmake/TC-thumbv6m.cmake
  cmake/TC-thumbv7m.cmake
  cross.tmpl
@@ -2723,7 +2938,6 @@ Files: .clang-format
  newlib/README
  newlib/doc/doc.str
  newlib/libc/ctype/ctype.tex
- newlib/libc/include/machine/ieee.h
  newlib/libc/include/sys/_tz_structs.h
  newlib/libc/libc.in.xml
  newlib/libc/machine/aarch64/sys/fcntl.h
@@ -2741,11 +2955,6 @@ Files: .clang-format
  newlib/libc/stdio/swprint.c
  newlib/libc/stdlib/mul_overflow.h
  newlib/libc/string/wcstrings.tex
- newlib/libc/sys.tex
- newlib/libc/sys/rtems/include/README
- newlib/libc/sys/xtensa/include/unistd.h
- newlib/libc/sys/xtensa/isatty.c
- newlib/libc/syscalls/sysgetentropy.c
  newlib/libc/time/strftime.c
  newlib/libc/time/tzset.c
  newlib/libc/xdr/README
@@ -2757,6 +2966,7 @@ Files: .clang-format
  newlib/man.xsl
  newlib/refcontainers.xslt
  newlib/testsuite/newlib.time/tzset.c
+ picocrt/machine/aarch64/crt0.S
  picolibc.h.in
  picolibc.ld.in
  picolibc.specs.in
@@ -2767,23 +2977,42 @@ Files: .clang-format
  scripts/cross-arm-none-eabi.txt
  scripts/cross-arm-zephyr-eabi.txt
  scripts/cross-avr.txt
+ scripts/cross-clang-aarch64-none-elf.txt
+ scripts/cross-clang-arm-none-eabi.txt
+ scripts/cross-clang-cortex-r82.txt
  scripts/cross-clang-msp430.txt
  scripts/cross-clang-riscv64-unknown-elf.txt
+ scripts/cross-clang-riscv64-zephyr-elf.txt
+ scripts/cross-clang-rv32imafc.txt
  scripts/cross-clang-rv32imafdc-unknown-elf.txt
+ scripts/cross-clang-thumb-none-eabi.txt
  scripts/cross-clang-thumbv6m-none-eabi.txt
+ scripts/cross-clang-thumbv7-a-none-eabi.txt
+ scripts/cross-clang-thumbv7e+dp-none-eabi.txt
  scripts/cross-clang-thumbv7e+fp-none-eabi.txt
  scripts/cross-clang-thumbv7m-none-eabi.txt
+ scripts/cross-clang-x86.txt
+ scripts/cross-clang-x86_64.txt
+ scripts/cross-coreboot-arm-eabi.txt
+ scripts/cross-coreboot-i386-elf.txt
+ scripts/cross-coreboot-riscv-elf.txt
+ scripts/cross-coreboot-x86_64-elf.txt
  scripts/cross-cortex-a9-none-eabi.txt
  scripts/cross-i686-linux-gnu.txt
+ scripts/cross-lm32-unknown-elf.txt
+ scripts/cross-loongarch64-unknown-elf.txt
  scripts/cross-m68k-linux-gnu.txt
  scripts/cross-m68k-unknown-elf.txt
  scripts/cross-microblazeel-zephyr-elf.txt
  scripts/cross-mips-linux-gnu.txt
  scripts/cross-mips-zephyr-elf.txt
+ scripts/cross-mips64-linux-gnuabi64.txt
  scripts/cross-mipsel-linux-gnu.txt
  scripts/cross-msp430-unknown-elf.txt
  scripts/cross-msp430.txt
  scripts/cross-nios2-zephyr-elf.txt
+ scripts/cross-or1k-elf.txt
+ scripts/cross-or1k-unknown-elf.txt
  scripts/cross-power9-fp128.txt
  scripts/cross-power9.txt
  scripts/cross-powerpc64-linux-gnu.txt
@@ -2791,7 +3020,8 @@ Files: .clang-format
  scripts/cross-riscv64-unknown-elf.txt
  scripts/cross-riscv64-zephyr-elf.txt
  scripts/cross-rv32imac.txt
- scripts/cross-rv32imac_zicsr.txt
+ scripts/cross-rv32imac_zicsr_zbb.txt
+ scripts/cross-rx-zephyr-elf.txt
  scripts/cross-sh-unknown-elf.txt
  scripts/cross-sparc-zephyr-elf.txt
  scripts/cross-sparc64-linux-gnu.txt
@@ -2800,6 +3030,7 @@ Files: .clang-format
  scripts/cross-x86-linux-gnu.txt
  scripts/cross-x86_64-linux-gnu.txt
  scripts/cross-x86_64-zephyr-elf.txt
+ scripts/cross-xtensa-dc233c_zephyr-elf.txt
  scripts/cross-xtensa-esp32-elf.txt
  scripts/cross-xtensa-espressif_esp32_zephyr-elf.txt
  scripts/cross-xtensa-espressif_esp32s2_zephyr-elf.txt
@@ -2812,8 +3043,10 @@ Files: .clang-format
  scripts/do-arm-tk
  scripts/duplicate-names
  scripts/monitor-e9
+ scripts/run-lm32
  scripts/test-picolibc
  semihost/machine/x86/bios.ld
+ test/CP720
  test/complex-funcs.c
  test/long_double_gen.5c
  test/long_double_vec.h
@@ -2827,12 +3060,8 @@ Files: newlib/doc/chapter-texi2docbook.py
 Copyright: 2016 Jon Turney <jon.turney@dronecode.org.uk>
 License: Default-1
 
-Files: newlib/libc/ctype/categories.c
- newlib/libc/ctype/categories.h
-Copyright: 2017 Thomas Wolff towo@towo.net
-License: Default-1
-
-Files: newlib/libc/ctype/ctype_.h
+Files: newlib/libc/ctype/caseconv.c
+ newlib/libc/ctype/ctype_.h
  newlib/libc/ctype/isalnum_l.c
  newlib/libc/ctype/isalpha_l.c
  newlib/libc/ctype/isascii_l.c
@@ -2855,7 +3084,6 @@ Files: newlib/libc/ctype/ctype_.h
  newlib/libc/ctype/iswlower_l.c
  newlib/libc/ctype/iswprint_l.c
  newlib/libc/ctype/iswpunct_l.c
- newlib/libc/ctype/iswspace_l.c
  newlib/libc/ctype/iswupper_l.c
  newlib/libc/ctype/iswxdigit_l.c
  newlib/libc/ctype/isxdigit_l.c
@@ -2879,16 +3107,8 @@ Files: newlib/libc/ctype/ctype_.h
 Copyright: 2016 Corinna Vinschen <corinna@vinschen.de>
 License: Default-1
 
-Files: newlib/libc/ctype/ctype_cp.h
- newlib/libc/ctype/ctype_iso.h
- newlib/libc/stdlib/mbsnrtowcs.c
- newlib/libc/stdlib/sb_charsets.c
- newlib/libc/stdlib/wcsnrtombs.c
- newlib/libc/string/local.h
- newlib/libc/string/wcscasecmp.c
- newlib/libc/string/wcsdup.c
- newlib/libc/string/wcsncasecmp.c
-Copyright: 2009 Corinna Vinschen <corinna@vinschen.de>
+Files: newlib/libc/ctype/categories.h
+Copyright: 2017 Thomas Wolff towo@towo.net
 License: Default-1
 
 Files: newlib/libc/ctype/isblank.c
@@ -3180,7 +3400,6 @@ Files: newlib/libc/stdlib/abort.c
  newlib/libc/stdlib/atoff.c
  newlib/libc/stdlib/atoi.c
  newlib/libc/stdlib/atol.c
- newlib/libc/stdlib/calloc.c
  newlib/libc/stdlib/ecvtbuf.c
  newlib/libc/stdlib/efgcvt.c
  newlib/libc/stdlib/eprintf.c
@@ -3213,6 +3432,16 @@ License: Default-1
 Files: newlib/libc/stdlib/itoa.c
  newlib/libc/stdlib/utoa.c
 Copyright: 2014 Corinna Vinschen <corinna@vinschen.de>
+License: Default-1
+
+Files: newlib/libc/stdlib/mbsnrtowcs.c
+ newlib/libc/stdlib/sb_charsets.c
+ newlib/libc/stdlib/wcsnrtombs.c
+ newlib/libc/string/local.h
+ newlib/libc/string/wcscasecmp.c
+ newlib/libc/string/wcsdup.c
+ newlib/libc/string/wcsncasecmp.c
+Copyright: 2009 Corinna Vinschen <corinna@vinschen.de>
 License: Default-1
 
 Files: newlib/libc/stdlib/random.c
@@ -3283,26 +3512,34 @@ Files: newlib/libm/machine/x86/fenv.c
 Copyright: 2010-2019 Red Hat, Inc.
 License: Default-1
 
+Files: scripts/cross-clang-aarch64-none-elf-fvp.txt
+Copyright: 2024 Arm Limited and/or its affiliates <open-source-office@arm.com>
+License: Default-1
+
 Files: zephyr/Kconfig
 Copyright: 2021 Amazon.com, Inc. or its affiliates. SPDX-License-Identifier: Apache-2.0
 License: Default-1
 
 Files: newlib/libc/include/fenv.h
+ newlib/libc/machine/riscv/asm.h
  newlib/libc/machine/riscv/ieeefp.c
+ newlib/libc/machine/riscv/local.h
+ newlib/libc/machine/riscv/machine/fenv.h
  newlib/libc/machine/riscv/memcpy.c
  newlib/libc/machine/riscv/memset.S
  newlib/libc/machine/riscv/setjmp.S
  newlib/libc/machine/riscv/strcmp.S
  newlib/libc/machine/riscv/strcpy.c
  newlib/libc/machine/riscv/strlen.c
- newlib/libc/machine/riscv/sys/asm.h
- newlib/libc/machine/riscv/sys/fenv.h
- newlib/libc/machine/riscv/sys/string.h
 Copyright: 2017  SiFive Inc.
 License: FreeBSD-1
 
 Files: newlib/libc/machine/csky/setjmp.S
 Copyright: 2020  C-SKY Microsystems
+License: FreeBSD-1
+
+Files: newlib/libc/machine/loongarch/setjmp.S
+Copyright: 2024 Jiaxun Yang <jiaxun.yang@flygoat.com>
 License: FreeBSD-1
 
 Files: newlib/libc/machine/riscv/memcpy-asm.S
@@ -3520,8 +3757,6 @@ Copyright: 2005-2014 Rich Felker, et al.
 License: Other-3
 
 Files: newlib/libc/include/ftw.h
- newlib/libc/posix/ftw.c
- newlib/libc/posix/nftw.c
 Copyright: 2005-2020 Rich Felker, et al.
 License: Other-3
 
@@ -3550,10 +3785,6 @@ License: Other-3
 
 Files: newlib/libc/machine/xtensa/xtensa-asm.h
 Copyright: 2006 Tensilica Inc.
-License: Other-3
-
-Files: newlib/libc/sys/xtensa/include/xtensa/config/core-isa.h
-Copyright: 1999-2023 Tensilica Inc.
 License: Other-3
 
 Files: test/libc-testsuite/basename.c
@@ -3629,7 +3860,6 @@ License: Other-5
 
 Files: newlib/libc/include/machine/fastmath.h
  newlib/libc/include/machine/ieeefp.h
- newlib/libc/include/machine/setjmp-dj.h
  newlib/libc/include/machine/setjmp.h
  newlib/libc/include/machine/time.h
  newlib/libc/include/machine/types.h
@@ -3843,9 +4073,7 @@ Files: newlib/libc/misc/init.c
 Copyright: 2004 CodeSourcery, LLC
 License: Other-15
 
-Files: newlib/libc/reent/reent.c
- newlib/libc/reent/reent.tex
- newlib/libc/signal/signal.c
+Files: newlib/libc/signal/signal.c
  newlib/libc/signal/signal.tex
  newlib/libc/string/bcmp.c
  newlib/libc/string/bcopy.c
@@ -3878,7 +4106,6 @@ Files: newlib/libc/reent/reent.c
  newlib/libc/string/strtok.c
  newlib/libc/string/strupr.c
  newlib/libc/string/strxfrm.c
- newlib/libc/string/u_strerr.c
  newlib/libc/time/asctime.c
  newlib/libc/time/asctime_r.c
  newlib/libc/time/clock.c
@@ -4029,15 +4256,11 @@ Files: newlib/libc/string/wcsnlen.c
 Copyright: 2003, Artem B. Bityuckiy (dedekind@mail.ru).
 License: Other-22
 
-Files: newlib/libc/sys/xtensa/crt0.c
-Copyright: 2003 Tensilica Inc.
-License: Other-23
-
 Files: newlib/libc/tinystdio/atod_ryu.c
  newlib/libc/tinystdio/atof_ryu.c
  newlib/libc/tinystdio/ryu/ryu_parse.h
 Copyright: 2019 Ulf Adams
-License: Other-24
+License: Other-23
 
 Files: newlib/libc/tinystdio/dtoa_ryu.c
  newlib/libc/tinystdio/ftoa_ryu.c
@@ -4053,12 +4276,12 @@ Files: newlib/libc/tinystdio/dtoa_ryu.c
  newlib/libc/tinystdio/ryu_table.c
  newlib/libc/tinystdio/ryu_umul128.c
 Copyright: 2018 Ulf Adams
-License: Other-24
+License: Other-23
 
 Files: newlib/libc/xdr/xdr_private.c
  newlib/libc/xdr/xdr_private.h
 Copyright: 2009 Charles S. Wilson
-License: Other-25
+License: Other-24
 
 Files: newlib/libm/common/fdlibm.h
  newlib/libm/common/isgreater.c
@@ -4243,7 +4466,7 @@ Files: newlib/libm/common/fdlibm.h
  newlib/libm/math/sr_lgamma.c
  newlib/libm/math/srf_lgamma.c
 Copyright: 1993 Sun Microsystems, Inc.
-License: Other-26
+License: Other-25
 
 Files: newlib/libm/common/s_remquo.c
  newlib/libm/common/sf_remquo.c
@@ -4256,28 +4479,28 @@ Files: newlib/libm/common/s_remquo.c
  newlib/libm/ld/ld80/e_fmodl.c
  newlib/libm/ld/ld80/s_remquol.c
 Copyright: 1993 Sun Microsystems, Inc.
-License: Other-27
+License: Other-26
 
 Files: newlib/libm/ld/common/s_cbrtl.c
 Copyright: 1993 Sun Microsystems, Inc.
-License: Other-28
+License: Other-27
 
 Files: newlib/libm/ld/ld128/e_rem_pio2l.h
  newlib/libm/ld/ld80/e_rem_pio2l.h
 Copyright: 1993 Sun Microsystems, Inc.
-License: Other-29
+License: Other-28
 
 Files: newlib/libm/ld/ld128/k_cosl.c
  newlib/libm/ld/ld128/k_sinl.c
  newlib/libm/ld/ld80/k_cosl.c
  newlib/libm/ld/ld80/k_sinl.c
 Copyright: 1993 Sun Microsystems, Inc.
-License: Other-30
+License: Other-29
 
 Files: newlib/libm/ld/ld128/k_tanl.c
  newlib/libm/ld/ld80/k_tanl.c
 Copyright: 2004 Sun Microsystems, Inc.
-License: Other-31
+License: Other-30
 
 Files: newlib/libm/machine/x86/f_llrint.c
  newlib/libm/machine/x86/f_llrintf.c
@@ -4289,7 +4512,7 @@ Files: newlib/libm/machine/x86/f_llrint.c
  newlib/libm/machine/x86/f_rintf.c
  newlib/libm/machine/x86/f_rintl.c
 Copyright: 2007 Dave Korn
-License: Other-32
+License: Other-31
 
 Files: newlib/libc/machine/d10v/setjmp.S
  newlib/libc/machine/d30v/setjmp.S
@@ -4450,6 +4673,8 @@ Files: newlib/libc/machine/d10v/setjmp.S
  newlib/libc/stdio64/stdio64.c
  newlib/libc/stdio64/stdio64.tex
  newlib/libc/stdio64/tmpfile64.c
+ newlib/libc/tinystdio/fgetpos.c
+ newlib/libc/tinystdio/fsetpos.c
 Copyright: 1990 The Regents of the University of California.
 License: UCB-1
 
@@ -4525,25 +4750,28 @@ License: BSD2-1
  SUCH DAMAGE.
 
 License: BSD2-2
+ Redistribution and use in source and binary forms, with or without
  modification, are permitted provided that the following conditions
  are met:
+ .
  1. Redistributions of source code must retain the above copyright
  notice, this list of conditions and the following disclaimer.
+ .
  2. Redistributions in binary form must reproduce the above copyright
  notice, this list of conditions and the following disclaimer in the
  documentation and/or other materials provided with the distribution.
  .
- THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND
- ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
- FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
- OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
- HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
- LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
- OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
- SUCH DAMAGE.
+ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+ A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+ HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+ LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 License: BSD2-3
  Redistribution and use in source and binary forms, with or without
@@ -4571,30 +4799,6 @@ License: BSD2-4
  Redistribution and use in source and binary forms, with or without
  modification, are permitted provided that the following conditions
  are met:
- .
- 1. Redistributions of source code must retain the above copyright
- notice, this list of conditions and the following disclaimer.
- .
- 2. Redistributions in binary form must reproduce the above copyright
- notice, this list of conditions and the following disclaimer in the
- documentation and/or other materials provided with the distribution.
- .
- THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
- A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
- HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
- SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
- LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
- DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
- THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
-License: BSD2-5
- Redistribution and use in source and binary forms, with or without
- modification, are permitted provided that the following conditions
- are met:
  1. Redistributions of source code must retain the above copyright
  notice, this list of conditions and the following disclaimer.
  2. Redistributions in binary form must reproduce the above copyright
@@ -4612,51 +4816,7 @@ License: BSD2-5
  INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-License: BSD2-6
- Redistribution and use in source and binary forms, with or without
- modification, are permitted provided that the following conditions
- are met:
- 1. Redistributions of source code must retain the above copyright
- notice, this list of conditions and the following disclaimer.
- 2. Redistributions in binary form must reproduce the above copyright
- notice, this list of conditions and the following disclaimer in the
- documentation and/or other materials provided with the distribution.
- .
- THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND
- ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE
- FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
- OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
- HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
- LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
- OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
- SUCH DAMAGE.
-
-License: BSD2-7
- Redistribution and use in source and binary forms, with or without
- modification, are permitted provided that the following conditions
- are met:
- 1. Redistributions of source code must retain the above copyright
- notice, this list of conditions and the following disclaimer.
- 2. Redistributions in binary form must reproduce the above copyright
- notice, this list of conditions and the following disclaimer in the
- documentation and/or other materials provided with the distribution.
- .
- THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND
- ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE
- FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
- OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
- HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
- LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
- OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
- SUCH DAMAGE.
-
-License: BSD2-8
+License: BSD2-5
  Redistribution and use in source and binary forms, with or without modification,
  are permitted provided that the following conditions are met:
  .
@@ -4678,7 +4838,7 @@ License: BSD2-8
  INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-License: BSD2-9
+License: BSD2-6
  Redistribution and use in source and binary forms, with or without
  modification, are permitted provided that the following conditions
  are met:
@@ -4698,7 +4858,7 @@ License: BSD2-9
  HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
  LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
 
-License: BSD2-10
+License: BSD2-7
  Redistribution and use in source and binary forms, with or without
  modification, are permitted provided that the following conditions
  are met:
@@ -4724,7 +4884,7 @@ License: BSD2-10
  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
  OF THE POSSIBILITY OF SUCH DAMAGE.
 
-License: BSD2-11
+License: BSD2-8
  Redistribution and use in source and binary forms, with or without
  modification, are permitted provided that the following conditions
  are met:
@@ -4746,7 +4906,29 @@ License: BSD2-11
  OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  SUCH DAMAGE.
 
-License: BSD2-12
+License: BSD2-9
+ Redistribution and use in source and binary forms, with or without
+ modification, are permitted provided that the following conditions
+ are met:
+ 1. Redistributions of source code must retain the above copyright
+ notice, this list of conditions and the following disclaimer.
+ 2. Redistributions in binary form must reproduce the above copyright
+ notice, this list of conditions and the following disclaimer in the
+ documentation and/or other materials provided with the distribution.
+ .
+ THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND
+ ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE
+ FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+ OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+ OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+ SUCH DAMAGE.
+
+License: BSD2-10
  Redistribution and use in source and binary forms, with or without
  modification, are permitted provided that the following conditions
  are met:
@@ -4768,30 +4950,7 @@ License: BSD2-12
  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  POSSIBILITY OF SUCH DAMAGE.
 
-License: BSD2-13
- Redistribution and use in source and binary forms, with or without
- modification, are permitted provided that the following conditions are met:
- .
- 1. Redistributions of source code must retain the above copyright
- notice, this list of conditions and the following disclaimer.
- .
- 2. Redistributions in binary form must reproduce the above copyright
- notice, this list of conditions and the following disclaimer in the
- documentation and/or other materials provided with the distribution.
- .
- THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS
- IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
- TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
- PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL TENSILICA
- INCORPORATED BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
- EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
- PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
- PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
- LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
- NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
-License: BSD2-14
+License: BSD2-11
  Redistribution and use in source and binary forms, with or without
  modification, are permitted provided that the following conditions
  are met:
@@ -4813,7 +4972,7 @@ License: BSD2-14
  INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-License: BSD2-15
+License: BSD2-12
  Redistribution and use in source and binary forms, with or without
  modification, are permitted provided that the following conditions
  are met:
@@ -5208,6 +5367,35 @@ License: BSD3-14
 
 License: BSD3-15
  Redistribution and use in source and binary forms, with or without
+ modification, are permitted provided that the following conditions
+ are met:
+ .
+ Redistributions of source code must retain the above copyright
+ notice, this list of conditions and the following disclaimer.
+ .
+ Redistributions in binary form must reproduce the above copyright
+ notice, this list of conditions and the following disclaimer in the
+ documentation and/or other materials provided with the distribution.
+ .
+ Neither the names of the copyright holders nor the names of their
+ contributors may be used to endorse or promote products derived from
+ this software without specific prior written permission.
+ .
+ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+ FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+ COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+ INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+ BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
+ ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ POSSIBILITY OF SUCH DAMAGE.
+
+License: BSD3-16
+ Redistribution and use in source and binary forms, with or without
  modification, are permitted provided that the following conditions are
  met:
  .
@@ -5234,7 +5422,7 @@ License: BSD3-15
  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-License: BSD3-16
+License: BSD3-17
  Redistribution and use in source and binary forms, with or without
  modification, are permitted provided that the following conditions
  are met:
@@ -5262,7 +5450,7 @@ License: BSD3-16
  INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-License: BSD3-17
+License: BSD3-18
  Redistribution and use in source and binary forms, with or without
  modification, are permitted provided that the following conditions
  are met:
@@ -5287,7 +5475,7 @@ License: BSD3-17
  OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  SUCH DAMAGE.
 
-License: BSD3-18
+License: BSD3-19
  Redistribution and use in source and binary forms, with or without
  modification, are permitted provided that the following conditions
  are met:
@@ -5312,7 +5500,7 @@ License: BSD3-18
  OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  SUCH DAMAGE.
 
-License: BSD3-19
+License: BSD3-20
  Redistribution and use in source and binary forms, with or without
  modification, are permitted provided that the following conditions are met:
  .
@@ -5338,7 +5526,7 @@ License: BSD3-19
  INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-License: BSD3-20
+License: BSD3-21
  Redistribution and use in source and binary forms, with or without
  modification, are permitted provided that the following conditions
  are met:
@@ -5363,35 +5551,6 @@ License: BSD3-20
  ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
  TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
-License: BSD3-21
- Redistribution and use in source and binary forms, with or without
- modification, are permitted provided that the following conditions
- are met:
- .
- Redistributions of source code must retain the above copyright
- notice, this list of conditions and the following disclaimer.
- .
- Redistributions in binary form must reproduce the above copyright
- notice, this list of conditions and the following disclaimer in the
- documentation and/or other materials provided with the distribution.
- .
- Neither the names of the copyright holders nor the names of their
- contributors may be used to endorse or promote products derived from
- this software without specific prior written permission.
- .
- THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
- FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
- COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
- INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
- BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
- LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
- ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- POSSIBILITY OF SUCH DAMAGE.
 
 License: BSD3-22
  This software was developed by the Computer Systems Engineering group
@@ -5656,30 +5815,6 @@ License: BSD3-32
  Redistribution and use in source and binary forms, with or without
  modification, are permitted provided that the following conditions
  are met:
- 1. Redistributions of source code must retain the above copyright
- notice, this list of conditions and the following disclaimer.
- 2. Redistributions in binary form must reproduce the above copyright
- notice, this list of conditions and the following disclaimer in the
- documentation and/or other materials provided with the distribution.
- 3. The name of the author may not be used to endorse or promote products
- derived from this software without specific prior written permission.
- .
- THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND
- ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
- FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
- OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
- HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
- LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
- OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
- SUCH DAMAGE.
-
-License: BSD3-33
- Redistribution and use in source and binary forms, with or without
- modification, are permitted provided that the following conditions
- are met:
  .
  1. Redistributions of source code must retain the above copyright
  notice, this list of conditions and the following disclaimer.
@@ -5704,7 +5839,7 @@ License: BSD3-33
  OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-License: BSD3-34
+License: BSD3-33
  Rewritten in C by Soren Kuula
  Redistribution and use in source and binary forms, with or without
  modification, are permitted provided that the following conditions are met:
@@ -5729,7 +5864,7 @@ License: BSD3-34
  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  POSSIBILITY OF SUCH DAMAGE.
 
-License: BSD3-35
+License: BSD3-34
  Redistribution and use in source and binary forms, with or without
  modification, are permitted provided that the following conditions are met:
  Redistributions of source code must retain the above copyright
@@ -5752,7 +5887,7 @@ License: BSD3-35
  INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-License: BSD3-36
+License: BSD3-35
  Redistribution and use in source and binary forms, with or without
  modification, are permitted provided that the following conditions
  are met:
@@ -5776,7 +5911,7 @@ License: BSD3-36
  INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-License: BSD3-37
+License: BSD3-36
  Redistribution and use in source and binary forms, with or
  without modification, are permitted provided that the
  following conditions are met:
@@ -6115,10 +6250,6 @@ License: Other-22
  SUCH DAMAGE.
 
 License: Other-23
- These coded instructions, statements, and computer programs are the
- copyrighted works and confidential proprietary information of Tensilica Inc.
-
-License: Other-24
  The contents of this file may be used under the terms of the Apache License,
  Version 2.0.
  .
@@ -6134,7 +6265,7 @@ License: Other-24
  is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
  KIND, either express or implied.
 
-License: Other-25
+License: Other-24
  Permission is hereby granted, free of charge, to any person obtaining a
  copy of this software and associated documentation files (the "Software"),
  to deal in the Software without restriction, including without limitation
@@ -6153,19 +6284,19 @@ License: Other-25
  ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  OTHER DEALINGS IN THE SOFTWARE.
 
-License: Other-26
+License: Other-25
  Developed at SunPro, a Sun Microsystems, Inc. business.
  Permission to use, copy, modify, and distribute this
  software is freely granted, provided that this notice
  is preserved.
 
-License: Other-27
+License: Other-26
  Developed at SunSoft, a Sun Microsystems, Inc. business.
  Permission to use, copy, modify, and distribute this
  software is freely granted, provided that this notice
  is preserved.
 
-License: Other-28
+License: Other-27
  Copyright (c) 2009-2011, Bruce D. Evans, Steven G. Kargl, David Schultz.
  .
  Developed at SunPro, a Sun Microsystems, Inc. business.
@@ -6178,7 +6309,7 @@ License: Other-28
  written by Steven G. Kargl with input from Bruce D. Evans
  and David A. Schultz.
 
-License: Other-29
+License: Other-28
  Copyright (c) 2008 Steven G. Kargl, David Schultz, Bruce D. Evans.
  .
  Developed at SunSoft, a Sun Microsystems, Inc. business.
@@ -6189,7 +6320,7 @@ License: Other-29
  .
  Optimized by Bruce D. Evans.
 
-License: Other-30
+License: Other-29
  Copyright (c) 2008 Steven G. Kargl, David Schultz, Bruce D. Evans.
  .
  Developed at SunSoft, a Sun Microsystems, Inc. business.
@@ -6197,14 +6328,14 @@ License: Other-30
  software is freely granted, provided that this notice
  is preserved.
 
-License: Other-31
+License: Other-30
  Copyright (c) 2008 Steven G. Kargl, David Schultz, Bruce D. Evans.
  .
  Permission to use, copy, modify, and distribute this
  software is freely granted, provided that this notice
  is preserved.
 
-License: Other-32
+License: Other-31
  x87 FP implementation contributed to Newlib by
  Dave Korn, November 2007.  This file is placed in the
  public domain.  Permission to use, copy, modify, and

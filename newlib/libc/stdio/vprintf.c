@@ -17,7 +17,6 @@
 /* doc in vfprintf.c */
 
 #define _DEFAULT_SOURCE
-#include <_ansi.h>
 #include <stdio.h>
 #include <stdarg.h>
 #include "local.h"
@@ -26,11 +25,7 @@ int
 vprintf (const char *fmt,
        va_list ap)
 {
-  _REENT_SMALL_CHECK_INIT (reent);
-  return vfprintf ( _stdout_r (reent), fmt, ap);
+  return vfprintf ( stdout, fmt, ap);
 }
 
-#ifdef _NANO_FORMATTED_IO
-int __nonnull((1))
-viprintf (const char *, __VALIST) _ATTRIBUTE ((__alias__("vprintf")));
-#endif
+__nano_reference(vprintf, viprintf);

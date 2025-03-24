@@ -19,7 +19,6 @@
 /* doc in siprintf.c */
 
 #define _DEFAULT_SOURCE
-#include <_ansi.h>
 #include <stdio.h>
 #include <stdarg.h>
 #include <limits.h>
@@ -38,7 +37,7 @@ sniprintf (
 
   if (size > INT_MAX)
     {
-      _REENT_ERRNO(ptr) = EOVERFLOW;
+      errno = EOVERFLOW;
       return EOF;
     }
   f._flags = __SWR | __SSTR;
@@ -50,7 +49,7 @@ sniprintf (
   ret = svfiprintf ( &f, fmt, ap);
   va_end (ap);
   if (ret < EOF)
-    _REENT_ERRNO(ptr) = EOVERFLOW;
+    errno = EOVERFLOW;
   if (size > 0)
     *f._p = 0;
   return (ret);

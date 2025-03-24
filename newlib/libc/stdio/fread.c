@@ -81,7 +81,6 @@ Supporting OS subroutines required: <<close>>, <<fstat>>, <<isatty>>,
 */
 
 #define _DEFAULT_SOURCE
-#include <_ansi.h>
 #include <stdio.h>
 #include <string.h>
 #include <malloc.h>
@@ -156,7 +155,7 @@ fread (
   if ((resid = count * size) == 0)
     return 0;
 
-  CHECK_INIT(ptr, fp);
+  CHECK_INIT();
 
   _newlib_flockfile_start (fp);
   if (ORIENT (fp, -1) != -1)
@@ -169,7 +168,7 @@ fread (
   total = resid;
   p = buf;
 
-#if !defined(PREFER_SIZE_OVER_SPEED) && !defined(__OPTIMIZE_SIZE__)
+#if !defined(__PREFER_SIZE_OVER_SPEED) && !defined(__OPTIMIZE_SIZE__)
 
   /* Optimize unbuffered I/O.  */
   if (fp->_flags & __SNBF)
@@ -221,7 +220,7 @@ fread (
 	}
     }
   else
-#endif /* !PREFER_SIZE_OVER_SPEED && !__OPTIMIZE_SIZE__ */
+#endif /* !__PREFER_SIZE_OVER_SPEED && !__OPTIMIZE_SIZE__ */
     {
         while (resid > (size_t) (r = fp->_r))
 	{

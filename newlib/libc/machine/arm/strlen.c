@@ -29,11 +29,10 @@
 #include <picolibc.h>
 
 #include "arm_asm.h"
-#include <_ansi.h>
 #include <string.h>
 #include <limits.h>
 
-#if defined __OPTIMIZE_SIZE__ || defined PREFER_SIZE_OVER_SPEED
+#if defined __OPTIMIZE_SIZE__ || defined __PREFER_SIZE_OVER_SPEED
 #if __ARM_ARCH_ISA_THUMB == 2
 /* Implemented in strlen.S.  */
 
@@ -45,7 +44,7 @@
 
 #endif
 
-#else /* defined __OPTIMIZE_SIZE__ || defined PREFER_SIZE_OVER_SPEED */
+#else /* defined __OPTIMIZE_SIZE__ || defined __PREFER_SIZE_OVER_SPEED */
 #if defined __thumb__ && ! defined __thumb2__
 #include "../../string/strlen.c"
 
@@ -53,8 +52,11 @@
   /* Implemented in strlen.S.  */
 
 #else
+#ifdef __GNUCLIKE_PRAGMA_DIAGNOSTIC
 #pragma GCC diagnostic ignored "-Wunused-parameter"
-size_t __attribute__((naked))
+#endif
+
+size_t __naked
 strlen (const char* str)
 {
   __asm__("len .req r0\n\t"

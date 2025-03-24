@@ -116,17 +116,15 @@ No supporting OS subroutines are required.
  */
 
 #define _GNU_SOURCE
-#include <_ansi.h>
 #include <limits.h>
 #include <wctype.h>
 #include <errno.h>
 #include <wchar.h>
-#include "../locale/setlocale.h"
+#include "local.h"
 
 /*
  * Convert a wide string to a long long integer.
  */
-#ifndef _REENT_ONLY
 
 long long
 wcstoll_l (const wchar_t *nptr, wchar_t **endptr,
@@ -201,7 +199,7 @@ wcstoll_l (const wchar_t *nptr, wchar_t **endptr,
 	}
 	if (any < 0) {
 		acc = neg ? LLONG_MIN : LLONG_MAX;
-		_REENT_ERRNO(rptr) = ERANGE;
+		errno = ERANGE;
 	} else if (neg)
 		acc = -acc;
 	if (endptr != 0)
@@ -217,4 +215,3 @@ wcstoll (const wchar_t *__restrict s,
 	return wcstoll_l (s, ptr, base, __get_current_locale ());
 }
 
-#endif

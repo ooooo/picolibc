@@ -40,7 +40,6 @@ add_subdirectory(arpa)
 
 picolibc_headers(""
   alloca.h
-  _ansi.h
   argz.h
   ar.h
   assert.h
@@ -49,7 +48,6 @@ picolibc_headers(""
   ctype.h
   devctl.h
   dirent.h
-  elf.h
   endian.h
   envlock.h
   envz.h
@@ -71,6 +69,7 @@ picolibc_headers(""
   malloc.h
   math.h
   memory.h
+  ndbm.h
   newlib.h
   paths.h
   picotls.h
@@ -83,6 +82,7 @@ picolibc_headers(""
   signal.h
   spawn.h
   stdint.h
+  stdnoreturn.h
   stdlib.h
   string.h
   strings.h
@@ -91,6 +91,7 @@ picolibc_headers(""
   termios.h
   threads.h
   time.h
+  uchar.h
   unctrl.h
   unistd.h
   utime.h
@@ -100,7 +101,7 @@ picolibc_headers(""
   wordexp.h
   )
 
-if(${_HAVE_COMPLEX})
+if(${__HAVE_COMPLEX})
   picolibc_headers(""
     complex.h
     )

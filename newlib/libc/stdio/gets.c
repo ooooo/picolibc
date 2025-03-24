@@ -58,7 +58,6 @@ Supporting OS subroutines required: <<close>>, <<fstat>>, <<isatty>>,
 */
 
 #define _DEFAULT_SOURCE
-#include <_ansi.h>
 #include <stdio.h>
 #include "local.h"
 
@@ -72,9 +71,8 @@ gets (
   register char *s = buf;
   FILE *fp;
 
-  _REENT_SMALL_CHECK_INIT (ptr);
-  fp = _stdin_r (ptr);
-  CHECK_INIT (ptr, fp);
+  fp = stdin;
+  CHECK_INIT();
   _newlib_flockfile_start (fp);
   while ((c = _sgetc ( fp)) != '\n')
     if (c == EOF)

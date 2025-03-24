@@ -32,7 +32,6 @@ Author: Joel Schopp <jschopp@austin.ibm.com>
 
 #include <picolibc.h>
 
-#include <_ansi.h>
 #include <stdio.h>
 
 #include "c99ppe.h"
@@ -44,7 +43,6 @@ typedef struct
   const _fpos_t *pos;
 } c99_fsetpos_t;
 
-#ifndef _REENT_ONLY
 
 int
 fsetpos (FILE * iop,
@@ -59,4 +57,3 @@ fsetpos (FILE * iop,
 
   return __send_to_ppe(SPE_C99_SIGNALCODE, SPE_C99_FSETPOS, &args);
 }
-#endif /* ! _REENT_ONLY */

@@ -31,7 +31,6 @@ No supporting OS subroutines are required.
 */
 
 #define _DEFAULT_SOURCE
-#include <_ansi.h>
 #include <wchar.h>
 
 wchar_t *

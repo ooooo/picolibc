@@ -81,11 +81,20 @@
  */
 
 #define _DEFAULT_SOURCE
-#include <_ansi.h>
 #include <stdlib.h>
 #include <string.h>
 #include "mprec.h"
 #include "atexit.h"
+
+#ifdef __GNUCLIKE_PRAGMA_DIAGNOSTIC
+#pragma GCC diagnostic ignored "-Wpragmas"
+#pragma GCC diagnostic ignored "-Wunknown-warning-option"
+#pragma GCC diagnostic ignored "-Wanalyzer-malloc-leak"
+#pragma GCC diagnostic ignored "-Wanalyzer-use-of-uninitialized-value"
+#pragma GCC diagnostic ignored "-Wanalyzer-out-of-bounds"
+#pragma GCC diagnostic ignored "-Warray-bounds"
+#pragma GCC diagnostic ignored "-Wanalyzer-null-dereference"
+#endif
 
 /* This is defined in sys/reent.h as (sizeof (size_t) << 3) now, as in NetBSD.
    The old value of 15 was wrong and made newlib vulnerable against buffer
@@ -98,8 +107,8 @@
    we define it here, rather than in stdlib/misc.c, as before. */
 #define _Kmax (sizeof (size_t) << 3)
 
-static NEWLIB_THREAD_LOCAL char *__dtoa_result;
-static NEWLIB_THREAD_LOCAL int __dtoa_result_len;
+static __THREAD_LOCAL char *__dtoa_result;
+static __THREAD_LOCAL int __dtoa_result_len;
 
 char *__alloc_dtoa_result(int len)
 {
@@ -115,7 +124,7 @@ char *__alloc_dtoa_result(int len)
   return __dtoa_result;
 }
 
-static NEWLIB_THREAD_LOCAL int _mprec_exit_registered;
+static __THREAD_LOCAL int _mprec_exit_registered;
 
 static void
 __mprec_exit(void)

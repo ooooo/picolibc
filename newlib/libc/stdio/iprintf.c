@@ -17,7 +17,6 @@
 /* doc in siprintf.c */
 
 #define _DEFAULT_SOURCE
-#include <_ansi.h>
 #include <stdio.h>
 #include <stdarg.h>
 #include "local.h"
@@ -28,9 +27,8 @@ iprintf (const char *fmt, ...)
   int ret;
   va_list ap;
 
-  _REENT_SMALL_CHECK_INIT (ptr);
   va_start (ap, fmt);
-  ret = vfiprintf ( _stdout_r (ptr), fmt, ap);
+  ret = vfiprintf ( stdout, fmt, ap);
   va_end (ap);
   return ret;
 }

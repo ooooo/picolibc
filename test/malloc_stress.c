@@ -132,7 +132,7 @@ check_malloc(size_t in_use)
 	int result = 0;
 
         (void) in_use;
-#ifdef _NANO_MALLOC
+#ifdef __NANO_MALLOC
 	struct mallinfo info = mallinfo();
 	if (info.arena < info.fordblks + in_use) {
 		printf("non-free bytes in arena %zu free %zu\n", info.arena, info.fordblks);
@@ -154,7 +154,7 @@ check_malloc(size_t in_use)
 	return result;
 }
 
-#ifdef _NANO_MALLOC
+#ifdef __NANO_MALLOC
 extern size_t __malloc_minsize, __malloc_align, __malloc_head;
 #endif
 
@@ -197,8 +197,8 @@ main(void)
 
 		reset_blocks();
 
+#if (((__GNUC__ == 4 && __GNUC_MINOR__ >= 2) || __GNUC__ > 4) && !defined(__clang__))
 #pragma GCC diagnostic push
-#ifndef __clang__
 #pragma GCC diagnostic ignored "-Walloc-size-larger-than=PTRDIFF_MAX"
 #endif
 		/* Test huge malloc sizes */
@@ -218,7 +218,9 @@ main(void)
 		/* Test allocating negative amounts */
 		for (i = -1; i >= -128; i--) {
 			blocks[0] = malloc((size_t) i);
+#if (((__GNUC__ == 4 && __GNUC_MINOR__ >= 2) || __GNUC__ > 4) && !defined(__clang__))
 #pragma GCC diagnostic pop
+#endif
 			if (blocks[0]) {
 				printf("malloc size %ld succeeded\n", i);
 				result++;

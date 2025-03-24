@@ -84,8 +84,8 @@ sinl(long double x)
 	return (hi);
 }
 
-#if defined(_HAVE_ALIAS_ATTRIBUTE)
-#ifndef __clang__
+#ifdef __strong_reference
+#if defined(__GNUCLIKE_PRAGMA_DIAGNOSTIC) && !defined(__clang__)
 #pragma GCC diagnostic ignored "-Wmissing-attributes"
 #endif
 __strong_reference(sinl, _sinl);

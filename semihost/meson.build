@@ -95,11 +95,13 @@ if src_semihost != []
     src_semihost += 'iob.c'
   endif
 
-  install_headers('semihost.h',
+  inc_headers = ['semihost.h']
+  install_headers(inc_headers,
 		  install_dir: include_dir
 		 )
 
   inc = [inc, include_directories('.')]
+  inc_args += '-I' + meson.current_source_dir()
 
   has_semihost = true
 
@@ -107,28 +109,44 @@ if src_semihost != []
 
   has_semihost_args = true
 
-  foreach target : targets
-    value = get_variable('target_' + target)
+  foreach params : targets
+    target = params['name']
+    target_dir = params['dir']
+    target_c_args = params['c_args']
+    target_lib_prefix = params['lib_prefix']
 
-    instdir = join_paths(lib_dir, value[0])
+    instdir = join_paths(lib_dir, target_dir)
 
-    if target == ''
-      libsemihost_name = 'semihost'
-    else
-      libsemihost_name = join_paths(target, 'libsemihost')
-    endif
+    libsemihost_name = 'semihost'
 
     set_variable('lib_semihost' + target,
-		 static_library(libsemihost_name,
+		 static_library(join_paths(target_dir, target_lib_prefix + libsemihost_name),
 				src_semihost,
 				install : true,
 				install_dir : instdir,
 				include_directories : inc,
-				c_args : value[1] + c_args))
+				c_args : target_c_args + c_args))
     
   endforeach
+
+  if enable_cdefs_tests
+    ignore_headers = []
+    foreach header : inc_headers
+
+      if not (header in ignore_headers) and not (header.startswith('_'))
+        test_name = 'check-cdef-' + header
+
+        test(test_name,
+             validate_cdefs,
+             args: [meson.current_source_dir() / header] + cc.cmd_array() + c_args + inc_args,
+             suite: 'headers')
+      endif
+    endforeach
+  endif
+
 endif
 
 if not has_semihost and get_option('fake-semihost')
   subdir('fake')
 endif
+

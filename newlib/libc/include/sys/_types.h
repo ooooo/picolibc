@@ -58,7 +58,6 @@ SUCH DAMAGE.
 typedef __WINT_TYPE__ wint_t;
 #endif
 
-#include <sys/config.h>
 #include <machine/_types.h>
 
 #ifndef __machine_blkcnt_t_defined
@@ -79,7 +78,11 @@ typedef __uint32_t __fsfilcnt_t;
 #endif
 
 #ifndef __machine_off_t_defined
+#if __SIZEOF_SIZE_T__ == 8 && __SIZEOF_LONG__ < 8
+typedef __uint64_t _off_t;
+#else
 typedef long _off_t;
+#endif
 #endif
 
 #if defined(__XMK__)
@@ -145,12 +148,8 @@ typedef __uint32_t __mode_t;
 __extension__ typedef long long _off64_t;
 #endif
 
-#if defined(__CYGWIN__) && !defined(__LP64__)
-typedef _off64_t __off_t;
-#else
 typedef _off_t __off_t;
 typedef __uint64_t __off64_t;
-#endif
 
 typedef _off64_t __loff_t;
 
@@ -214,13 +213,16 @@ typedef struct
   {
     wint_t __wch;
     unsigned char __wchb[4];
+    __uint32_t __ucs;
+    __uint16_t __ucs2;
   } __value;		/* Value so far.  */
 } _mbstate_t;
 #endif
 
 #ifndef __machine_iconv_t_defined
 /* Iconv descriptor type */
-typedef void *_iconv_t;
+struct __iconv_t;
+typedef struct __iconv_t *_iconv_t;
 #endif
 
 #ifndef __machine_clock_t_defined
@@ -229,7 +231,7 @@ typedef void *_iconv_t;
 
 typedef	_CLOCK_T_	__clock_t;
 
-#if defined(_USE_LONG_TIME_T) || __LONG_MAX__ > 0x7fffffffL
+#if __SIZEOF_LONG__ == 8
 #define	_TIME_T_ long
 #else
 #define	_TIME_T_ __int_least64_t
@@ -261,5 +263,16 @@ typedef	__int32_t	__nl_item;
 typedef	unsigned short	__nlink_t;
 typedef	long		__suseconds_t;	/* microseconds (signed) */
 typedef	unsigned long	__useconds_t;	/* microseconds (unsigned) */
+
+#ifdef __STDC_WANT_LIB_EXT1__
+#if (__STDC_WANT_LIB_EXT1__ != 0) && (__STDC_WANT_LIB_EXT1__ != 1)
+#error Please define __STDC_WANT_LIB_EXT__ as 0 or 1
+#endif
+
+#if __STDC_WANT_LIB_EXT1__ == 1
+typedef size_t __rsize_t;
+typedef int __errno_t;
+#endif
+#endif
 
 #endif	/* _SYS__TYPES_H */

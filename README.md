@@ -10,6 +10,7 @@ Build status:
 
  * ![Linux](https://github.com/picolibc/picolibc/workflows/Linux/badge.svg?branch=main)
  * ![Zephyr](https://github.com/picolibc/picolibc/workflows/Zephyr/badge.svg?branch=main)
+ * ![Coreboot](https://github.com/picolibc/picolibc/workflows/Coreboot/badge.svg?branch=main)
  * ![Mac OS X](https://github.com/picolibc/picolibc/workflows/Mac%20OS%20X/badge.svg)
 
 ## License
@@ -41,22 +42,27 @@ is used to validate the code for all patch integration:
  * ARC (32- and 64- bit)
  * ARM (32- and 64- bit)
  * i386 (Native and Linux hosted, for testing)
+ * LatticeMico32
+ * LoongArch
  * Motorola 68000 (m68k)
  * MIPS
  * MSP430
  * Nios II
+ * OpenRisc
  * Power9
+ * Renesas RX
  * RISC-V (both 32- and 64- bit)
  * SparcV8 (32 bit)
+ * SuperH
  * x86_64 (Native and Linux hosted, for testing)
+ * Xtensa ESP32
 
 There is also build infrastructure and continuous build validation,
 but no integrated testing available for additional architectures:
 
  * Microblaze (32-bit, big and little endian)
- * PowerPC (big and little endian)
  * Sparc64
- * Xtensa (ESP8266, ESP32)
+ * Xtensa (ESP8266, LX106)
 
 Supporting architectures that already have Newlib code requires:
 
@@ -147,6 +153,102 @@ use Picolibc:
 
 ### Picolibc release 1.8.next
 
+ * Add missing POSIX constants to limits.h.
+
+ * Add Renesas RX support. Thanks to Duy Dguyen.
+
+ * Update to Unicode 16.0. This matches glibc 2.41.
+
+ * Add TLS support and testing on loongarch, m68k, or1k, powerpc and
+   superh.
+
+### Picolibc release 1.8.9
+
+ * Use common clang/gcc feature detection macros on arm.
+
+ * Additional clang/compiler-rt work-arounds for arm which is less
+   consistent in handling exceptions.
+
+ * Use clang multilib support for aarch64
+
+ * Build fix on arc which would build two strchr versions in release
+   mode.
+
+ * Add picocrt and semihost support for xtensa. Test xtensa dc233c.
+
+ * Add C11's <uchar.h> header and implementation.
+
+ * Add nano-malloc-clear-freed option to erase memory released in free
+   or realloc.
+
+ * Add memset_explicit from C23.
+
+ * Work around broken clang builtin malloc which fails to set errno.
+
+ * Widen C++ _CTYPE_DATA array to fix mis-classification of \t; C++
+   requires bitmasks for all ctype operations, and 8 bits is not
+   enough. Thanks to M-Moawad.
+
+ * Update case conversion tables to Unicode 15.1.0
+
+ * Fix documentation formatting. Thanks to Eduard Tanase.
+
+ * Fix support for using long-long vfprintf version by default. Thanks
+   to Louis Peens.
+
+ * Remove arm unaligned memcpy asm code. This couldn't support targets
+   that only supported unaligned access. Use a new faster C version
+   for this case.
+
+ * Add asnprintf and vasnprintf as provided by newlib
+
+ * Support ARM's FVP emulator. Thanks to Oliver Stannard.
+
+ * Remove arc strlen asm code as it would access memory *before* the
+   provided buffer and fall afoul of the stack bounds checking
+   hardware.
+
+ * Support --printf={d,f,l,i,m} in place of
+   -DPICOLIBC_*_PRINTF_SCANF. This is the syntax proposed in the
+   patches submitted to gcc for picolibc support.
+
+ * Add LoongArch support, including testing. Thanks to Jiaxun Yang.
+
+ * Use new picolibc-ci-tools project which builds custom toolchain
+   bits automatically. Thanks to Jiaxun Yang.
+
+ * Add OpenRisc support, including testing. Thanks to Joel Holdsworth.
+
+ * Add Lattic3Mico32 support, including testing. Thanks to Jiaxun Yang.
+
+ * Add MIPS semihosting support. Thanks to Jiaxun Yang.
+
+ * Add older GCC compiler support, including versions < 4.4. Thanks to
+   Joel Holdsworth.
+
+ * Add coreboot configurations and tests. Thanks to Jeremy Bettis and
+   Jon Murphy.
+
+ * Fix numerous charset conversion errors for non-Unicode locales.
+
+ * Make sure malloc return is aligned by using max_align_t. Thanks to
+   Alex Richardson.
+
+ * Replace iconv and locale implementations with smaller code offering
+   the same locale functionality as before while the iconv code shares
+   the same charset support as the locale code instead of having a
+   completely separate implementation.
+
+### Picolibc release 1.8.8
+
+ * Fixed 3 bugs in the powf computation. Thanks to Fabian Schriever.
+
+ * Fixed a bunch of build issues found by Zephyr.
+
+ * Improve C++ testing and compatibility.
+
+### Picolibc release 1.8.7
+
  * Support ARM v8.1-m BTI and PAC features
 
  * Fix stdio buffered backend automatic flushing of stdout when
@@ -215,6 +317,55 @@ use Picolibc:
 
  * Fix hex float scanning and printing. Thanks to Hana Ashour and
    Ahmed Shehab.
+
+ * Fix double rounding in %f printf. Thanks to Ahmed Shehab for
+   constructing a test case that identified the issue.
+
+ * Add mem_align to the "big" malloc version. Thanks to Simon Tatham.
+
+ * Adjust POSIX and C headers to limit symbol exposure to that
+   specified in the standards.
+
+ * Fix rounding in float scanf. This does round twice for input longer
+   than the required number of digits, but that's permitted by the C
+   specification.
+
+ * Support %a/%A in scanf. Support arbitrary precision in %a/%A
+   printf. Fix NaN/INF formatting in %a/%A printf. Thanks to Ahmed
+   Shehab.
+
+ * Provide a build-time option to enable %n in printf. This is
+   disabled by default for security concerns, but supported in case
+   someone needs strict C conformance. Thanks to Ahmed Shehab.
+
+ * Make freopen clear the unget buffer. Thanks to Mostafa Salman.
+
+ * Fix wide and multi-byte character support in printf and scanf. For
+   strict standards conformance, there's now an option that enables
+   %lc/%ls in printf even if multi-byte support is not enabled.
+
+ * Enable MMU in picocrt on A profile ARM and AARCH64 targets when
+   present. This is required by the latest qemu which now more
+   accurately emulates this hardware. Thanks to Alex Richardson.
+
+ * Fix AARCH64 asm code in ILP32 mode.
+
+ * Parse NaN(<string>) in sscanf. This is required by the standard,
+   although picolibc doesn't do anything with <string>. Thanks to
+   Mohamed Moawad.
+
+ * Clean up header files. Picolibc tries to limit symbol definitions
+   to those specified in the C and POSIX specs.
+
+ * Add support for C's Annex K functions. These are bounds-checking
+   versions of various memory and string functions. Thanks to Mostafa
+   Salman.
+
+ * Perform locale string validation in newlocale even when _MB_CAPABLE
+   isn't defined. Thanks to Mostafa Salman.
+
+ * Place compiler-rt library after C library when linking
+   tests. Thanks to Oliver Stannard.
 
 ### Picolibc version 1.8.6
 

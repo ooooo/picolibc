@@ -32,7 +32,6 @@
 
 
 #define _DEFAULT_SOURCE
-#include <_ansi.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -54,7 +53,7 @@ char *__cvt (_PRINTF_FLOAT_TYPE value, int ndigits,
 
 int __exponent (char *p0, int exp, int fmtch);
 
-#ifdef FLOATING_POINT
+#ifdef __IO_FLOATING_POINT
 
 /* Using reentrant DATA, convert finite VALUE into a string of digits
    with no decimal point, using NDIGITS precision and FLAGS as guides
@@ -169,7 +168,7 @@ _printf_float (struct _reent *data,
 {
 #define _fpvalue (pdata->_double_)
 
-  char *decimal_point = localeconv ()->decimal_point;
+  char *decimal_point = DECIMAL_POINT;
   size_t decp_len = strlen (decimal_point);
   /* Temporary negative sign for floats.  */
   char softsign;
@@ -187,7 +186,7 @@ _printf_float (struct _reent *data,
 
   if (pdata->flags & LONGDBL)
     {
-      _fpvalue = (double) GET_ARG (N, *ap, _LONG_DOUBLE);
+      _fpvalue = (double) GET_ARG (N, *ap, long double);
     }
   else
     {

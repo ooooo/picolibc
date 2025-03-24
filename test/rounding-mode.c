@@ -38,6 +38,12 @@
 #include <fenv.h>
 #include "rounding-mode.h"
 
+#ifdef __sh__
+#if !(defined(__SH4__) || defined(__SH4_SINGLE__) || defined(__SH4_SINGLE_ONLY__))
+#define GDB_SIMULATOR
+#endif
+#endif
+
 #ifndef PICOLIBC_DOUBLE_NOROUND
 static double
 do_round_int(double value, int mode)
@@ -92,24 +98,6 @@ do_roundf_int(float value, int mode)
 }
 #endif
 
-double
-div(double a, double b);
-
-double
-mul(double a, double b);
-
-double
-sub(double a, double b);
-
-float
-div_f(float a, float b);
-
-float
-mul_f(float a, float b);
-
-float
-sub_f(float a, float b);
-
 #if defined(FE_UPWARD) && defined(FE_DOWNWARD) && defined(FE_TOWARDZERO)
 
 #ifndef PICOLIBC_DOUBLE_NOROUND
@@ -117,7 +105,7 @@ sub_f(float a, float b);
 static double
 div_mul_sub(double a, double b, double c, double d)
 {
-	return sub(mul(div(a,b), c), d);
+	return sub_d(mul_d(div_d(a,b), c), d);
 }
 
 #define do_fancy(sign) div_mul_sub(sign 1.0, 3.0, 3.0, sign 1.0)
@@ -247,6 +235,10 @@ int main(void)
 	unsigned i;
 	int ret = 0;
 
+#ifdef GDB_SIMULATOR
+        printf("GDB simulator doesn't support rounding modes. Skipping\n");
+        return 77;
+#endif
 	for (i = 0; i < NUM_VALUE; i++) {
 #ifdef FE_TONEAREST
 		ret += check(FE_TONEAREST, "FE_TONEAREST", my_values[i]);

@@ -101,10 +101,6 @@ warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 # define _DOUBLE_IS_32BITS
 #endif
 
-#if _SIZEOF_LONG_DOUBLE__ == 4
-# define _LONG_DOUBLE_IS_32BITS
-#endif
-
 #if (defined(__arm__) || defined(__thumb__)) && !defined(__MAVERICK__)
 /* arm with hard fp and soft dp cannot use new float code */
 # if (__ARM_FP & 4) && !(__ARM_FP & 8)
@@ -114,7 +110,7 @@ warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
    byte ordering was big or little endian depending upon the target.
    Modern floating-point formats are naturally ordered; in this case
    __VFP_FP__ will be defined, even if soft-float.  */
-#if defined(__VFP_FP__) || defined(__SOFTFP__)
+#if defined(__VFP_FP__) || __ARM_FP == 0
 # ifdef __ARMEL__
 #  define __IEEE_LITTLE_ENDIAN
 # else
@@ -126,7 +122,7 @@ warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #  define __IEEE_BYTES_LITTLE_ENDIAN
 # endif
 #endif
-#ifndef __SOFTFP__
+#if __ARM_FP != 0
 # define _SUPPORTS_ERREXCEPT
 #endif
 /* As per ISO/IEC TS 18661 '__FLT_EVAL_METHOD__' will be defined to 16
@@ -144,7 +140,7 @@ warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #else
 #define __IEEE_BIG_ENDIAN
 #endif
-#ifdef __ARM_FP
+#if __ARM_FP != 0
 # define _SUPPORTS_ERREXCEPT
 #else
 #ifdef __clang__
@@ -263,6 +259,17 @@ warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #endif
 #endif
 
+#ifdef __loongarch__
+#if defined(__BYTE_ORDER__) && (__BYTE_ORDER__ == __ORDER_BIG_ENDIAN__)
+#define __IEEE_BIG_ENDIAN
+#else
+#define __IEEE_LITTLE_ENDIAN
+#endif
+#ifndef __loongarch_soft_float
+# define _SUPPORTS_ERREXCEPT
+#endif
+#endif
+
 #ifdef __riscv
 #if defined(__BYTE_ORDER__) && (__BYTE_ORDER__ == __ORDER_BIG_ENDIAN__)
 #define __IEEE_BIG_ENDIAN
@@ -322,7 +329,9 @@ warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #endif
 
 #ifdef __mips__
+#ifndef __mips_nan2008
 #define _IEEE_754_2008_SNAN 0
+#endif
 #ifndef __mips_soft_float
 #define _SUPPORTS_ERREXCEPT
 #endif
@@ -402,6 +411,10 @@ warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #else
 #define __IEEE_LITTLE_ENDIAN
 #endif
+#endif
+
+#ifdef __ARC64__
+#define __IEEE_LITTLE_ENDIAN
 #endif
 
 #ifdef __CRX__
@@ -582,6 +595,14 @@ warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #define __IEEE_LITTLE_ENDIAN
 #endif
 
+#ifdef __TRICORE__
+#if defined(__BYTE_ORDER__) && (__BYTE_ORDER__ == __ORDER_BIG_ENDIAN__)
+#define __IEEE_BIG_ENDIAN
+#else
+#define __IEEE_LITTLE_ENDIAN
+#endif
+#endif
+
 /* New math code requires 64-bit doubles */
 #ifdef _DOUBLE_IS_32BITS
 #undef __OBSOLETE_MATH
@@ -596,9 +617,6 @@ warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #define __IEEE_BIG_ENDIAN
 #endif
 
-#ifdef __CYGWIN__
-#define __OBSOLETE_MATH_DEFAULT 0
-#endif
 
 #ifndef __OBSOLETE_MATH_DEFAULT
 #define __OBSOLETE_MATH_DEFAULT 1

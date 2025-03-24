@@ -21,7 +21,6 @@ static char sccsid[] = "%W% (Berkeley) %G%";
 #endif /* LIBC_SCCS and not lint */
 
 #define _DEFAULT_SOURCE
-#include <_ansi.h>
 #include <stdio.h>
 #include <limits.h>
 #include <stdarg.h>
@@ -40,7 +39,7 @@ vsniprintf (
 
   if (size > INT_MAX)
     {
-      _REENT_ERRNO(ptr) = EOVERFLOW;
+      errno = EOVERFLOW;
       return EOF;
     }
   f._flags = __SWR | __SSTR;
@@ -50,7 +49,7 @@ vsniprintf (
   f._file = -1;  /* No file. */
   ret = svfiprintf ( &f, fmt, ap);
   if (ret < EOF)
-    _REENT_ERRNO(ptr) = EOVERFLOW;
+    errno = EOVERFLOW;
   if (size > 0)
     *f._p = 0;
   return ret;

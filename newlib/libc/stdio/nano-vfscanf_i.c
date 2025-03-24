@@ -27,7 +27,6 @@
  */
 
 #define _DEFAULT_SOURCE
-#include <_ansi.h>
 #include <ctype.h>
 #include <wctype.h>
 #include <stdio.h>
@@ -49,7 +48,7 @@ _scanf_chars (
 	      FILE *fp, va_list *ap)
 {
   int n;
-  char *p;
+  char *p = 0;
 
   if (pdata->width == 0)
     pdata->width = (pdata->code == CT_CHAR) ? 1 : (size_t)~0;
@@ -64,7 +63,7 @@ _scanf_chars (
 	 || (pdata->code == CT_STRING && !isspace (*fp->_p)))
     {
       n++;
-      if ((pdata->flags & SUPPRESS) == 0)
+      if (p)
 	*p++ = *fp->_p;
 	
       fp->_r--, fp->_p++;
@@ -80,7 +79,7 @@ _scanf_chars (
   if (n == 0 && pdata->code == CT_CCL)
     return MATCH_FAILURE;
 
-  if ((pdata->flags & SUPPRESS) == 0)
+  if (p)
     {
       pdata->nassigned++;
       if (pdata->code != CT_CHAR)

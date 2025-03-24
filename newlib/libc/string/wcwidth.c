@@ -90,15 +90,14 @@ PORTABILITY
  */
 
 #define _XOPEN_SOURCE
-#include <_ansi.h>
 #include <wchar.h>
 #include <stdint.h>
-#ifndef _MB_CAPABLE
+#ifndef __MB_CAPABLE
 #include <wctype.h> /* iswprint, iswcntrl */
 #endif
 #include "local.h"
 
-#ifdef _MB_CAPABLE
+#ifdef __MB_CAPABLE
 struct interval
 {
   uint32_t first;
@@ -127,7 +126,7 @@ bisearch(uint32_t ucs, const struct interval *table, int max)
 
   return 0;
 }
-#endif /* _MB_CAPABLE */
+#endif /* __MB_CAPABLE */
 
 /* The following function defines the column width of an ISO 10646
  * character as follows:
@@ -170,7 +169,7 @@ int
 __wcwidth (const wint_t _ucs)
 {
   uint32_t ucs = (uint32_t) _ucs;
-#ifdef _MB_CAPABLE
+#ifdef __MB_CAPABLE
   /* sorted list of non-overlapping intervals of East Asian Ambiguous chars */
   static const struct interval ambiguous[] =
 #include "ambiguous.t"
@@ -224,13 +223,13 @@ __wcwidth (const wint_t _ucs)
     return 2;
   else
     return 1;
-#else /* !_MB_CAPABLE */
+#else /* !__MB_CAPABLE */
   if (iswprint (ucs))
     return 1;
   if (iswcntrl (ucs) || ucs == L'\0')
     return 0;
   return -1;
-#endif /* _MB_CAPABLE */
+#endif /* __MB_CAPABLE */
 }
 
 int
@@ -238,8 +237,5 @@ wcwidth (const wchar_t wc)
 {
   wint_t wi = wc;
 
-#ifdef _MB_CAPABLE
-  wi = _jp2uc (wi);
-#endif /* _MB_CAPABLE */
   return __wcwidth (wi);
 }

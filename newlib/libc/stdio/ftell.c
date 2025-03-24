@@ -77,7 +77,6 @@ static char sccsid[] = "%W% (Berkeley) %G%";
  */
 
 #define _DEFAULT_SOURCE
-#include <_ansi.h>
 #include <stdio.h>
 #include <errno.h>
 #include "local.h"
@@ -92,7 +91,7 @@ ftell (
   if ((long)pos != pos)
     {
       pos = -1;
-      _REENT_ERRNO(ptr) = EOVERFLOW;
+      errno = EOVERFLOW;
     }
   return (long)pos;
 }

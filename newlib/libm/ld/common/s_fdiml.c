@@ -24,7 +24,6 @@
  * SUCH DAMAGE.
  */
 
-//__FBSDID("$FreeBSD: src/lib/msun/src/s_fdim.c,v 1.1 2004/06/30 07:04:01 das Exp $");
 
 
 long double
@@ -33,7 +32,7 @@ fdiml(long double x, long double y)
         if (isnanl_inline(x) || isnanl_inline(y))
 		return (x + y);
         long double z = x > y ? x - y : 0.0L;
-        if (!isinfl(x) && !isinfl(y))
+        if (!isinf(x) && !isinfl(y))
                 z = check_oflowl(z);
 	return z;
 }

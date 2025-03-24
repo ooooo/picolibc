@@ -11,11 +11,10 @@ static void (*fortify_handler)(int sig);
 
 #define CHK_FAIL_MSG "*** overflow detected ***: terminated"
 
-void
-__attribute__((__noreturn__))
+__noreturn void
 __chk_fail(void)
 {
-#ifdef TINY_STDIO
+#ifdef __TINY_STDIO
   puts(CHK_FAIL_MSG);
 #else
   static const char msg[] = CHK_FAIL_MSG "\n";

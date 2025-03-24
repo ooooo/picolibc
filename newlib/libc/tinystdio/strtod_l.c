@@ -45,17 +45,13 @@ strtod_l (const char *__restrict s00,
 }
 
 
-#if defined(_HAVE_LONG_DOUBLE) && defined(_LDBL_EQ_DBL)
-#ifdef _HAVE_ALIAS_ATTRIBUTE
-#pragma GCC diagnostic ignored "-Wpragmas"
-#pragma GCC diagnostic ignored "-Wunknown-warning-option"
-#pragma GCC diagnostic ignored "-Wattribute-alias="
-extern long double strtold_l(const char *, char **, locale_t loc) __attribute__ ((__alias__ ("strtod_l")));
+#if defined(__HAVE_LONG_DOUBLE) && defined(_LDBL_EQ_DBL)
+#ifdef __strong_reference
+__strong_reference_dup(strtod_l, strtold_l);
 #else
 long double
 strtold_l (const char * nptr, char ** endptr, locale_t loc)
 {
-        (void) loc;
 	return (long double) strtod_l(nptr, endptr, loc);
 }
 #endif

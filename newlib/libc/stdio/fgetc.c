@@ -81,7 +81,6 @@ Supporting OS subroutines required: <<close>>, <<fstat>>, <<isatty>>,
 */
 
 #define _DEFAULT_SOURCE
-#include <_ansi.h>
 #include <stdio.h>
 #include "local.h"
 
@@ -90,7 +89,7 @@ fgetc (
        FILE * fp)
 {
   int result;
-  CHECK_INIT(ptr, fp);
+  CHECK_INIT();
   _newlib_flockfile_start (fp);
   result = _sgetc ( fp);
   _newlib_flockfile_end (fp);

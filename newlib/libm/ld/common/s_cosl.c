@@ -24,7 +24,6 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-//__FBSDID("$FreeBSD: src/lib/msun/src/s_cosl.c,v 1.3 2011/05/30 19:41:28 kargl Exp $");
 
 /*
  * Limited testing on pseudorandom numbers drawn within [-2e8:4e8] shows
@@ -79,8 +78,8 @@ cosl(long double x)
 	return (hi);
 }
 
-#if defined(_HAVE_ALIAS_ATTRIBUTE)
-#ifndef __clang__
+#ifdef __strong_reference
+#if defined(__GNUCLIKE_PRAGMA_DIAGNOSTIC) && !defined(__clang__)
 #pragma GCC diagnostic ignored "-Wmissing-attributes"
 #endif
 __strong_reference(cosl, _cosl);

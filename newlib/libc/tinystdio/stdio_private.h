@@ -45,6 +45,7 @@
 #include <wchar.h>
 #include <float.h>
 #include <math.h>
+#include <limits.h>
 #include <stdio-bufio.h>
 #include <sys/lock.h>
 
@@ -67,6 +68,7 @@ struct __file_str {
         char	*pos;		/* current buffer position */
         char    *end;           /* end of buffer */
         size_t  size;           /* size of allocated storage */
+        bool    alloc;          /* current storage was allocated */
 };
 
 int
@@ -124,14 +126,26 @@ bool __matchcaseprefix(const char *input, const char *pattern);
                 .end = (_s) + (_size),          \
 	}
 
-#define FDEV_SETUP_STRING_ALLOC() {		\
+#define FDEV_SETUP_STRING_ALLOC() {  \
 		.file = {			\
 			.flags = __SWR,		\
 			.put = __file_str_put_alloc	\
 		},				\
 		.pos = NULL,			\
-		.end = NULL,			\
+                .end = NULL,                    \
                 .size = 0,                      \
+                .alloc = false,                 \
+	}
+
+#define FDEV_SETUP_STRING_ALLOC_BUF(_buf, _size) {  \
+		.file = {			\
+			.flags = __SWR,		\
+			.put = __file_str_put_alloc	\
+		},				\
+		.pos = _buf,			\
+                .end = (char *) (_buf) + (_size), \
+                .size = _size,                  \
+                .alloc = false,                 \
 	}
 
 #define _FDEV_BUFIO_FD(bf) ((int)((intptr_t) (bf)->ptr))
@@ -198,29 +212,13 @@ static inline int bufio_close(struct __file_bufio *bf)
     return ret;
 }
 
-#ifdef POSIX_IO
-
 #define FDEV_SETUP_POSIX(fd, buf, size, rwflags, bflags)        \
         FDEV_SETUP_BUFIO(fd, buf, size,                         \
                          read, write,                           \
                          lseek, close, rwflags, bflags)
 
 int
-__posix_sflags (const char *mode, int *optr);
-
-static inline int
-__stdio_sflags (const char *mode)
-{
-    int omode;
-    return __posix_sflags (mode, &omode);
-}
-
-#else
-
-int
-__stdio_sflags (const char *mode);
-
-#endif
+__stdio_flags (const char *mode, int *optr);
 
 int	__d_vfprintf(FILE *__stream, const char *__fmt, va_list __ap) __FORMAT_ATTRIBUTE__(printf, 2, 0);
 int	__f_vfprintf(FILE *__stream, const char *__fmt, va_list __ap) __FORMAT_ATTRIBUTE__(printf, 2, 0);
@@ -667,7 +665,16 @@ __non_atomic_load_ungetc(const volatile __ungetc_t *p)
         return *p;
 }
 
-#ifdef ATOMIC_UNGETC
+#if defined(__LONG_DOUBLE_128__) && defined(__strong_reference)
+#if defined(__GNUCLIKE_PRAGMA_DIAGNOSTIC) && !defined(__clang__)
+#pragma GCC diagnostic ignored "-Wmissing-attributes"
+#endif
+#define __ieee128_reference(a,b) __strong_reference(a,b)
+#else
+#define __ieee128_reference(a,b)
+#endif
+
+#ifdef __ATOMIC_UNGETC
 
 #if __PICOLIBC_UNGETC_SIZE == 4 && defined (__GCC_HAVE_SYNC_COMPARE_AND_SWAP_4)
 #define PICOLIBC_HAVE_SYNC_COMPARE_AND_SWAP
@@ -732,7 +739,7 @@ __picolibc_non_atomic_compare_exchange_ungetc(__ungetc_t *p,
 
 #define __atomic_load_ungetc(p) (*(p))
 
-#endif /* ATOMIC_UNGETC */
+#endif /* __ATOMIC_UNGETC */
 
 /*
  * This operates like _tolower on upper case letters, but also works

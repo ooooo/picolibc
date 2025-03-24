@@ -33,9 +33,6 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
 #include "sparc-semihost.h"
 
 typedef volatile uint8_t vuint8_t;
@@ -47,7 +44,7 @@ struct apbuart {
     vuint32_t   control;
 };
 
-#ifdef __GNUC__
+#ifdef __GNUCLIKE_PRAGMA_DIAGNOSTIC
 #pragma GCC diagnostic ignored "-Wpragmas"
 #pragma GCC diagnostic ignored "-Wunknown-warning-option"
 /* 'bsize' is used directly with malloc/realloc which confuses -fanalyzer */
@@ -97,7 +94,7 @@ sparc_putc(char c, FILE *file)
 	return (unsigned char) c;
 }
 
-#ifdef TINY_STDIO
+#ifdef __TINY_STDIO
 
 static int
 sparc_getc(FILE *file)

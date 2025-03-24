@@ -6,7 +6,6 @@
 /* doc in siprintf.c */
 
 #define _DEFAULT_SOURCE
-#include <_ansi.h>
 #include <stdio.h>
 #include <stdarg.h>
 #include <limits.h>
@@ -41,7 +40,7 @@ asniprintf (char *buf,
      for _size.  */
   if (len > INT_MAX)
     {
-      _REENT_ERRNO(ptr) = EOVERFLOW;
+      errno = EOVERFLOW;
       return NULL;
     }
   f._bf._size = f._w = len;

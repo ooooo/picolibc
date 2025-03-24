@@ -54,10 +54,10 @@ Supporting OS subroutines required: <<close>>, <<fstat>>, <<isatty>>,
 
 #define _DEFAULT_SOURCE
 #define _DEFAULT_SOURCE
-#include <_ansi.h>
 #include <stdio.h>
 #include <string.h>
 #include "local.h"
+#include "../string/local.h"
 #include <errno.h>
 
 #define WRITE_STR(str) \
@@ -82,7 +82,7 @@ perror (
   int dummy;
   FILE *fp = stderr;
 
-  CHECK_INIT (ptr, fp);
+  CHECK_INIT();
 
   _newlib_flockfile_start(fp);
   fflush ( fp);
@@ -92,7 +92,7 @@ perror (
       WRITE_STR (": ");
     }
 
-  if ((error = _strerror_r (_REENT_ERRNO(ptr), 1, &dummy)) != NULL)
+  if ((error = _strerror_r (errno, 1, &dummy)) != NULL)
     WRITE_STR (error);
 
 #ifdef __SCLE

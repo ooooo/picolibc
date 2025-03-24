@@ -38,7 +38,11 @@
 #include <stdlib.h>
 #include <string.h>
 
-static const char file_name[] = "posix-io-test-file";
+#ifndef TEST_FILE_NAME
+#define TEST_FILE_NAME "posix-io-test-file"
+#endif
+
+static const char file_name[] = TEST_FILE_NAME;
 static const char test_string[] = "hello, world\n";
 
 static void test_cleanup(void)
@@ -76,7 +80,7 @@ main(void)
 		return 1;
 	}
 
-#if defined(TINY_STDIO) || !defined(_HAVE_SEMIHOST)
+#if defined(__TINY_STDIO) || !defined(__SEMIHOST)
         if (fseeko(f, -3, SEEK_CUR) < 0) {
                 printf("failed to seek back 3 bytes\n");
                 return 1;

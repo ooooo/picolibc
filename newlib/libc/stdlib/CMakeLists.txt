@@ -79,7 +79,6 @@ picolibc_sources(
   mbtowc.c
   mbtowc_r.c
   mrand48.c
-  mstats.c
   nrand48.c
   putenv.c
   rand48.c
@@ -113,23 +112,25 @@ picolibc_sources(
   wctomb_r.c
   pico-atexit.c
   pico-exit.c
+  pico-exitprocs.c
   pico-onexit.c
   pico-cxa-atexit.c
+  set_constraint_handler_s.c
+  ignore_handler_s.c
   )
 
 picolibc_sources_flags("-fno-builtin-malloc;-fno-builtin-free"
-  nano-malloc-calloc.c
-  nano-malloc-cfree.c
-  nano-malloc-free.c
-  nano-malloc-getpagesize.c
-  nano-malloc-mallinfo.c
-  nano-malloc-malloc.c
-  nano-malloc-malloc_stats.c
-  nano-malloc-malloc_usable_size.c
-  nano-malloc-mallopt.c
-  nano-malloc-memalign.c
-  nano-malloc-posix_memalign.c
-  nano-malloc-pvalloc.c
-  nano-malloc-realloc.c
-  nano-malloc-valloc.c
+  nano-calloc.c
+  nano-free.c
+  nano-getpagesize.c
+  nano-mallinfo.c
+  nano-malloc.c
+  nano-malloc-stats.c
+  nano-malloc-usable-size.c
+  nano-mallopt.c
+  nano-memalign.c
+  nano-posix-memalign.c
+  nano-pvalloc.c
+  nano-realloc.c
+  nano-valloc.c
   )

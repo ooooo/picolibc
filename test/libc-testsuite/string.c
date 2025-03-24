@@ -20,7 +20,7 @@
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-#define _BSD_SOURCE
+#define _DEFAULT_SOURCE
 #include <stdio.h>
 #include <string.h>
 
@@ -30,11 +30,13 @@
  * m = message to print on failure (with formats for r & x)
 **/
 
+#if ((__GNUC__ == 4 && __GNUC_MINOR__ >= 2) || __GNUC__ > 4)
 #pragma GCC diagnostic ignored "-Wpragmas"
 #pragma GCC diagnostic ignored "-Wunknown-warning-option"
 #pragma GCC diagnostic ignored "-Wformat-extra-args"
 #pragma GCC diagnostic ignored "-Wformat"
 #pragma GCC diagnostic ignored "-Wstringop-truncation"
+#endif
 
 #define TEST(r, f, x, m) do {                                           \
         (r) = (f);                                                      \
@@ -45,7 +47,7 @@
     } while(0)
 
 #define TEST_S(s, x, m) do {                                            \
-        if (strcmp((s),(x)) != 0) {                                     \
+        if (s == NULL || strcmp((s),(x)) != 0) {                        \
             printf(__FILE__ ":%d: [%s] != [%s] (%s)\n", __LINE__, s, x, m); \
             err++;                                                      \
         }                                                               \

@@ -11,7 +11,6 @@
  * ====================================================
  */
 
-//__FBSDID("$FreeBSD: src/lib/msun/src/k_rem_pio2.c,v 1.11 2008/02/25 11:43:20 bde Exp $");
 
 /*
  * __kernel_rem_pio2(x,y,e0,nx,prec)
@@ -119,7 +118,7 @@
  *
  */
 
-#ifdef __GNUC__
+#ifdef __GNUCLIKE_PRAGMA_DIAGNOSTIC
 /* GCC analyzer gets confused about the use of 'iq' here */
 #pragma GCC diagnostic ignored "-Wpragmas"
 #pragma GCC diagnostic ignored "-Wunknown-warning-option"

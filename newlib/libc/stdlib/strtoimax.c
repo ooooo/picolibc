@@ -36,15 +36,13 @@
 static char sccsid[] = "from @(#)strtol.c	8.1 (Berkeley) 6/4/93";
 #endif /* LIBC_SCCS and not lint */
 #define _DEFAULT_SOURCE
-#include <sys/cdefs.h>
-__FBSDID("$FreeBSD: head/lib/libc/stdlib/strtoimax.c 251672 2013-06-13 00:19:30Z emaste $");
 
 #include <ctype.h>
 #include <errno.h>
 #include <stdlib.h>
 #include <inttypes.h>
 #include <stdint.h>
-#include "../locale/setlocale.h"
+#include "local.h"
 
 /*
  * Convert a string to an intmax_t integer.
@@ -53,7 +51,6 @@ __FBSDID("$FreeBSD: head/lib/libc/stdlib/strtoimax.c 251672 2013-06-13 00:19:30Z
  * alphabets and digits are each contiguous.
  */
 
-#ifndef _REENT_ONLY
 
 intmax_t
 strtoimax_l(const char * __restrict nptr, char ** __restrict endptr, int base,
@@ -135,10 +132,10 @@ strtoimax_l(const char * __restrict nptr, char ** __restrict endptr, int base,
 	}
 	if (any < 0) {
 		acc = neg ? INTMAX_MIN : INTMAX_MAX;
-		_REENT_ERRNO(rptr) = ERANGE;
+		errno = ERANGE;
 	} else if (!any) {
 noconv:
-		_REENT_ERRNO(rptr) = EINVAL;
+		errno = EINVAL;
 	} else if (neg)
 		acc = -acc;
 	if (endptr != NULL)
@@ -152,4 +149,3 @@ strtoimax(const char* __restrict nptr, char** __restrict endptr, int base)
 	return strtoimax_l(nptr, endptr, base, __get_current_locale());
 }
 
-#endif

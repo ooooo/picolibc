@@ -32,7 +32,6 @@ Author: Joel Schopp <jschopp@austin.ibm.com>
 
 #include <picolibc.h>
 
-#include <_ansi.h>
 #include <stdio.h>
 
 #include "c99ppe.h"
@@ -45,7 +44,6 @@ typedef struct
   unsigned int pad1[ 3 ];
 } c99_fputs_t;
 
-#ifndef _REENT_ONLY
 
 int
 fputs (char const *__restrict s,
@@ -60,4 +58,3 @@ fputs (char const *__restrict s,
 
   return __send_to_ppe(SPE_C99_SIGNALCODE, SPE_C99_FPUTS, &args);
 }
-#endif /* ! _REENT_ONLY */

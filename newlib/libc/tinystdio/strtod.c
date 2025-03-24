@@ -83,12 +83,9 @@ strtod (const char * nptr, char ** endptr)
     return flt;
 }
 
-#if defined(_HAVE_LONG_DOUBLE) && __SIZEOF_LONG_DOUBLE__ == __SIZEOF_DOUBLE__
-#ifdef _HAVE_ALIAS_ATTRIBUTE
-#pragma GCC diagnostic ignored "-Wpragmas"
-#pragma GCC diagnostic ignored "-Wunknown-warning-option"
-#pragma GCC diagnostic ignored "-Wattribute-alias="
-extern long double strtold(const char *, char **) __attribute__ ((__alias__ ("strtod")));
+#if defined(__HAVE_LONG_DOUBLE) && __SIZEOF_LONG_DOUBLE__ == __SIZEOF_DOUBLE__
+#ifdef __strong_reference
+__strong_reference_dup(strtod, strtold);
 #else
 long double
 strtold (const char * nptr, char ** endptr)

@@ -25,7 +25,6 @@
  */
 
 #define _DEFAULT_SOURCE
-#include <_ansi.h>
 #include <stdio.h>
 #include <errno.h>
 #include "local.h"
@@ -34,13 +33,13 @@ int
 fileno_unlocked (FILE * f)
 {
   int result;
-  CHECK_INIT (_REENT, f);
+  CHECK_INIT();
   if (f->_flags)
     result = __sfileno (f);
   else
     {
       result = -1;
-      _REENT_ERRNO(_REENT) = EBADF;
+      errno = EBADF;
     }
   return result;
 }

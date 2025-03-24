@@ -6,12 +6,9 @@
 #ifndef _LIBGEN_H_
 #define _LIBGEN_H_
 
-#include "_ansi.h"
 #include <sys/cdefs.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+_BEGIN_STD_C
 
 /* There are two common basename variants.  If you do NOT #include <libgen.h>
    and you do
@@ -29,9 +26,7 @@ extern "C" {
 char      *basename (char *) __asm__(__ASMNAME("basename"));
 char      *dirname (char *);
 
-#ifdef __cplusplus
-}
-#endif
+_END_STD_C
 
 #endif /* _LIBGEN_H_ */
 

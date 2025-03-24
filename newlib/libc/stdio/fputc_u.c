@@ -25,7 +25,6 @@
  */
 
 #define _DEFAULT_SOURCE
-#include <_ansi.h>
 #include <stdio.h>
 #include "local.h"
 
@@ -34,6 +33,6 @@ fputc_unlocked (
        int ch,
        FILE * file)
 {
-  CHECK_INIT(ptr, file);
+  CHECK_INIT();
   return putc_unlocked ( ch, file);
 }

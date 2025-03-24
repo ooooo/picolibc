@@ -21,7 +21,6 @@ static char sccsid[] = "%W% (Berkeley) %G%";
 #endif /* LIBC_SCCS and not lint */
 
 #define _DEFAULT_SOURCE
-#include <_ansi.h>
 #include <stdio.h>
 #include <errno.h>
 #include "local.h"
@@ -42,7 +41,7 @@ _swbuf (
 
   /* Ensure stdio has been initialized.  */
 
-  CHECK_INIT (ptr, fp);
+  CHECK_INIT();
 
   /*
    * In case we cannot write, or longjmp takes us out early,

@@ -18,7 +18,6 @@
 /* This code created by modifying sprintf.c so copyright inherited. */
 
 #define _DEFAULT_SOURCE
-#include <_ansi.h>
 #include <stdio.h>
 #include <stdarg.h>
 #include <limits.h>
@@ -38,7 +37,7 @@ snprintf (
 
   if (size > INT_MAX)
     {
-      _REENT_ERRNO(ptr) = EOVERFLOW;
+      errno = EOVERFLOW;
       return EOF;
     }
   f._flags = __SWR | __SSTR;
@@ -50,23 +49,11 @@ snprintf (
   ret = svfprintf (&f, fmt, ap);
   va_end (ap);
   if (ret < EOF)
-    _REENT_ERRNO(ptr) = EOVERFLOW;
+    errno = EOVERFLOW;
   if (size > 0)
     *f._p = 0;
   return (ret);
 }
 
-#ifdef _NANO_FORMATTED_IO
-int
-sniprintf (char *, size_t, const char *, ...)
-       _ATTRIBUTE ((__alias__("snprintf")));
-#endif
-
-#ifdef __LONG_DOUBLE_IEEE128__
-#if defined(_HAVE_ALIAS_ATTRIBUTE)
-#ifndef __clang__
-#pragma GCC diagnostic ignored "-Wmissing-attributes"
-#endif
-__strong_reference(snprintf, __snprintfieee128);
-#endif
-#endif
+__nano_reference(snprintf, sniprintf);
+__ieee128_reference(snprintf, __snprintfieee128);

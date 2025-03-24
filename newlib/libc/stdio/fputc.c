@@ -83,7 +83,6 @@ Supporting OS subroutines required: <<close>>, <<fstat>>, <<isatty>>,
 */
 
 #define _DEFAULT_SOURCE
-#include <_ansi.h>
 #include <stdio.h>
 #include "local.h"
 
@@ -93,7 +92,7 @@ fputc (
        FILE * file)
 {
   int result;
-  CHECK_INIT(ptr, file);
+  CHECK_INIT();
    _newlib_flockfile_start (file);
   result = putc ( ch, file);
   _newlib_flockfile_end (file);

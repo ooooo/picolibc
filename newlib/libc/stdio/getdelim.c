@@ -32,7 +32,6 @@ No supporting OS subroutines are directly required.
 
 #define _DEFAULT_SOURCE
 #define _DEFAULT_SOURCE
-#include <_ansi.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <errno.h>
@@ -72,7 +71,7 @@ __getdelim (char **bufptr,
       *n = DEFAULT_LINE_SIZE;
     }
 
-  CHECK_INIT (_REENT, fp);
+  CHECK_INIT();
 
   _newlib_flockfile_start (fp);
 

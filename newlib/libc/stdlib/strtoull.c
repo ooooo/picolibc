@@ -113,12 +113,11 @@ PORTABILITY
  */
 
 #define _GNU_SOURCE
-#include <_ansi.h>
 #include <limits.h>
 #include <ctype.h>
 #include <errno.h>
 #include <stdlib.h>
-#include "../locale/setlocale.h"
+#include "local.h"
 
 /*
  * Convert a string to an unsigned long long integer.
@@ -175,7 +174,7 @@ _strtoull_l (const char *__restrict nptr,
 	}
 	if (any < 0) {
 		acc = ULLONG_MAX;
-		_REENT_ERRNO(rptr) = ERANGE;
+		errno = ERANGE;
 	} else if (neg)
 		acc = -acc;
 	if (endptr != 0)
@@ -183,7 +182,6 @@ _strtoull_l (const char *__restrict nptr,
 	return (acc);
 }
 
-#ifndef _REENT_ONLY
 
 unsigned long long
 strtoull_l (const char *__restrict s, char **__restrict ptr, int base,
@@ -200,4 +198,3 @@ strtoull (const char *__restrict s,
 	return _strtoull_l (s, ptr, base, __get_current_locale ());
 }
 
-#endif

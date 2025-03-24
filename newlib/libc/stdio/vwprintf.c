@@ -17,7 +17,6 @@
 /* doc in vfwprintf.c */
 
 #define _DEFAULT_SOURCE
-#include <_ansi.h>
 #include <stdio.h>
 #include <wchar.h>
 #include <stdarg.h>
@@ -27,6 +26,5 @@ int
 vwprintf (const wchar_t *__restrict fmt,
        va_list ap)
 {
-  _REENT_SMALL_CHECK_INIT (reent);
-  return vfwprintf ( _stdout_r (reent), fmt, ap);
+  return vfwprintf ( stdout, fmt, ap);
 }

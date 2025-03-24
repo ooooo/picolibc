@@ -33,20 +33,19 @@
 # OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 nano_malloc_srcs_stdlib = [
-  'nano-malloc-calloc.c',
-  'nano-malloc-cfree.c',
-  'nano-malloc-free.c',
-  'nano-malloc-getpagesize.c',
-  'nano-malloc-mallinfo.c',
-  'nano-malloc-malloc.c',
-  'nano-malloc-malloc_stats.c',
-  'nano-malloc-malloc_usable_size.c',
-  'nano-malloc-mallopt.c',
-  'nano-malloc-memalign.c',
-  'nano-malloc-posix_memalign.c',
-  'nano-malloc-pvalloc.c',
-  'nano-malloc-realloc.c',
-  'nano-malloc-valloc.c',
+  'nano-calloc.c',
+  'nano-free.c',
+  'nano-getpagesize.c',
+  'nano-mallinfo.c',
+  'nano-malloc.c',
+  'nano-malloc-stats.c',
+  'nano-malloc-usable-size.c',
+  'nano-mallopt.c',
+  'nano-memalign.c',
+  'nano-posix-memalign.c',
+  'nano-pvalloc.c',
+  'nano-realloc.c',
+  'nano-valloc.c',
 ]
 
 std_malloc_srcs_stdlib = [
@@ -59,6 +58,7 @@ std_malloc_srcs_stdlib = [
   'malloc-malloc_usable_size.c',
   'malloc-mallopt.c',
   'malloc-memalign.c',
+  'malloc-posix_memalign.c',
   'malloc-pvalloc.c',
   'malloc-realloc.c',
   'malloc-valloc.c',
@@ -69,6 +69,7 @@ pico_exit_srcs_stdlib = [
   'pico-exit.c',
   'pico-onexit.c',
   'pico-cxa-atexit.c',
+  'pico-exitprocs.c',
 ]
 
 newlib_exit_srcs_stdlib = [
@@ -129,7 +130,6 @@ srcs_stdlib = [
     'mbtowc.c',
     'mbtowc_r.c',
     'mrand48.c',
-    'mstats.c',
     'nrand48.c',
     'putenv.c',
     'rand48.c',
@@ -161,6 +161,8 @@ srcs_stdlib = [
     'wctob.c',
     'wctomb.c',
     'wctomb_r.c',
+    'set_constraint_handler_s.c',
+    'ignore_handler_s.c',
 ]
 
 srcs_stdlib_stdio = [
@@ -169,6 +171,7 @@ srcs_stdlib_stdio = [
     'efgcvt.c',
     'gdtoa-gethex.c',
     'gdtoa-hexnan.c',
+    'ldtoa.c',
     'mprec.c',
     'strtod.c',
     'strtodg.c',
@@ -178,22 +181,13 @@ srcs_stdlib_stdio = [
     'strtoull.c',
     'strtoimax.c',
     'strtoumax.c',
-]
-
-lsrcs_stdlib = [
-  'strtold.c',
-  'strtorx.c',
-  'wcstold.c'
+    'strtold.c',
+    'strtorx.c',
+    'wcstold.c',
 ]
 
 if not tinystdio
   srcs_stdlib += srcs_stdlib_stdio
-  if have_long_double
-    srcs_stdlib += lsrcs_stdlib
-    if io_long_double
-      srcs_stdlib += 'ldtoa.c'
-    endif
-  endif
 endif
 
 # Work around compiler optimizing calls involving malloc/free
@@ -258,8 +252,11 @@ endforeach
 
 src_stdlib = files(srcs_stdlib_use)
 
-foreach target : targets
-  value = get_variable('target_' + target)
+foreach params : targets
+  target = params['name']
+  target_dir = params['dir']
+  target_c_args = params['c_args']
+  target_lib_prefix = params['lib_prefix']
 
   # Have to build a sub-library to get custom c_args for malloc
   set_variable('lib_stdlib' + target,
@@ -267,6 +264,6 @@ foreach target : targets
 			      srcs_stdlib_malloc_use,
 			      pic: false,
 			      include_directories: inc,
-			      c_args: value[1] + c_args + c_args_malloc))
+			      c_args: target_c_args + c_args + c_args_malloc))
 
 endforeach

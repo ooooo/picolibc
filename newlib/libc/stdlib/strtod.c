@@ -131,13 +131,12 @@ THIS SOFTWARE.
 /* Original file gdtoa-strtod.c Modified 06-21-2006 by Jeff Johnston to work within newlib.  */
 
 #define _GNU_SOURCE
-#include <_ansi.h>
 #include <errno.h>
 #include <stdlib.h>
 #include <string.h>
 #include "mprec.h"
 #include "gdtoa.h"
-#include "../locale/setlocale.h"
+#include "local.h"
 
 /* #ifndef NO_FENV_H */
 /* #include <fenv.h> */
@@ -263,8 +262,8 @@ strtod_l (const char *__restrict s00, char **__restrict se,
 #ifdef Honor_FLT_ROUNDS
 	int rounding;
 #endif
-#ifdef __HAVE_LOCALE_INFO__
-	const char *decimal_point = __get_numeric_locale(loc)->decimal_point;
+#ifdef DECIMAL_POINT_L
+	const char *decimal_point = DECIMAL_POINT_L(loc);
 	const int dec_len = strlen (decimal_point);
 #else
 	const char *decimal_point = ".";
@@ -279,11 +278,11 @@ strtod_l (const char *__restrict s00, char **__restrict se,
 	for(s = s00;;s++) switch(*s) {
 		case '-':
 			sign = 1;
-                        __PICOLIBC_FALLTHROUGH;
+                        __fallthrough;
 		case '+':
 			if (*++s)
 				goto break2;
-                        __PICOLIBC_FALLTHROUGH;
+                        __fallthrough;
 		case 0:
 			goto ret0;
 		case '\t':
@@ -324,7 +323,7 @@ strtod_l (const char *__restrict s00, char **__restrict se,
 			  case STRTOG_NoNumber:
 				s = s00;
 				sign = 0;
-				__PICOLIBC_FALLTHROUGH;
+				__fallthrough;
 			  case STRTOG_Zero:
 				break;
 			  default:
@@ -400,7 +399,7 @@ strtod_l (const char *__restrict s00, char **__restrict se,
 		switch(c = *++s) {
 			case '-':
 				esign = 1;
-                                __PICOLIBC_FALLTHROUGH;
+                                __fallthrough;
 			case '+':
 				c = *++s;
 			}
@@ -598,7 +597,7 @@ strtod_l (const char *__restrict s00, char **__restrict se,
 			if (e1 > DBL_MAX_10_EXP) {
  ovfl:
 #ifndef NO_ERRNO
-				_REENT_ERRNO(ptr) = ERANGE;
+				errno = ERANGE;
 #endif
 				/* Can't trust HUGE_VAL */
 #ifdef IEEE_Arith
@@ -705,7 +704,7 @@ strtod_l (const char *__restrict s00, char **__restrict se,
  undfl:
 					dval(rv) = 0.;
 #ifndef NO_ERRNO
-					_REENT_ERRNO(ptr) = ERANGE;
+					errno = ERANGE;
 #endif
 					if (bd0)
 						goto retfree;
@@ -1252,7 +1251,7 @@ strtod_l (const char *__restrict s00, char **__restrict se,
 #ifndef NO_ERRNO
 		/* try to avoid the bug of testing an 8087 register value */
 		if ((dword0(rv) & Exp_mask) == 0)
-			_REENT_ERRNO(ptr) = ERANGE;
+			errno = ERANGE;
 #endif
 		}
 #endif /* Avoid_Underflow */
@@ -1282,11 +1281,13 @@ strtod (const char *__restrict s00,
   return strtod_l (s00, se, __get_current_locale ());
 }
 
-#if defined(_HAVE_LONG_DOUBLE) && defined(_LDBL_EQ_DBL)
-#ifdef _HAVE_ALIAS_ATTRIBUTE
+#if defined(__HAVE_LONG_DOUBLE) && defined(_LDBL_EQ_DBL)
+#ifdef __strong_reference
+#ifdef __GNUCLIKE_PRAGMA_DIAGNOSTIC
 #pragma GCC diagnostic ignored "-Wpragmas"
 #pragma GCC diagnostic ignored "-Wunknown-warning-option"
 #pragma GCC diagnostic ignored "-Wattribute-alias="
+#endif
 extern long double strtold(const char *, char **) __attribute__ ((__alias__ ("strtod")));
 #else
 long double
@@ -1328,7 +1329,7 @@ strtof_l (const char *__restrict s00, char **__restrict se, locale_t loc)
   float retval = (float) val;
 #ifndef NO_ERRNO
   if ((isinf (retval) && !isinf (val)) || (isdenormf(retval) && !isdenorm(val)))
-    _REENT_ERRNO(_REENT) = ERANGE;
+    errno = ERANGE;
 #endif
   return retval;
 }
@@ -1343,7 +1344,7 @@ strtof (const char *__restrict s00,
   float retval = (float) val;
 #ifndef NO_ERRNO
   if ((isinf (retval) && !isinf (val)) || (isdenormf(retval) && !isdenorm(val)))
-    _REENT_ERRNO(_REENT) = ERANGE;
+    errno = ERANGE;
 #endif
   return retval;
 }

@@ -93,7 +93,6 @@ Supporting OS subroutines required: <<close>>, <<fstat>>, <<isatty>>,
 */
 
 #define _DEFAULT_SOURCE
-#include <_ansi.h>
 #include <stdio.h>
 #include <stdarg.h>
 #include "local.h"
@@ -102,6 +101,5 @@ int
 viprintf (const char *fmt,
        va_list ap)
 {
-  _REENT_SMALL_CHECK_INIT (reent);
-  return vfiprintf ( _stdout_r (reent), fmt, ap);
+  return vfiprintf ( stdout, fmt, ap);
 }

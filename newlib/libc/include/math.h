@@ -31,13 +31,11 @@ LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
 OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 SUCH DAMAGE.
  */
-#ifndef  _MATH_H_
 
+#ifndef  _MATH_H_
 #define  _MATH_H_
 
 #include <sys/cdefs.h>
-#include <ieeefp.h>
-#include "_ansi.h"
 
 _BEGIN_STD_C
 
@@ -90,7 +88,7 @@ _BEGIN_STD_C
   #define HUGE_VALF (1.0e999999999F)
  #endif
 
- #if !defined(HUGE_VALL)  &&  defined(_HAVE_LONG_DOUBLE)
+ #if !defined(HUGE_VALL)  &&  defined(__HAVE_LONG_DOUBLE)
   #define HUGE_VALL (1.0e999999999L)
  #endif
 
@@ -140,9 +138,11 @@ extern double fmod (double, double);
 #if __MISC_VISIBLE
 extern int finite (double);
 extern int finitef (float);
+extern int isinf (double);
 extern int isinff (float);
+extern int isnan (double);
 extern int isnanf (float);
-#if defined(_HAVE_LONG_DOUBLE)
+#if defined(__HAVE_LONG_DOUBLE)
 extern int finitel (long double);
 extern int isinfl (long double);
 extern int isnanl (long double);
@@ -223,6 +223,18 @@ extern int isnan (double);
 # define FP_ILOGBNAN __INT_MAX__
 #endif
 
+#if !defined(FP_FAST_FMA) && (__HAVE_FAST_FMA || defined(__FP_FAST_FMA))
+#define FP_FAST_FMA
+#endif
+
+#if !defined(FP_FAST_FMAF) && (__HAVE_FAST_FMAF || defined(__FP_FAST_FMAF))
+#define FP_FAST_FMAF
+#endif
+
+#if !defined(FP_FAST_FMAL) && (__HAVE_FAST_FMAL || defined(__FP_FAST_FMAL))
+#define FP_FAST_FMAL
+#endif
+
 #ifndef MATH_ERRNO
 # define MATH_ERRNO 1
 #endif
@@ -230,7 +242,7 @@ extern int isnan (double);
 # define MATH_ERREXCEPT 2
 #endif
 #ifndef math_errhandling
-# ifdef _IEEE_LIBM
+# ifdef __IEEE_LIBM
 #  define _MATH_ERRHANDLING_ERRNO 0
 # else
 #  define _MATH_ERRHANDLING_ERRNO MATH_ERRNO
@@ -263,7 +275,7 @@ extern int __signbitf (float);
 extern int __signbitd (double);
 extern int __finite (double);
 extern int __finitef (float);
-#if defined(_HAVE_LONG_DOUBLE)
+#if defined(__HAVE_LONG_DOUBLE)
 extern int __fpclassifyl (long double);
 extern int __isinfl (long double);
 extern int __isnanl (long double);
@@ -296,27 +308,24 @@ extern int __signbitl (long double);
   #define issubnormal(__x) (__builtin_issubnormal (__x))
   #define iszero(__x) (__builtin_iszero(__x))
 #else
-#if defined(_HAVE_LONG_DOUBLE)
-  #define fpclassify(__x)                                                 \
-      ((sizeof(__x) == sizeof(float)  ? __fpclassifyf(__x)                \
-        : (sizeof(__x) == sizeof(double)) ?  __fpclassifyd((double) (__x)) \
-        : __fpclassifyl((long double) (__x))))
-  #define isfinite(__x)                                           \
-      ((sizeof(__x) == sizeof(float)) ? __finitef(__x)            \
-       : (sizeof(__x) == sizeof(double)) ? __finite((double) (__x))     \
-       : __finitel((long double) (__x)))
-#else
-  #define fpclassify(__x) \
-	  ((sizeof(__x) == sizeof(float))  ? __fpclassifyf(__x) : \
-	  __fpclassifyd((double) (__x)))
-  #define isfinite(__x) ((sizeof(__x) == sizeof(float)) ?         \
-                         __finitef(__x) : __finite((double) __x))
-#endif
-  #define isinf(__x) (fpclassify(__x) == FP_INFINITE)
-  #define isnan(__x) (fpclassify(__x) == FP_NAN)
-  #define isnormal(__x) (fpclassify(__x) == FP_NORMAL)
-  #define issubnormal(__x) (fpclassify(__x) == FP_SUBNORMAL)
-  #define iszero(__x) (fpclassify(__x) == FP_ZERO)
+# if defined(__HAVE_LONG_DOUBLE)
+#  define __float_generic3(__f, __d, __l, __x)                           \
+    ((sizeof(__x) == sizeof(float))  ? __f(__x)                    \
+     : (sizeof(__x) == sizeof(double)) ?  __d((double) (__x))       \
+     : __l((long double) (__x)))
+# else
+#  define __float_generic3(__f, __d, __l, __x)           \
+    ((sizeof(__x) == sizeof(float))  ? __f(__x)    \
+     : __d((double) (__x)))
+# endif
+# define __float_generic(__p, __x) __float_generic3(__p ## f, __p ## d, __p ## l, __x)
+# define fpclassify(__x) __float_generic(__fpclassify, __x)
+# define isfinite(__x) __float_generic3(__finitef, __finite, __finitel, __x)
+# define isinf(__x) __float_generic(__isinf, __x)
+# define isnan(__x) __float_generic(__isnan, __x)
+# define isnormal(__x) (fpclassify(__x) == FP_NORMAL)
+# define issubnormal(__x) (fpclassify(__x) == FP_SUBNORMAL)
+# define iszero(__x) (fpclassify(__x) == FP_ZERO)
 #endif
 
 #define isfinitef(x) isfinite((float) (x))
@@ -325,11 +334,19 @@ extern int __signbitl (long double);
 #define isnormalf(x) isnormal((float) (x))
 #define iszerof(x) iszero((float) (x))
 
+#ifdef __HAVE_LONG_DOUBLE
+#define isfinitel(x) isfinite((long double) (x))
+#define isinfl(x) isinf((long double) (x))
+#define isnanl(x) isnan((long double) (x))
+#define isnormall(x) isnormal((long double) (x))
+#define iszerol(x) iszero((long double) (x))
+#endif
+
 #ifndef iseqsig
 int __iseqsigd(double x, double y);
 int __iseqsigf(float x, float y);
 
-#ifdef _HAVE_LONG_DOUBLE
+#ifdef __HAVE_LONG_DOUBLE
 int __iseqsigl(long double x, long double y);
 #define iseqsig(__x,__y)                                                \
     ((sizeof(__x) == sizeof(float) && sizeof(__y) == sizeof(float)) ?   \
@@ -352,7 +369,7 @@ int __iseqsigl(long double x, long double y);
 int __issignalingf(float f);
 int __issignaling(double d);
 
-#if defined(_HAVE_LONG_DOUBLE)
+#if defined(__HAVE_LONG_DOUBLE)
 int __issignalingl(long double d);
 #define issignaling(__x)						\
 	((sizeof(__x) == sizeof(float))  ? __issignalingf(__x) :	\
@@ -366,11 +383,11 @@ int __issignalingl(long double d);
 	((sizeof(__x) == sizeof(float))  ? __issignalingf(__x) :	\
 	 __issignaling ((double) (__x)))
 #endif /* _DOUBLE_IS_32BITS */
-#endif /* _HAVE_LONG_DOUBLE */
+#endif /* __HAVE_LONG_DOUBLE */
 #endif
 
 #if __GNUC_PREREQ (4, 0)
-  #if defined(_HAVE_LONG_DOUBLE)
+  #if defined(__HAVE_LONG_DOUBLE)
     #define signbit(__x)							\
 	    ((sizeof(__x) == sizeof(float))  ? __builtin_signbitf(__x) :	\
 	     ((sizeof(__x) == sizeof(double)) ? __builtin_signbit ((double)(__x)) : \
@@ -381,7 +398,7 @@ int __issignalingl(long double d);
 	     __builtin_signbit ((double) (__x)))
   #endif
 #else
-  #if defined(_HAVE_LONG_DOUBLE)
+  #if defined(__HAVE_LONG_DOUBLE)
     #define signbit(__x)							\
 	    ((sizeof(__x) == sizeof(float))  ? __signbitf(__x) :	\
 	     ((sizeof(__x) == sizeof(double)) ? __signbit ((double)(__x)) : \
@@ -543,7 +560,7 @@ extern float erfcf (float);
 extern float log2f (float);
 extern float hypotf (float, float);
 
-#ifdef _HAVE_LONG_DOUBLE
+#ifdef __HAVE_LONG_DOUBLE
 
 /* These functions are always available for long double */
 
@@ -575,7 +592,7 @@ extern long double significandl(long double);
 extern long double fabsl (long double);
 extern long double copysignl (long double, long double);
 
-#ifdef _HAVE_LONG_DOUBLE_MATH
+#ifdef __HAVE_LONG_DOUBLE_MATH
 extern long double atanl (long double);
 extern long double cosl (long double);
 extern long double sinl (long double);
@@ -622,16 +639,16 @@ extern long double ynl(int, long double);
 
 extern long double getpayloadl(const long double *x);
 
-#endif /* _HAVE_LONG_DOUBLE_MATH */
+#endif /* __HAVE_LONG_DOUBLE_MATH */
 
-#endif /* _HAVE_LONG_DOUBLE */
+#endif /* __HAVE_LONG_DOUBLE */
 
 #endif /* __ISO_C_VISIBLE >= 1999 */
 
 #if __MISC_VISIBLE
 extern double drem (double, double);
 extern float dremf (float, float);
-#ifdef _HAVE_LONG_DOUBLE_MATH
+#ifdef __HAVE_LONG_DOUBLE_MATH
 extern long double dreml (long double, long double);
 extern long double lgammal_r (long double, int *);
 #endif
@@ -661,14 +678,14 @@ extern float jnf (int, float);
 #if __GNU_VISIBLE
 extern void sincos (double, double *, double *);
 extern void sincosf (float, float *, float *);
-#ifdef _HAVE_LONG_DOUBLE_MATH
+#ifdef __HAVE_LONG_DOUBLE_MATH
 extern void sincosl (long double, long double *, long double *);
 #endif
 extern double exp10 (double);
 extern double pow10 (double);
 extern float exp10f (float);
 extern float pow10f (float);
-#ifdef _HAVE_LONG_DOUBLE_MATH
+#ifdef __HAVE_LONG_DOUBLE_MATH
 extern long double exp10l (long double);
 extern long double pow10l (long double);
 #endif
@@ -729,10 +746,10 @@ extern int signgam;
 
 #include <machine/math.h>
 
-_END_STD_C
-
 #ifdef __FAST_MATH__
 #include <machine/fastmath.h>
 #endif
+
+_END_STD_C
 
 #endif /* _MATH_H_ */

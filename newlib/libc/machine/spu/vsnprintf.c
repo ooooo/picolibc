@@ -29,7 +29,6 @@ POSSIBILITY OF SUCH DAMAGE.
  */
 #include <picolibc.h>
 
-#include <_ansi.h>
 #include <stdio.h>
 
 #include "c99ppe.h"
@@ -51,7 +50,6 @@ typedef struct
   va_list ap;
 } c99_vsnprintf_t;
 
-#ifndef _REENT_ONLY
 
 int
 vsnprintf (char *__restrict str,
@@ -71,4 +69,3 @@ vsnprintf (char *__restrict str,
   return __send_to_ppe(SPE_C99_SIGNALCODE, SPE_C99_VSNPRINTF, &args);
 }
 
-#endif /* ! _REENT_ONLY */

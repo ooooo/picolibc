@@ -29,11 +29,9 @@
 #include <errno.h>
 #include "check.h"
 
-#if defined(_ICONV_FROM_ENCODING_UTF_8) || \
-    defined(_ICONV_FROM_ENCODING_ISO_8859_5) || \
-    defined(_ICONV_FROM_ENCODING_KOI8_R)
+#ifdef __MB_CAPABLE
 
-#ifdef _ICONV_FROM_ENCODING_ISO_8859_5
+#ifdef __MB_EXTENDED_CHARSETS_ISO
 static const char iso_8859_5[] =
 {
     0xbe,0xdf,0xd5,0xe0,0xd0,0xe2,0xde,0xe0,0xeb,0x20,
@@ -134,10 +132,10 @@ static const char iso_8859_5[] =
     0x20,0x20,0x20,0x20,0x20,0x20,0x20,0x20,0x20,0x2d,
     0x2d,0x2d,0x3e,0x0a
 };
-#endif /* #ifdef _ICONV_FROM_ENCODING_ISO_8859_5 */
+#endif
 
-#ifdef _ICONV_FROM_ENCODING_KOI8_R
-static const char koi8_r[] = 
+#ifdef __MB_EXTENDED_CHARSETS_WINDOWS
+static const char koi8_r[] =
 {
     0xef,0xd0,0xc5,0xd2,0xc1,0xd4,0xcf,0xd2,0xd9,0x20,
     0xd7,0x20,0xcf,0xc4,0xce,0xcf,0xca,0x20,0xd3,0xd4,
@@ -237,9 +235,9 @@ static const char koi8_r[] =
     0x20,0x20,0x20,0x20,0x20,0x20,0x20,0x20,0x20,0x2d,
     0x2d,0x2d,0x3e,0x0a
 };
-#endif /* #ifdef _ICONV_FROM_ENCODING_KOI8_R */
+#endif
 
-#ifdef _ICONV_FROM_ENCODING_UTF_8
+#ifdef __MB_CAPABLE
 static const char utf8[] =
 {
     0xd0,0x9e,0xd0,0xbf,0xd0,0xb5,0xd1,0x80,0xd0,0xb0,
@@ -360,15 +358,15 @@ struct iconv_data
 
 #define CONVERSIONS 3
 
-static const struct iconv_data data[] = 
+static const struct iconv_data data[] =
 {
-#ifdef _ICONV_FROM_ENCODING_ISO_8859_5
+#ifdef __MB_EXTENDED_CHARSETS_ISO
     {sizeof(iso_8859_5), "ISO-8859-5", (char *)iso_8859_5},
 #endif
-#ifdef _ICONV_FROM_ENCODING_KOI8_R
+#ifdef __MB_EXTENDED_CHARSETS_WINDOWS
     {sizeof(koi8_r), "KOI8-R", (char *)koi8_r},
 #endif
-#ifdef _ICONV_FROM_ENCODING_UTF_8
+#ifdef __MB_CAPABLE
     {sizeof(utf8), "UTF-8", (char *)utf8},
 #endif
     {0, NULL, NULL}
@@ -381,10 +379,6 @@ iconv_t descs[CONVERSIONS*CONVERSIONS];
 
 #define ERROR 0
 
-#ifndef TEST_NLSPATH
-#define TEST_NLSPATH "./"
-#endif
-
 int main(void)
 {
     int i, j, d = 0;
@@ -393,10 +387,8 @@ int main(void)
     char *outbuf, *inbuf;
     int conversions = sizeof(data)/sizeof(struct iconv_data) - 1;
 
-    CHECK(setenv("NLSPATH", TEST_NLSPATH, 0) != -1);
-
     puts("RU iconv test");
-    
+
     for (i = 0; i < conversions; i++)
     {
         for (j = 0; j < conversions; j++)
@@ -410,7 +402,7 @@ int main(void)
 	    }
 	}
     }
-    
+
     d = 0;
     for (i = 0; i < conversions; i++)
     {
@@ -426,9 +418,9 @@ int main(void)
                 perror("Can't reset shift state");
                 CHECK(ERROR);
             }
-	    
-            n = iconv(descs[d++], (const char **)&(inbuf), &inbytes, 
-	                          (char **)&outbuf, &outbytes);
+
+            n = iconv(descs[d++], &inbuf, &inbytes,
+	                          &outbuf, &outbytes);
             if (n == (size_t)-1)
             {
 	        printf("Conversion from %s to %s FAILED - iconv() "
@@ -436,7 +428,7 @@ int main(void)
 		perror("");
                 CHECK(ERROR);
             }
-	    
+
 	    if (data[j].len != OUTBUF_LEN - outbytes)
 	    {
                 printf("Conversion from %s to %s FAILED",
@@ -445,7 +437,7 @@ int main(void)
 		       OUTBUF_LEN - (long) outbytes, (unsigned long) data[j].len);
                 CHECK(ERROR);
 	    }
-	    
+
 	    for (k = 0; k < data[j].len; k++)
 	    {
 	        if (ob[k] != data[j].data[k])
@@ -455,18 +447,18 @@ int main(void)
    	            printf("Error: byte %d is wrong\n", k);
 		    printf("outbuf value: %#x, inbuf value %#x, "
 		           "right value: %#x\n",
-          	           (int)ob[k], (int)(data[i].data[k]), 
+          	           (int)ob[k], (int)(data[i].data[k]),
 		           (int)(data[j].data[k]));
                     CHECK(ERROR);
 		}
 	    }
 
 	    printf("iconv from %s to %s was successfully done\n",
-                   data[i].name, data[j].name); 
-            
+                   data[i].name, data[j].name);
+
 	}
     }
-    
+
     d = 0;
     for (i = 0; i < conversions; i++)
         for (j = 0; j < conversions; j++)
@@ -475,10 +467,10 @@ int main(void)
     exit(0);
 }
 
-#else /* #if defined(_ICONV_FROM_ENCODING_UTF_8) || ... */
+#else /* #ifdef __MB_CAPABLE */
 int main(void)
 {
     puts("None of ISO-8859-5, KOI8-R and UTF-8 converters linked, SKIP test");
     exit(0);
 }
-#endif /* #if defined(_ICONV_FROM_ENCODING_UTF_8) || ... */
+#endif /* #ifdef __MB_CAPABLE */

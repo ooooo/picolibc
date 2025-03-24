@@ -45,7 +45,8 @@
 	.type	start, @function
 _start:
 	.code16
-	cs lgdtl gdt_desc - _start + 0x10
+	cs
+	lgdtl gdt_desc - _start + 0x10
 	mov $1, %eax
 	mov %eax, %cr0
 	ljmpl $0x10,$_start32
@@ -87,14 +88,14 @@ _start32:
 	call	memset
 	addl	$12, %esp
 
-#ifdef PICOLIBC_TLS
+#ifdef __THREAD_LOCAL_STORAGE
 	// call to _set_tls(__tls_base)
 	pushl	$__tls_base
 	call	_set_tls
 	addl	$4, %esp
 #endif
 	
-#if defined(_HAVE_INITFINI_ARRAY) && CONSTRUCTORS
+#if defined(__INIT_FINI_ARRAY) && CONSTRUCTORS
 	call	__libc_init_array
 #endif
 

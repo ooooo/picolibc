@@ -66,7 +66,6 @@ static char sccsid[] = "%W% (Berkeley) %G%";
 #endif /* LIBC_SCCS and not lint */
 
 #define _DEFAULT_SOURCE
-#include <_ansi.h>
 #include <stdio.h>
 #include "local.h"
 
@@ -78,7 +77,7 @@ int
 ferror (FILE * fp)
 {
   int result;
-  CHECK_INIT(_REENT, fp);
+  CHECK_INIT();
   _newlib_flockfile_start (fp);
   result = __sferror (fp);
   _newlib_flockfile_end (fp);

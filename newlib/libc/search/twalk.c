@@ -39,10 +39,8 @@ SUCH DAMAGE.
  * Totally public domain.
  */
 
-#include <sys/cdefs.h>
 #if 0
 #if defined(LIBC_SCCS) && !defined(lint)
-__RCSID("$NetBSD: twalk.c,v 1.1 1999/02/22 10:33:16 christos Exp $");
 #endif /* LIBC_SCCS and not lint */
 #endif
 
@@ -56,7 +54,11 @@ static void trecurse(const node_t *,
 
 /* Walk the nodes of a tree */
 static void
-trecurse(const node_t *root, void (*action)(const void *, VISIT, int), int level)
+trecurse(
+	const node_t *root,	/* Root of the tree to be walked */
+	void (*action)(const void *, VISIT, int),
+	int level
+)
 {
 
 	if (root->llink == NULL && root->rlink == NULL)

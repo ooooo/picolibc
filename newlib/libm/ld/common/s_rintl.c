@@ -24,7 +24,6 @@
  * SUCH DAMAGE.
  */
 
-//__FBSDID("$FreeBSD: src/lib/msun/src/s_rintl.c,v 1.5 2008/02/22 11:59:05 bde Exp $");
 
 
 #if LDBL_MAX_EXP != 0x4000
@@ -98,12 +97,12 @@ nearbyintl(long double x)
 
         if (isnan(x))
             return x + x;
-#if defined(FE_INEXACT) && !defined(PICOLIBC_DOUBLE_NOEXECPT)
+#if defined(FE_INEXACT) && !defined(PICOLIBC_DOUBLE_NOEXCEPT)
 	fenv_t env;
 	fegetenv(&env);
 #endif
 	ret = rintl(x);
-#if defined(FE_INEXACT) && !defined(PICOLIBC_DOUBLE_NOEXECPT)
+#if defined(FE_INEXACT) && !defined(PICOLIBC_DOUBLE_NOEXCEPT)
 	fesetenv(&env);
 #endif
 	return (ret);

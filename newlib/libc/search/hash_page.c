@@ -30,14 +30,6 @@
  * SUCH DAMAGE.
  */
 
-#define _DEFAULT_SOURCE
-#define __LINUX_ERRNO_EXTENSIONS__
-#include <sys/param.h>
-#if defined(LIBC_SCCS) && !defined(lint)
-static char sccsid[] = "@(#)hash_page.c	8.7 (Berkeley) 8/16/94";
-#endif /* LIBC_SCCS and not lint */
-#include <sys/cdefs.h>
-
 /*
  * PACKAGE:  hashing
  *
@@ -54,8 +46,8 @@ static char sccsid[] = "@(#)hash_page.c	8.7 (Berkeley) 8/16/94";
  *	open_temp
  */
 
+#define _DEFAULT_SOURCE
 #include <sys/types.h>
-
 #include <errno.h>
 #include <fcntl.h>
 #include <signal.h>
@@ -63,9 +55,10 @@ static char sccsid[] = "@(#)hash_page.c	8.7 (Berkeley) 8/16/94";
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#ifdef DEBUG
-#include <assert.h>
+#if !defined(DEBUG) && !defined(NDEBUG)
+#define NDEBUG
 #endif
+#include <assert.h>
 
 #include "db_local.h"
 #include "hash.h"
@@ -93,7 +86,11 @@ static int	 ugly_split
  * stuff on.
  */
 static void
-putpair(char *p, const DBT *key, const DBT *val)
+putpair(
+	char *p,
+	const DBT *key,
+	const DBT *val
+)
 {
 	__uint16_t *bp, n, off;
 
@@ -123,9 +120,11 @@ putpair(char *p, const DBT *key, const DBT *val)
  *	-1 error
  */
 extern int
-__delpair(HTAB *hashp,
-          BUFHEAD *bufp,
-          int ndx)
+__delpair(
+	HTAB *hashp,
+	BUFHEAD *bufp,
+	int ndx
+)
 {
 	__uint16_t *bp, newoff;
 	int n;
@@ -175,9 +174,11 @@ __delpair(HTAB *hashp,
  *	-1 ==> Error
  */
 extern int
-__split_page(HTAB *hashp,
-             __uint32_t obucket,
-             __uint32_t nbucket)
+__split_page(
+	HTAB *hashp,
+	__uint32_t obucket,
+	__uint32_t nbucket
+)
 {
 	BUFHEAD *new_bufp, *old_bufp;
 	__uint16_t *ino;
@@ -271,12 +272,14 @@ __split_page(HTAB *hashp,
  *	-1 ==> failure
  */
 static int
-ugly_split(HTAB *hashp,
-           __uint32_t obucket,	/* Same as __split_page. */
-           BUFHEAD *old_bufp,
-           BUFHEAD *new_bufp,
-           int copyto,  	/* First byte on page which contains key/data values. */
-           int moved)		/* Number of pairs moved to new page. */
+ugly_split(
+	HTAB *hashp,
+	__uint32_t obucket,	/* Same as __split_page. */
+	BUFHEAD *old_bufp,
+	BUFHEAD *new_bufp,
+	int copyto,	/* First byte on page which contains key/data values. */
+	int moved		/* Number of pairs moved to new page. */
+)
 {
 	BUFHEAD *bufp;		/* Buffer header for ino */
 	__uint16_t *ino;		/* Page keys come off of */
@@ -392,10 +395,12 @@ ugly_split(HTAB *hashp,
  *	1 ==> failure
  */
 extern int
-__addel(HTAB *hashp,
+__addel(
+	HTAB *hashp,
 	BUFHEAD *bufp,
 	const DBT *key,
-        const DBT *val)
+	const DBT *val
+)
 {
 	__uint16_t *bp, *sop;
 	int do_expand;
@@ -459,7 +464,10 @@ __addel(HTAB *hashp,
  *	NULL on error
  */
 extern BUFHEAD *
-__add_ovflpage(HTAB *hashp, BUFHEAD *bufp)
+__add_ovflpage(
+	HTAB *hashp,
+	BUFHEAD *bufp
+)
 {
 	__uint16_t *sp;
 	__uint16_t ndx, ovfl_num;
@@ -510,12 +518,14 @@ __add_ovflpage(HTAB *hashp, BUFHEAD *bufp)
  *	-1 indicates FAILURE
  */
 extern int
-__get_page(HTAB *hashp,
-           char *p,
-           __uint32_t bucket,
-           int is_bucket,
-           int is_disk,
-           int is_bitmap)
+__get_page(
+	HTAB *hashp,
+	char *p,
+	__uint32_t bucket,
+	int is_bucket,
+	int is_disk,
+	int is_bitmap
+)
 {
 	int fd, page, size;
 	int rsize;
@@ -571,11 +581,13 @@ __get_page(HTAB *hashp,
  *	-1 ==>failure
  */
 extern int
-__put_page(HTAB *hashp,
-           char *p,
-           __uint32_t bucket,
-           int is_bucket,
-           int is_bitmap)
+__put_page(
+	HTAB *hashp,
+	char *p,
+	__uint32_t bucket,
+	int is_bucket,
+	int is_bitmap
+)
 {
 	int fd, page, size;
 	int wsize;
@@ -620,10 +632,12 @@ __put_page(HTAB *hashp,
  * once they are read in.
  */
 extern int
-__ibitmap(HTAB *hashp,
-          int pnum,
-          int nbits,
-          int ndx)
+__ibitmap(
+	HTAB *hashp,
+	int pnum,
+	int nbits,
+	int ndx
+)
 {
 	__uint32_t *ip;
 	int clearbytes, clearints;
@@ -644,7 +658,9 @@ __ibitmap(HTAB *hashp,
 }
 
 static __uint32_t
-first_free(__uint32_t map)
+first_free(
+	__uint32_t map
+)
 {
 	__uint32_t i, mask;
 
@@ -658,7 +674,9 @@ first_free(__uint32_t map)
 }
 
 static __uint16_t
-overflow_page(HTAB *hashp)
+overflow_page(
+	HTAB *hashp
+)
 {
 	__uint32_t *freep = NULL;
 	int max_free, offset, splitnum;
@@ -805,7 +823,10 @@ found:
  * Mark this overflow page as free.
  */
 extern void
-__free_ovflpage(HTAB *hashp, BUFHEAD *obufp)
+__free_ovflpage(
+	HTAB *hashp,
+	BUFHEAD *obufp
+)
 {
 	__uint16_t addr;
 	__uint32_t *freep;
@@ -826,15 +847,12 @@ __free_ovflpage(HTAB *hashp, BUFHEAD *obufp)
 
 	if (!(freep = hashp->mapp[free_page]))
 		freep = fetch_bitmap(hashp, free_page);
-#ifdef DEBUG
 	/*
 	 * This had better never happen.  It means we tried to read a bitmap
 	 * that has already had overflow pages allocated off it, and we
 	 * failed to read it from the file.
 	 */
-	if (!freep)
-		assert(0);
-#endif
+        assert(freep);
 	CLRBIT(freep, free_bit);
 #ifdef DEBUG2
 	(void)fprintf(stderr, "FREE_OVFLPAGE: ADDR: %d BIT: %d PAGE %d\n",
@@ -849,7 +867,9 @@ __free_ovflpage(HTAB *hashp, BUFHEAD *obufp)
  *	-1 failure
  */
 static int
-open_temp(HTAB *hashp)
+open_temp(
+	HTAB *hashp
+)
 {
 	sigset_t set, oset;
 	char namestr[sizeof("_hashXXXXXX")];
@@ -860,7 +880,7 @@ open_temp(HTAB *hashp)
         strcpy(namestr, "_hashXXXXXX");
 	if ((hashp->fp = mkstemp(namestr)) != -1) {
 		(void)unlink(namestr);
-#ifdef _HAVE_FCNTL
+#ifdef __HAVE_FCNTL
 		(void)fcntl(hashp->fp, F_SETFD, 1);
 #endif
 	}
@@ -873,9 +893,11 @@ open_temp(HTAB *hashp)
  * an overflow pair, so we need to shift things.
  */
 static void
-squeeze_key(__uint16_t *sp,
-            const DBT *key,
-            const DBT *val)
+squeeze_key(
+	__uint16_t *sp,
+	const DBT *key,
+	const DBT *val
+)
 {
 	char *p;
 	__uint16_t free_space, n, off, pageno;
@@ -900,7 +922,10 @@ squeeze_key(__uint16_t *sp,
 }
 
 static __uint32_t *
-fetch_bitmap(HTAB *hashp, int ndx)
+fetch_bitmap(
+	HTAB *hashp,
+	int ndx
+)
 {
 	if (ndx >= hashp->nmaps)
 		return (NULL);

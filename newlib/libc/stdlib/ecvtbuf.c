@@ -55,7 +55,6 @@ Supporting OS subroutines required: <<close>>, <<fstat>>, <<isatty>>,
 */
 
 #define _GNU_SOURCE
-#include <_ansi.h>
 #include <stdlib.h>
 #include <string.h>
 #include "mprec.h"
@@ -157,10 +156,9 @@ print_e (
   *buf++ = 0;
 }
 
-#ifndef _REENT_ONLY
 
-static NEWLIB_THREAD_LOCAL int _cvtlen;
-static NEWLIB_THREAD_LOCAL char *_cvtbuf;
+static __THREAD_LOCAL int _cvtlen;
+static __THREAD_LOCAL char *_cvtbuf;
 
 static void
 _cvtcleanup(void)
@@ -290,7 +288,6 @@ ecvtbuf (double invalue,
   return save;
 }
 
-#endif
 
 char *
 _gcvt (

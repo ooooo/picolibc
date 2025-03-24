@@ -568,7 +568,6 @@ Supporting OS subroutines required: <<close>>, <<fstat>>, <<isatty>>,
 */
 
 #define _DEFAULT_SOURCE
-#include <_ansi.h>
 #include <stdio.h>
 #include <stdarg.h>
 #include <limits.h>
@@ -597,17 +596,5 @@ sprintf (
   return (ret);
 }
 
-#ifdef _NANO_FORMATTED_IO
-int
-siprintf (char *, const char *, ...)
-       _ATTRIBUTE ((__alias__("sprintf")));
-#endif
-
-#ifdef __LONG_DOUBLE_IEEE128__
-#if defined(_HAVE_ALIAS_ATTRIBUTE)
-#ifndef __clang__
-#pragma GCC diagnostic ignored "-Wmissing-attributes"
-#endif
-__strong_reference(sprintf, __sprintfieee128);
-#endif
-#endif
+__nano_reference(sprintf, siprintf);
+__ieee128_reference(sprintf, __sprintfieee128);

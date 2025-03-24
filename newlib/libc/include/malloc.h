@@ -36,18 +36,14 @@ SUCH DAMAGE.
 #ifndef _INCLUDE_MALLOC_H_
 #define _INCLUDE_MALLOC_H_
 
-#include <_ansi.h>
-
+#include <sys/cdefs.h>
 #define __need_size_t
 #include <stddef.h>
 
-#include <sys/cdefs.h>
 /* include any machine-specific extensions */
 #include <machine/malloc.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+_BEGIN_STD_C
 
 /* This version of struct mallinfo must match the one in
    libc/stdlib/mallocr.c.  */
@@ -67,13 +63,13 @@ struct mallinfo {
 
 /* The routines.  */
 
-void	free (void *) _NOTHROW;
-void	*malloc(size_t) __malloc_like __result_use_check __alloc_size(1) _NOTHROW;
-void	*calloc(size_t, size_t) __malloc_like __result_use_check
-    __alloc_size2(1, 2) _NOTHROW;
-void	*realloc(void *, size_t) __result_use_check __alloc_size(2) _NOTHROW;
+void	free (void *) __nothrow;
+void	*malloc(size_t) __malloc_like __warn_unused_result __alloc_size(1) __nothrow;
+void	*calloc(size_t, size_t) __malloc_like __warn_unused_result
+    __alloc_size2(1, 2) __nothrow;
+void	*realloc(void *, size_t) __warn_unused_result __alloc_size(2) __nothrow;
 void    *memalign (size_t __alignment, size_t __size)  __malloc_like
-    __result_use_check __alloc_size(2) _NOTHROW;
+    __warn_unused_result __alloc_size(2) __nothrow;
 
 struct mallinfo mallinfo (void);
 void malloc_stats (void);
@@ -86,10 +82,6 @@ void *pvalloc (size_t);
 int malloc_trim (size_t);
 void __malloc_lock(void);
 void __malloc_unlock(void);
-
-/* A compatibility routine for an earlier version of the allocator.  */
-
-void mstats (char *);
 
 /* SVID2/XPG mallopt options */
 
@@ -105,13 +97,9 @@ void mstats (char *);
 #define M_MMAP_THRESHOLD    -3 
 #define M_MMAP_MAX          -4
 
-#ifndef __CYGWIN__
 /* Some systems provide this, so do too for compatibility.  */
 void cfree (void *);
-#endif /* __CYGWIN__ */
 
-#ifdef __cplusplus
-}
-#endif
+_END_STD_C
 
 #endif /* _INCLUDE_MALLOC_H_ */

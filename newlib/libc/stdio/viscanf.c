@@ -77,7 +77,6 @@ Supporting OS subroutines required:
 */
 
 #define _DEFAULT_SOURCE
-#include <_ansi.h>
 #include <stdio.h>
 #include <stdarg.h>
 #include "local.h"
@@ -87,7 +86,6 @@ viscanf (
        const char *fmt,
        va_list ap)
 {
-  _REENT_SMALL_CHECK_INIT (ptr);
-  return _svfiscanf ( _stdin_r (ptr), fmt, ap);
+  return _svfiscanf ( stdin, fmt, ap);
 }
 

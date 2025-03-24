@@ -34,9 +34,6 @@
 #define	_DB_H_
 
 #include <sys/types.h>
-#include <sys/cdefs.h>
-#include <sys/config.h>
-
 #include <limits.h>
 
 #define	RET_ERROR	-1		/* Return values. */
@@ -201,7 +198,7 @@ typedef struct {
 	((char *)&(b))[1] = ((char *)&(a))[0];				\
 }
 
-__BEGIN_DECLS
+_BEGIN_STD_C
 DB *dbopen(const char *, int, int, DBTYPE, const void *);
 
 #ifdef __DBINTERFACE_PRIVATE
@@ -210,5 +207,5 @@ DB	*__hash_open(const char *, int, int, int, const HASHINFO *);
 DB	*__rec_open(const char *, int, int, const RECNOINFO *, int);
 void	 __dbpanic(DB *dbp);
 #endif
-__END_DECLS
+_END_STD_C
 #endif /* !_DB_H_ */

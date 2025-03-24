@@ -109,12 +109,11 @@ No supporting OS subroutines are required.
  */
 
 #define _GNU_SOURCE
-#include <_ansi.h>
 #include <limits.h>
 #include <ctype.h>
 #include <errno.h>
 #include <stdlib.h>
-#include "../locale/setlocale.h"
+#include "local.h"
 
 /*
  * Convert a string to a long integer.
@@ -201,7 +200,7 @@ _strtol_l (const char *__restrict nptr,
 	}
 	if (any < 0) {
 		acc = neg ? LONG_MIN : LONG_MAX;
-		_REENT_ERRNO(rptr) = ERANGE;
+		errno = ERANGE;
 	} else if (neg)
 		acc = -acc;
 	if (endptr != 0)
@@ -209,7 +208,6 @@ _strtol_l (const char *__restrict nptr,
 	return (acc);
 }
 
-#ifndef _REENT_ONLY
 
 long
 strtol_l (const char *__restrict s, char **__restrict ptr, int base,
@@ -226,4 +224,3 @@ strtol (const char *__restrict s,
 	return _strtol_l (s, ptr, base, __get_current_locale ());
 }
 
-#endif

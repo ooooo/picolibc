@@ -17,7 +17,6 @@
 /* No user fns here.  Pesch 15apr92. */
 
 #define _DEFAULT_SOURCE
-#include <_ansi.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/stat.h>
@@ -80,7 +79,7 @@ _swhatbuf (
 	size_t *bufsize,
 	int *couldbetty)
 {
-#ifdef _FSEEK_OPTIMIZATION
+#ifdef __FSEEK_OPTIMIZATION
   const int snpt = __SNPT;
 #else
   const int snpt = 0;

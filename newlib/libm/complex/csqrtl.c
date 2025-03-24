@@ -25,11 +25,12 @@
  */
 
 #define _GNU_SOURCE
-#include <sys/cdefs.h>
 #include <complex.h>
 #include <float.h>
 #include <math.h>
 #include <stdbool.h>
+
+#ifdef __HAVE_LONG_DOUBLE
 
 /*
  * gcc doesn't implement complex multiplication or division correctly,
@@ -106,3 +107,5 @@ csqrtl(long double complex z)
 	else
 		return (result);
 }
+
+#endif /* __HAVE_LONG_DOUBLE */

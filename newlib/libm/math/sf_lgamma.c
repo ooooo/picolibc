@@ -23,8 +23,8 @@ lgammaf(float x)
     return lgammaf_r(x, &__signgam);
 }
 
-#  ifdef _HAVE_ALIAS_ATTRIBUTE
-#ifdef __GNUC__
+#  ifdef __strong_reference
+#ifdef __GNUCLIKE_PRAGMA_DIAGNOSTIC
 #pragma GCC diagnostic ignored "-Wpragmas"
 #pragma GCC diagnostic ignored "-Wunknown-warning-option"
 #pragma GCC diagnostic ignored "-Wattribute-alias="

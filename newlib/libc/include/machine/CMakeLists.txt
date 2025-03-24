@@ -39,12 +39,12 @@ picolibc_headers(machine
   _endian.h
   endian.h
   fastmath.h
+  fenv.h
   fenv-softfloat.h
   ieeefp.h
   malloc.h
   math.h
   param.h
-  setjmp-dj.h
   setjmp.h
   stdlib.h
   termios.h

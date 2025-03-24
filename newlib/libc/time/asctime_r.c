@@ -18,12 +18,20 @@ WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
  * asctime_r.c
  */
 
+#define _DEFAULT_SOURCE
 #include <stdio.h>
 #include <time.h>
 #include <errno.h>
 
 #define oob(x,a) ((unsigned)(x) >= sizeof(a)/sizeof(a[0]))
 #define valid(x,a)   (oob(x,a) ? "???" : a[x])
+
+#ifdef __GNUC__
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpragmas"
+#pragma GCC diagnostic ignored "-Wunknown-warning-option"
+#pragma GCC diagnostic ignored "-Wunterminated-string-initialization"
+#endif
 
 char *
 asctime_r (const struct tm *__restrict tim_p,

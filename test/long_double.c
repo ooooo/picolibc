@@ -41,6 +41,19 @@
 #include <stdlib.h>
 #include <string.h>
 
+/*
+ * fall-through case statement annotations
+ */
+#if __cplusplus >= 201703L || __STDC_VERSION__ > 201710L
+/* Standard C++17/C23 attribute */
+#define __TEST_PICOLIBC_FALLTHROUGH [[fallthrough]]
+#elif __has_attribute(fallthrough)
+/* Non-standard but supported by at least gcc and clang */
+#define __TEST_PICOLIBC_FALLTHROUGH __attribute__((fallthrough))
+#else
+#define __TEST_PICOLIBC_FALLTHROUGH do { } while(0)
+#endif
+
 #ifdef _TEST_LONG_DOUBLE
 
 static long double max_error;
@@ -74,7 +87,7 @@ check_long_double(const char *name, int i, long double prec, long double expect,
     if (!within_error(expect, result, prec)) {
         long double diff = fabsl(expect - result);
 #ifdef __PICOLIBC__
-#ifdef _WANT_IO_LONG_DOUBLE
+#ifdef __IO_LONG_DOUBLE
         printf("%s test %d got %La expect %La diff %La\n", name, i, result, expect, diff);
 #else
         printf("%s test %d got %a expect %a diff %a\n", name, i, (double) result, (double) expect, (double) diff);
@@ -99,25 +112,35 @@ check_long_long(const char *name, int i, long long expect, long long result)
     return 0;
 }
 
-typedef const struct {
-    const char *name;
+/*
+ * Force the large table to be loaded into RAM as the PID area
+ * of read-only data is only 64kB
+ */
+#ifdef _RX_PID
+#define CONST volatile
+#else
+#define CONST const
+#endif
+
+typedef CONST struct {
+    CONST char *name;
     int (*test)(void);
 } long_double_test_t;
 
-typedef const struct {
+typedef CONST struct {
     int line;
     long double x;
     long double y;
 } long_double_test_f_f_t;
 
-typedef const struct {
+typedef CONST struct {
     int line;
     long double x0;
     long double x1;
     long double y;
 } long_double_test_f_ff_t;
 
-typedef const struct {
+typedef CONST struct {
     int line;
     long double x0;
     long double x1;
@@ -125,14 +148,14 @@ typedef const struct {
     long double y;
 } long_double_test_f_fff_t;
 
-typedef const struct {
+typedef CONST struct {
     int line;
     long double x0;
     int x1;
     long double y;
 } long_double_test_f_fi_t;
 
-typedef const struct {
+typedef CONST struct {
     int line;
     long double x;
     long long y;
@@ -160,6 +183,9 @@ typedef const struct {
 #elif LDBL_MANT_DIG == 53
 #define DEFAULT_PREC 0x1p-48L
 #define SQRTL_PREC 0x1.0p-52L
+#elif LDBL_MANT_DIG == 24
+#define DEFAULT_PREC 0x1p-21L
+#define SQRTL_PREC 0x1.0p-23L
 #else
 #error unsupported long double
 #endif
@@ -182,15 +208,15 @@ typedef const struct {
 
 #include "long_double_vec.h"
 
-#if !defined(__PICOLIBC__) || (defined(_WANT_IO_LONG_DOUBLE) && (defined(TINY_STDIO) || defined(FLOATING_POINT)))
+#if !defined(__PICOLIBC__) || (defined(__IO_LONG_DOUBLE) && (defined(__TINY_STDIO) || defined(__IO_FLOATING_POINT)))
 #define TEST_IO_LONG_DOUBLE
 #endif
 
-#if defined(__PICOLIBC__) && defined(__m68k__) && !defined(TINY_STDIO)
+#if defined(__PICOLIBC__) && defined(__m68k__) && !defined(__TINY_STDIO)
 #undef TEST_IO_LONG_DOUBLE
 #endif
 
-#if defined(__PICOLIBC__) && !defined(TINY_STDIO) && __LDBL_MANT_DIG__ != 64
+#if defined(__PICOLIBC__) && !defined(__TINY_STDIO) && __LDBL_MANT_DIG__ != 64
 #undef TEST_IO_LONG_DOUBLE
 #endif
 
@@ -267,7 +293,6 @@ naive_strtold(const char *buf)
                 }
                 return -(long double)INFINITY;
             }
-            /* FALLTHROUGH */
             if (base == 10.0L) {
                 if (state == LDOUBLE_INT || state == LDOUBLE_FRAC) {
                     state = LDOUBLE_EXP;
@@ -275,7 +300,7 @@ naive_strtold(const char *buf)
                 }
                 return -(long double)INFINITY;
             }
-            /* FALLTHROUGH */
+            __TEST_PICOLIBC_FALLTHROUGH;
         case 'A': case 'B': case 'C':
         case 'D': case 'F':
             if (state == LDOUBLE_INT || state == LDOUBLE_FRAC) {
@@ -291,7 +316,7 @@ naive_strtold(const char *buf)
                 }
                 return -(long double)INFINITY;
             }
-            /* FALLTHROUGH */
+            __TEST_PICOLIBC_FALLTHROUGH;
         case 'a': case 'b': case 'c':
         case 'd': case 'f':
             if (state == LDOUBLE_INT || state == LDOUBLE_FRAC) {
@@ -378,14 +403,16 @@ static const int test_exp[] = {
  * For 64-bit values, we may have exact conversions. Otherwise, allow
  * some error
  */
-#ifdef _IO_FLOAT_EXACT
+#ifdef __IO_FLOAT_EXACT
 # if __SIZEOF_LONG_DOUBLE__ == 8
 #  define MAX_DECIMAL_ERROR       0
 # else
 #  define MAX_DECIMAL_ERROR     1e-10L
 # endif
 #else
-# if __SIZEOF_LONG_DOUBLE__ == 8
+# if __SIZEOF_LONG_DOUBLE__ == 4
+#  define MAX_DECIMAL_ERROR       1e-2L
+# elif __SIZEOF_LONG_DOUBLE__ == 8
 #  define MAX_DECIMAL_ERROR       1e-5L
 # else
 #  define MAX_DECIMAL_ERROR       1e-10L
@@ -423,28 +450,51 @@ test_io(void)
                 if (isinf(v)) {
                     if (strcmp(buf, "inf") != 0) {
                         printf("test_io i %d val %La exp %d: is %s should be inf\n", i, vals[i], test_exp[e], buf);
+#ifdef __RX__
+                        printf("ignoring error on RX\n");
+#else
                         result++;
+#endif
                     }
                 } else if (isnan(v)) {
                     if (strcmp(buf, "nan") != 0) {
                         printf("test_io is %s should be nan\n", buf);
+#ifdef __RX__
+                        printf("ignoring error on RX\n");
+#else
                         result++;
+#endif
                     }
                 } else {
                     r = naive_strtold(buf);
                     if (!close(r, v, max_error_naive)) {
                         printf("test_io naive i %d val %La exp %d: \"%s\", is %La should be %La\n", i, vals[i], test_exp[e], buf, r, v);
+#ifdef __RX__
+                        if (!isnormal(v) || !isnormal(r))
+                            printf("ignoring error on RX\n");
+                        else
+#endif
                         result++;
                     }
                 }
                 sscanf(buf, "%Lf", &r);
                 if (!close(r, v, max_error) && !(isnan(v) && isnan(r))) {
                     printf("test_io scanf i %d val %La exp %d: \"%s\", is %La should be %La\n", i, vals[i], test_exp[e], buf, r, v);
+#ifdef __RX__
+                    if (!isnormal(v) || !isnormal(r))
+                        printf("ignoring error on RX\n");
+                    else
+#endif
                     result++;
                 }
                 r = strtold(buf, &end);
                 if ((!close(r, v, max_error) && !(isnan(v) && isnan(r)))|| end != buf + strlen(buf)) {
                     printf("test_io strtold i %d val %La exp %d: \"%s\", is %La should be %La\n", i, vals[i], test_exp[e], buf, r, v);
+#ifdef __RX__
+                    if (!isnormal(v) || !isnormal(r))
+                        printf("ignoring error on RX\n");
+                    else
+#endif
                     result++;
                 }
             }
@@ -454,12 +504,85 @@ test_io(void)
 }
 #endif
 
+union double_long
+{
+  double d;
+  struct {
+      long upper;
+      unsigned long lower;
+    } l;
+};
+
+union float_long {
+  float f;
+  long l;
+};
+
+#ifdef __MSP430__
+#define STEP_I  8
+#define STEP_J  4
+#else
+#define STEP_I  1
+#define STEP_J  1
+#endif
+
+static int
+test_conv(void)
+{
+    union double_long dl;
+    long double ld;
+    double d;
+    union float_long fl;
+    float f;
+    long i;
+    unsigned long j, k;
+    int ret = 0;
+
+    for (i = 0; i <= 0xffff; i += STEP_I) {
+        for (j = 0; j < 0xf; j += STEP_J) {
+            for (k = 0; k < 0x2; k++) {
+                dl.l.upper = i << 16;
+                dl.l.lower = (j << 28) | k;
+                ld = (long double) dl.d;
+                if (fabsl(ld) > 1) {
+                    ld /= 2;
+                    ld *= 2;
+                } else {
+                    ld *= 2;
+                    ld /= 2;
+                }
+                d = (double) ld;
+                if (isnan(d) && isnan(dl.d))
+                    ;
+                else if (d != dl.d) {
+                    printf("convert double %a -> %La -> %a\n", dl.d, ld, d);
+                    ret++;
+                }
+
+                fl.l = (i << 16) | k;
+                ld = (long double) fl.f;
+                f = (float) ld;
+                if (isnan(f) && isnan(fl.f))
+                    ;
+                else if (f != fl.f) {
+                    printf("convert float %a -> %La -> %a\n", (double) fl.f, ld, (double) f);
+                    ret++;
+                }
+            }
+        }
+    }
+    return ret;
+}
+
 int main(void)
 {
     int result = 0;
     unsigned int i;
 
-    printf("LDBL_MANT_DIG %d\n", LDBL_MANT_DIG);
+#ifdef __mcffpu__
+    printf("coldfile: qemu doesn't emulate coldfire FPU correctly, skipping\n");
+    return 77;
+#endif
 #ifdef __m68k__
     volatile long double zero = 0.0L;
     volatile long double one = 1.0L;
@@ -470,9 +593,13 @@ int main(void)
     }
 #endif
 #ifdef TEST_IO_LONG_DOUBLE
+    printf("test_io\n");
     result += test_io();
 #endif
+    printf("test_conv\n");
+    result += test_conv();
     for (i = 0; i < sizeof(long_double_tests) / sizeof(long_double_tests[0]); i++) {
+        printf("test %s\n", long_double_tests[i].name);
         result += long_double_tests[i].test();
     }
     return result != 0;

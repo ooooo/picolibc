@@ -38,7 +38,7 @@
 #include <unistd.h>
 #include "opal.h"
 
-void  _ATTRIBUTE((__noreturn__))
+__noreturn void
 _exit(int code)
 {
         char buf[15];

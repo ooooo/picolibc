@@ -34,7 +34,6 @@
 #if defined(LIBC_SCCS) && !defined(lint)
 static char sccsid[] = "@(#)hash_func.c	8.2 (Berkeley) 2/21/94";
 #endif /* LIBC_SCCS and not lint */
-#include <sys/cdefs.h>
 #include <sys/types.h>
 
 #include "db_local.h"
@@ -134,25 +133,25 @@ hash3(keyarg, len)
 		case 0:
 			do {
 				HASHC;
-				__PICOLIBC_FALLTHROUGH;
+				__fallthrough;
 		case 7:
 				HASHC;
-				__PICOLIBC_FALLTHROUGH;
+				__fallthrough;
 		case 6:
 				HASHC;
-				__PICOLIBC_FALLTHROUGH;
+				__fallthrough;
 		case 5:
 				HASHC;
-				__PICOLIBC_FALLTHROUGH;
+				__fallthrough;
 		case 4:
 				HASHC;
-				__PICOLIBC_FALLTHROUGH;
+				__fallthrough;
 		case 3:
 				HASHC;
-				__PICOLIBC_FALLTHROUGH;
+				__fallthrough;
 		case 2:
 				HASHC;
-				__PICOLIBC_FALLTHROUGH;
+				__fallthrough;
 		case 1:
 				HASHC;
 			} while (--loop);
@@ -164,7 +163,10 @@ hash3(keyarg, len)
 
 /* Hash function from Chris Torek. */
 __uint32_t
-__default_hash(const void *keyarg, size_t len)
+__default_hash(
+	const void *keyarg,
+	size_t len
+)
 {
 	const u_char *key;
 	__uint32_t h;

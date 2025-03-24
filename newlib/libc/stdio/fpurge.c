@@ -50,7 +50,6 @@ No supporting OS subroutines are required.
 */
 
 #define _DEFAULT_SOURCE
-#include <_ansi.h>
 #include <stdio.h>
 #ifndef __rtems__
 #include <stdio_ext.h>
@@ -66,14 +65,14 @@ fpurge (
 {
   int t;
 
-  CHECK_INIT (ptr, fp);
+  CHECK_INIT();
 
   _newlib_flockfile_start (fp);
 
   t = fp->_flags;
   if (!t)
     {
-      _REENT_ERRNO(ptr) = EBADF;
+      errno = EBADF;
       _newlib_flockfile_exit (fp);
       return EOF;
     }

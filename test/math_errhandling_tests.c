@@ -489,7 +489,10 @@ static FLOAT_T makemathname(test_nexttoward_negmin_neg1)(void) { return makemath
 static FLOAT_T makemathname(test_nexttoward_qnan_1)(void) { return makemathname(nexttoward)(makemathname(qnanval), makelname(one)); }
 static FLOAT_T makemathname(test_nexttoward_snan_1)(void) { return makemathname(nexttoward)(makemathname(snanval), makelname(one)); }
 static FLOAT_T makemathname(test_nexttoward_1_qnan)(void) { return makemathname(nexttoward)(makemathname(one), makelname(qnanval)); }
+#if !defined(__clang__) || !defined(PICOLIBC_LONG_DOUBLE_NOEXCEPT)
+/* compiler.rt is inconsistent when dealing with long double snan on hardware with only non-ld floats */
 static FLOAT_T makemathname(test_nexttoward_1_snan)(void) { return makemathname(nexttoward)(makemathname(one), makelname(snanval)); }
+#endif
 static FLOAT_T makemathname(test_nexttoward_max_inf)(void) { return makemathname(nexttoward)(makemathname(max_val), makelname(infval)); }
 static FLOAT_T makemathname(test_nexttoward_negmax_neginf)(void) { return makemathname(nexttoward)(-makemathname(max_val), -makelname(infval)); }
 static FLOAT_T makemathname(test_nexttoward_min_0)(void) { return makemathname(nexttoward)(makemathname(min_val), makelname(zero)); }
@@ -1287,7 +1290,9 @@ const struct {
         TEST(nexttoward_qnan_1, (FLOAT_T)NAN, 0, 0),
         TEST(nexttoward_snan_1, (FLOAT_T)NAN, FE_INVALID, 0),
         TEST(nexttoward_1_qnan, (FLOAT_T)NAN, 0, 0),
+#if !defined(__clang__) || !defined(PICOLIBC_LONG_DOUBLE_NOEXCEPT)
         TEST(nexttoward_1_snan, (FLOAT_T)NAN, FE_INVALID, 0),
+#endif
         TEST(nexttoward_max_inf, (FLOAT_T)INFINITY, FE_OVERFLOW, ERANGE),
         TEST(nexttoward_negmax_neginf, -(FLOAT_T)INFINITY, FE_OVERFLOW, ERANGE),
         TEST(nexttoward_min_0, (FLOAT_T)0, FE_UNDERFLOW, ERANGE),
@@ -1506,7 +1511,7 @@ static const struct {
         { 0 },
 };
 
-#if defined(TINY_STDIO) || !defined(NO_FLOATING_POINT)
+#if defined(__TINY_STDIO) || !defined(__IO_NO_FLOATING_POINT)
 #define PRINT	if (!printed++) printf("    %-30.30s = %g errno %d (%s) except %s\n", \
                        makemathname(tests)[t].name, (double) v, err, strerror(err), e_to_str(except))
 #else
@@ -1522,8 +1527,13 @@ makemathname(is_equal)(FLOAT_T a, FLOAT_T b)
 {
     if (isinf(a) && isinf(b))
         return (a > 0) == (b > 0);
-    if (makemathname(isnan)(a) && makemathname(isnan)(b))
+    if (makemathname(isnan)(a) && makemathname(isnan)(b)) {
+#ifdef GDB_SIMULATOR
+        return 1;
+#else
         return issignaling(a) == issignaling(b);
+#endif
+    }
     return a == b;
 }
 
@@ -1647,6 +1657,12 @@ static bool makemathname(check_except)(void)
         return result;
 }
 
+#ifdef GDB_SIMULATOR
+#define record_exception_error() printf("\tignoring exception error on GDB simulator\n")
+#else
+#define record_exception_error() result++
+#endif
+
 static int
 makemathname(run_tests)(void) {
 	int result = 0;
@@ -1656,8 +1672,9 @@ makemathname(run_tests)(void) {
 	int t;
         int printed;
 
-        if (!makemathname(check_except)())
-                result++;
+        if (!makemathname(check_except)()) {
+                record_exception_error();
+        }
 
 	for (t = 0; makemathname(tests)[t].func; t++) {
                 printed = 0;
@@ -1690,13 +1707,19 @@ makemathname(run_tests)(void) {
                                 PRINT;
 				printf("\texceptions supported. %s returns %s instead of %s\n",
                                        makemathname(tests)[t].name, e_to_str(except), e_to_str(makemathname(tests)[t].except));
-				++result;
+                                record_exception_error();
 			}
 		} else {
 			if (except) {
-                                PRINT;
-				printf("\texceptions not supported. %s returns %s\n", makemathname(tests)[t].name, e_to_str(except));
-				++result;
+#if defined(__clang__) && MATH_ERREXCEPT && !EXCEPTION_TEST
+                                if (except == FE_INEXACT) {
+                                } else
+#endif
+                                {
+                                        PRINT;
+                                        printf("\texceptions not supported. %s returns %s\n", makemathname(tests)[t].name, e_to_str(except));
+                                        record_exception_error();
+                                }
 			}
 		}
 		if (math_errhandling & MATH_ERRNO) {
@@ -1744,13 +1767,13 @@ makemathname(run_tests)(void) {
                                 IPRINT;
 				printf("\texceptions supported. %s returns %s instead of %s\n",
                                        makemathname(itests)[t].name, e_to_str(except), e_to_str(makemathname(itests)[t].except));
-				++result;
+                                record_exception_error();
 			}
 		} else {
 			if (except) {
                                 IPRINT;
 				printf("\texceptions not supported. %s returns %s\n", makemathname(itests)[t].name, e_to_str(except));
-				++result;
+                                record_exception_error();
 			}
 		}
 		if (math_errhandling & MATH_ERRNO) {

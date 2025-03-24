@@ -28,8 +28,6 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-#include <sys/cdefs.h>
-__RCSID("$NetBSD: sprintf_chk.c,v 1.6 2009/02/05 05:40:36 lukem Exp $");
 
 /*LINTLIBRARY*/
 
@@ -64,11 +62,8 @@ __sprintf_chk(char * __restrict buf, int flags, size_t slen,
 }
 
 
-#ifdef __LONG_DOUBLE_IEEE128__
-#if defined(_HAVE_ALIAS_ATTRIBUTE)
-#ifndef __clang__
-#pragma GCC diagnostic ignored "-Wmissing-attributes"
-#endif
+#ifdef __LONG_DOUBLE_128__
+#ifdef __strong_reference
 __strong_reference(__sprintf_chk, __sprintf_chkieee128);
 #endif
 #endif

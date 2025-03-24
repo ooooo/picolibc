@@ -80,7 +80,6 @@ PORTABILITY
 */
 
 #define _GNU_SOURCE
-#include <_ansi.h>
 #include <errno.h>
 #include <limits.h>
 #include <stdio.h>
@@ -100,7 +99,7 @@ fputws (
 {
   size_t nbytes;
   char buf[BUFSIZ];
-#ifdef _FVWRITE_IN_STREAMIO
+#ifdef __FVWRITE_IN_STREAMIO
   struct __suio uio;
   struct __siov iov;
 

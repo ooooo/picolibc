@@ -18,7 +18,6 @@
 
 #define _GNU_SOURCE
 #include "test.h"
-//#include <_ansi.h>
 #include <stdlib.h>
 #include <errno.h>
 #include <string.h>
@@ -33,8 +32,8 @@ extern double_type doubles[];
 
 double_type *pd = doubles;
 
-#ifdef _IO_FLOAT_EXACT
-#if !defined(TINYSTDIO) && defined(__m68k__) && !defined(__mcf_fpu__) && !defined(__HAVE_M68881__)
+#ifdef __IO_FLOAT_EXACT
+#if !defined(__TINY_STDIO) && defined(__m68k__) && !defined(__mcf_fpu__) && !defined(__HAVE_M68881__)
 /* soft floats on m68k have rounding bugs for 64-bit values */
 #define CONVERT_BITS_DOUBLE	63
 #else
@@ -93,7 +92,7 @@ test_strtof (void)
   test_iok(tail - pd->string, pd->endscan & ENDSCAN_MASK);
 }
 
-#if defined(_TEST_LONG_DOUBLE) && (__LDBL_MANT_DIG__ == 64 || defined(TINY_STDIO))
+#if defined(_TEST_LONG_DOUBLE) && (__LDBL_MANT_DIG__ == 64 || defined(__TINY_STDIO))
 #define HAVE_STRTOLD
 #endif
 
@@ -234,7 +233,7 @@ check_null(char *s) {
   return s;
 }
 
-#if !defined(TINY_STDIO) && !defined(NO_NEWLIB)
+#if !defined(__TINY_STDIO) && !defined(NO_NEWLIB)
 #define ecvt_r(n, dig, dec, sign, buf, len) (ecvtbuf(n, dig, dec, sign, buf) ? 0 : -1)
 #define fcvt_r(n, dig, dec, sign, buf, len) (fcvtbuf(n, dig, dec, sign, buf) ? 0 : -1)
 #define ecvtf_r(n, dig, dec, sign, buf, len) (ecvtbuf(n, dig, dec, sign, buf) ? 0 : -1)
@@ -401,7 +400,7 @@ diterate (void (*func)(),
 static void
 deltest (void)
 {
-#if defined(TINY_STDIO) || !defined(NO_FLOATING_POINT)
+#if defined(__TINY_STDIO) || !defined(__IO_NO_FLOATING_POINT)
   newfunc("rounding");
   line(1);
   sprintf(buffer,"%.2f", 9.999);
@@ -435,7 +434,7 @@ deltest (void)
 static void
 test_sprint (void)
 {
-#if defined(TINY_STDIO) || !defined(NO_FLOATING_POINT)
+#if defined(__TINY_STDIO) || !defined(__IO_NO_FLOATING_POINT)
   extern sprint_double_type sprint_doubles[];
   sprint_double_type *s = sprint_doubles;
 #endif
@@ -446,7 +445,7 @@ test_sprint (void)
   newfunc( "sprintf");
 
 
-#if defined(TINY_STDIO) || !defined(NO_FLOATING_POINT)
+#if defined(__TINY_STDIO) || !defined(__IO_NO_FLOATING_POINT)
   while (s->line)
   {
     line( s->line);
@@ -534,7 +533,7 @@ static void
 test_scan (void)
 {
   int i,j;
-#if defined(TINY_STDIO) || !defined(NO_FLOATING_POINT)
+#if defined(__TINY_STDIO) || !defined(__IO_NO_FLOATING_POINT)
   extern sprint_double_type sprint_doubles[];
   sprint_double_type *s = sprint_doubles;
 #endif
@@ -543,7 +542,7 @@ test_scan (void)
 
   newfunc( "scanf");
 
-#if defined(TINY_STDIO) || !defined(NO_FLOATING_POINT)
+#if defined(__TINY_STDIO) || !defined(__IO_NO_FLOATING_POINT)
   /* Test scanf by converting all the numbers in the sprint vectors
      to and from their source and making sure nothing breaks */
 

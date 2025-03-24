@@ -38,7 +38,7 @@
 /* Correct special case results in non-nearest rounding modes.  */
 # define WANT_ROUNDING 1
 #endif
-#ifdef _IEEE_LIBM
+#ifdef __IEEE_LIBM
 # define WANT_ERRNO 0
 # define _LIB_VERSION _IEEE_
 #else
@@ -54,25 +54,8 @@
 #define _IEEE_  -1
 #define _POSIX_ 0
 
-#ifdef _HAVE_ATTRIBUTE_ALWAYS_INLINE
-#define ALWAYS_INLINE __inline__ __attribute__((__always_inline__))
-#else
-#define ALWAYS_INLINE __inline__
-#endif
-
-#ifdef _HAVE_ATTRIBUTE_NOINLINE
-# define NOINLINE __attribute__ ((__noinline__))
-#else
-# define NOINLINE
-#endif
-
-#ifdef _HAVE_BUILTIN_EXPECT
-# define likely(x) __builtin_expect (!!(x), 1)
+# define likely(x) __builtin_expect (x, 1)
 # define unlikely(x) __builtin_expect (x, 0)
-#else
-# define likely(x) (x)
-# define unlikely(x) (x)
-#endif
 
 /* Compiler can inline round as a single instruction.  */
 #ifndef HAVE_FAST_ROUND
@@ -100,7 +83,7 @@
 /* Round x to nearest int in all rounding modes, ties have to be rounded
    consistently with converttoint so the results match.  If the result
    would be outside of [-2^31, 2^31-1] then the semantics is unspecified.  */
-static ALWAYS_INLINE double_t
+static __always_inline double_t
 roundtoint (double_t x)
 {
   return round (x);
@@ -109,7 +92,7 @@ roundtoint (double_t x)
 /* Convert x to nearest int in all rounding modes, ties have to be rounded
    consistently with roundtoint.  If the result is not representible in an
    int32_t then the semantics is unspecified.  */
-static ALWAYS_INLINE int32_t
+static __always_inline int32_t
 converttoint (double_t x)
 {
 # if HAVE_FAST_LROUND
@@ -132,7 +115,7 @@ typedef long double __float64;
 # define _NEED_FLOAT64
 #endif
 
-static ALWAYS_INLINE uint32_t
+static __always_inline uint32_t
 asuint (float f)
 {
 #if defined(__riscv_flen) && __riscv_flen >= 32
@@ -149,7 +132,7 @@ asuint (float f)
 #endif
 }
 
-static ALWAYS_INLINE float
+static __always_inline float
 asfloat (uint32_t i)
 {
 #if defined(__riscv_flen) && __riscv_flen >= 32
@@ -166,37 +149,37 @@ asfloat (uint32_t i)
 #endif
 }
 
-static ALWAYS_INLINE int32_t
+static __always_inline int32_t
 _asint32 (float f)
 {
     return (int32_t) asuint(f);
 }
 
-static ALWAYS_INLINE int
+static __always_inline int
 _sign32(int32_t ix)
 {
     return ((uint32_t) ix) >> 31;
 }
 
-static ALWAYS_INLINE int
+static __always_inline int
 _exponent32(int32_t ix)
 {
     return (ix >> 23) & 0xff;
 }
 
-static ALWAYS_INLINE int32_t
+static __always_inline int32_t
 _significand32(int32_t ix)
 {
     return ix & 0x7fffff;
 }
 
-static ALWAYS_INLINE float
+static __always_inline float
 _asfloat(int32_t i)
 {
     return asfloat((uint32_t) i);
 }
 
-static ALWAYS_INLINE int
+static __always_inline int
 issignalingf_inline (float x)
 {
   uint32_t ix = asuint (x);
@@ -206,25 +189,25 @@ issignalingf_inline (float x)
 }
 
 #ifdef _NEED_FLOAT64
-static ALWAYS_INLINE int
+static __always_inline int
 _sign64(int64_t ix)
 {
     return ((uint64_t) ix) >> 63;
 }
 
-static ALWAYS_INLINE int
+static __always_inline int
 _exponent64(int64_t ix)
 {
     return (ix >> 52) & 0x7ff;
 }
 
-static ALWAYS_INLINE int64_t
+static __always_inline int64_t
 _significand64(int64_t ix)
 {
     return ix & 0xfffffffffffffLL;
 }
 
-static ALWAYS_INLINE uint64_t
+static __always_inline uint64_t
 asuint64 (__float64 f)
 {
 #if defined(__riscv_flen) && __riscv_flen >= 64 && __riscv_xlen >= 64
@@ -241,7 +224,7 @@ asuint64 (__float64 f)
 #endif
 }
 
-static ALWAYS_INLINE __float64
+static __always_inline __float64
 asfloat64 (uint64_t i)
 {
 #if defined(__riscv_flen) && __riscv_flen >= 64 && __riscv_xlen >= 64
@@ -258,19 +241,19 @@ asfloat64 (uint64_t i)
 #endif
 }
 
-static ALWAYS_INLINE int64_t
+static __always_inline int64_t
 _asint64(__float64 f)
 {
     return (int64_t) asuint64(f);
 }
 
-static ALWAYS_INLINE __float64
+static __always_inline __float64
 _asfloat64(int64_t i)
 {
     return asfloat64((uint64_t) i);
 }
 
-static ALWAYS_INLINE int
+static __always_inline int
 issignaling64_inline (__float64 x)
 {
   uint64_t ix = asuint64 (x);
@@ -325,43 +308,43 @@ issignaling64_inline (__float64 x)
 #define pick_long_double_except(expr,val)       (expr)
 #endif
 
-static ALWAYS_INLINE float
+static __always_inline float
 opt_barrier_float (float x)
 {
   FORCE_FLOAT y = x;
   return y;
 }
 
-static ALWAYS_INLINE double
+static __always_inline double
 opt_barrier_double (double x)
 {
   FORCE_DOUBLE y = x;
   return y;
 }
 
-static ALWAYS_INLINE void
+static __always_inline void
 force_eval_float (float x)
 {
   FORCE_FLOAT y = x;
   (void) y;
 }
 
-static ALWAYS_INLINE void
+static __always_inline void
 force_eval_double (double x)
 {
   FORCE_DOUBLE y = x;
   (void) y;
 }
 
-#ifdef _HAVE_LONG_DOUBLE
-static ALWAYS_INLINE long double
+#ifdef __HAVE_LONG_DOUBLE
+static __always_inline long double
 opt_barrier_long_double (long double x)
 {
   FORCE_LONG_DOUBLE y = x;
   return y;
 }
 
-static ALWAYS_INLINE void
+static __always_inline void
 force_eval_long_double (long double x)
 {
     FORCE_LONG_DOUBLE y = x;
@@ -459,7 +442,7 @@ force_eval_long_double (long double x)
  * There is limited support for long double greater than 64 bits
  */
 
-#ifdef __GNUC__
+#ifdef __GNUCLIKE_PRAGMA_DIAGNOSTIC
 #pragma GCC diagnostic ignored "-Wpragmas"
 #pragma GCC diagnostic ignored "-Wunknown-warning-option"
 #pragma GCC diagnostic ignored "-Wattribute-alias="
@@ -467,25 +450,25 @@ force_eval_long_double (long double x)
 #endif
 
 #ifdef _DOUBLE_IS_32BITS
-# ifdef _HAVE_ALIAS_ATTRIBUTE
-#  define _MATH_ALIAS_d_to_f(name) extern double _D_NAME(name)(void) __attribute__((__alias__(_FLOAT_ALIAS(name))));
-#  define _MATH_ALIAS_d_d_to_f(name) extern double _D_NAME(name)(double x) __attribute__((__alias__(_FLOAT_ALIAS(name))));
-#  define _MATH_ALIAS_d_D_to_f(name) extern double _D_NAME(name)(const double *x) __attribute__((__alias__(_FLOAT_ALIAS(name))));
-#  define _MATH_ALIAS_d_s_to_f(name) extern double _D_NAME(name)(const char *x) __attribute__((__alias__(_FLOAT_ALIAS(name))));
-#  define _MATH_ALIAS_d_dd_to_f(name) extern double _D_NAME(name)(double x, double y) __attribute__((__alias__(_FLOAT_ALIAS(name))));
-#  define _MATH_ALIAS_d_dl_to_f(name) extern double _D_NAME(name)(double x, long double y) __attribute__((__alias__(_FLOAT_ALIAS(name))));
-#  define _MATH_ALIAS_d_dD_to_f(name) extern double _D_NAME(name)(double x, double *y) __attribute__((__alias__(_FLOAT_ALIAS(name))));
-#  define _MATH_ALIAS_d_ddd_to_f(name) extern double _D_NAME(name)(double x, double y, double z) __attribute__((__alias__(_FLOAT_ALIAS(name))));
-#  define _MATH_ALIAS_d_dI_to_f(name) extern double _D_NAME(name)(double x, int *y) __attribute__((__alias__(_FLOAT_ALIAS(name))));
-#  define _MATH_ALIAS_d_ddI_to_f(name) extern double _D_NAME(name)(double x, double y, int *z) __attribute__((__alias__(_FLOAT_ALIAS(name))));
-#  define _MATH_ALIAS_d_id_to_f(name) extern double _D_NAME(name)(int n, double x) __attribute__((__alias__(_FLOAT_ALIAS(name))));
-#  define _MATH_ALIAS_d_di_to_f(name) extern double _D_NAME(name)(double x, int n) __attribute__((__alias__(_FLOAT_ALIAS(name))));
-#  define _MATH_ALIAS_d_dj_to_f(name) extern double _D_NAME(name)(double x, long n) __attribute__((__alias__(_FLOAT_ALIAS(name))));
-#  define _MATH_ALIAS_i_d_to_f(name) extern int _D_NAME(name)(double x) __attribute__((__alias__(_FLOAT_ALIAS(name))));
-#  define _MATH_ALIAS_j_d_to_f(name) extern long _D_NAME(name)(double x) __attribute__((__alias__(_FLOAT_ALIAS(name))));
-#  define _MATH_ALIAS_k_d_to_f(name) extern long long _D_NAME(name)(double x) __attribute__((__alias__(_FLOAT_ALIAS(name))));
-#  define _MATH_ALIAS_i_dd_to_f(name) extern int _D_NAME(name)(double x, double y) __attribute__((__alias__(_FLOAT_ALIAS(name))));
-#  define _MATH_ALIAS_v_dDD_to_f(name) extern void _D_NAME(name)(double x, double *y, double *z) __attribute__((__alias__(_FLOAT_ALIAS(name))));
+# ifdef __strong_reference
+#  define _MATH_ALIAS_d_to_f(name) __strong_reference_dup(_FLOAT_NAME(name), _D_NAME(name));
+#  define _MATH_ALIAS_d_d_to_f(name) _MATH_ALIAS_d_to_f(name)
+#  define _MATH_ALIAS_d_D_to_f(name) _MATH_ALIAS_d_to_f(name)
+#  define _MATH_ALIAS_d_s_to_f(name) _MATH_ALIAS_d_to_f(name)
+#  define _MATH_ALIAS_d_dd_to_f(name) _MATH_ALIAS_d_to_f(name)
+#  define _MATH_ALIAS_d_dl_to_f(name) _MATH_ALIAS_d_to_f(name)
+#  define _MATH_ALIAS_d_dD_to_f(name) _MATH_ALIAS_d_to_f(name)
+#  define _MATH_ALIAS_d_ddd_to_f(name) _MATH_ALIAS_d_to_f(name)
+#  define _MATH_ALIAS_d_dI_to_f(name) _MATH_ALIAS_d_to_f(name)
+#  define _MATH_ALIAS_d_ddI_to_f(name) _MATH_ALIAS_d_to_f(name)
+#  define _MATH_ALIAS_d_id_to_f(name) _MATH_ALIAS_d_to_f(name)
+#  define _MATH_ALIAS_d_di_to_f(name) _MATH_ALIAS_d_to_f(name)
+#  define _MATH_ALIAS_d_dj_to_f(name) _MATH_ALIAS_d_to_f(name)
+#  define _MATH_ALIAS_i_d_to_f(name) _MATH_ALIAS_d_to_f(name)
+#  define _MATH_ALIAS_j_d_to_f(name) _MATH_ALIAS_d_to_f(name)
+#  define _MATH_ALIAS_k_d_to_f(name) _MATH_ALIAS_d_to_f(name)
+#  define _MATH_ALIAS_i_dd_to_f(name) _MATH_ALIAS_d_to_f(name)
+#  define _MATH_ALIAS_v_dDD_to_f(name) _MATH_ALIAS_d_to_f(name)
 # else
 #  define _MATH_ALIAS_d_to_f(name) double _D_NAME(name)(void) { return (double) __FLOAT_NAME(name)(); }
 #  define _MATH_ALIAS_d_d_to_f(name) double _D_NAME(name)(double x) { return (double) __FLOAT_NAME(name)((float) x); }
@@ -535,24 +518,24 @@ force_eval_long_double (long double x)
 
 #ifdef _LDBL_EQ_DBL
 # ifdef _DOUBLE_IS_32BITS
-#  ifdef _HAVE_ALIAS_ATTRIBUTE
-#   define _MATH_ALIAS_l_to_f(name) extern long double _LD_NAME(name)(void) __attribute__((__alias__(_FLOAT_ALIAS(name))));
-#   define _MATH_ALIAS_l_l_to_f(name) extern long double _LD_NAME(name)(long double x) __attribute__((__alias__(_FLOAT_ALIAS(name))));
-#   define _MATH_ALIAS_l_L_to_f(name) extern long double _LD_NAME(name)(const long double *x) __attribute__((__alias__(_FLOAT_ALIAS(name))));
-#   define _MATH_ALIAS_l_s_to_f(name) extern long double _LD_NAME(name)(const char *x) __attribute__((__alias__(_FLOAT_ALIAS(name))));
-#   define _MATH_ALIAS_l_ll_to_f(name) extern long double _LD_NAME(name)(long double x, long double y) __attribute__((__alias__(_FLOAT_ALIAS(name))));
-#   define _MATH_ALIAS_l_lL_to_f(name) extern long double _LD_NAME(name)(long double x, long double *y) __attribute__((__alias__(_FLOAT_ALIAS(name))));
-#   define _MATH_ALIAS_l_lll_to_f(name) extern long double _LD_NAME(name)(long double x, long double y, long double z) __attribute__((__alias__(_FLOAT_ALIAS(name))));
-#   define _MATH_ALIAS_l_lI_to_f(name) extern long double _LD_NAME(name)(long double x, int *y) __attribute__((__alias__(_FLOAT_ALIAS(name))));
-#   define _MATH_ALIAS_l_llI_to_f(name) extern long double _LD_NAME(name)(long double x, long double y, int *z) __attribute__((__alias__(_FLOAT_ALIAS(name))));
-#   define _MATH_ALIAS_l_il_to_f(name) extern long double _LD_NAME(name)(int n, long double x) __attribute__((__alias__(_FLOAT_ALIAS(name))));
-#   define _MATH_ALIAS_l_li_to_f(name) extern long double _LD_NAME(name)(long double x, int n) __attribute__((__alias__(_FLOAT_ALIAS(name))));
-#   define _MATH_ALIAS_l_lj_to_f(name) extern long double _LD_NAME(name)(long double x, long n) __attribute__((__alias__(_FLOAT_ALIAS(name))));
-#   define _MATH_ALIAS_i_l_to_f(name) extern int _LD_NAME(name)(long double x) __attribute__((__alias__(_FLOAT_ALIAS(name))));
-#   define _MATH_ALIAS_j_l_to_f(name) extern long _LD_NAME(name)(long double x) __attribute__((__alias__(_FLOAT_ALIAS(name))));
-#   define _MATH_ALIAS_k_l_to_f(name) extern long long _LD_NAME(name)(long double x) __attribute__((__alias__(_FLOAT_ALIAS(name))));
-#   define _MATH_ALIAS_i_ll_to_f(name) extern int _LD_NAME(name)(long double x, long double y) __attribute__((__alias__(_FLOAT_ALIAS(name))));
-#   define _MATH_ALIAS_v_lLL_to_f(name) extern void _LD_NAME(name)(long double x, long double *y, long double *z) __attribute__((__alias__(_FLOAT_ALIAS(name))));
+#  ifdef __strong_reference
+#   define _MATH_ALIAS_l_to_f(name) __strong_reference_dup(_FLOAT_NAME(name), _LD_NAME(name));
+#   define _MATH_ALIAS_l_l_to_f(name) _MATH_ALIAS_l_to_f(name)
+#   define _MATH_ALIAS_l_L_to_f(name) _MATH_ALIAS_l_to_f(name)
+#   define _MATH_ALIAS_l_s_to_f(name) _MATH_ALIAS_l_to_f(name)
+#   define _MATH_ALIAS_l_ll_to_f(name) _MATH_ALIAS_l_to_f(name)
+#   define _MATH_ALIAS_l_lL_to_f(name) _MATH_ALIAS_l_to_f(name)
+#   define _MATH_ALIAS_l_lll_to_f(name) _MATH_ALIAS_l_to_f(name)
+#   define _MATH_ALIAS_l_lI_to_f(name) _MATH_ALIAS_l_to_f(name)
+#   define _MATH_ALIAS_l_llI_to_f(name) _MATH_ALIAS_l_to_f(name)
+#   define _MATH_ALIAS_l_il_to_f(name) _MATH_ALIAS_l_to_f(name)
+#   define _MATH_ALIAS_l_li_to_f(name) _MATH_ALIAS_l_to_f(name)
+#   define _MATH_ALIAS_l_lj_to_f(name) _MATH_ALIAS_l_to_f(name)
+#   define _MATH_ALIAS_i_l_to_f(name) _MATH_ALIAS_l_to_f(name)
+#   define _MATH_ALIAS_j_l_to_f(name) _MATH_ALIAS_l_to_f(name)
+#   define _MATH_ALIAS_k_l_to_f(name) _MATH_ALIAS_l_to_f(name)
+#   define _MATH_ALIAS_i_ll_to_f(name) _MATH_ALIAS_l_to_f(name)
+#   define _MATH_ALIAS_v_lLL_to_f(name) _MATH_ALIAS_l_to_f(name)
 #  else
 #   define _MATH_ALIAS_l_to_f(name) long double _LD_NAME(name)(void) { return (long double) _FLOAT_NAME(name)(); }
 #   define _MATH_ALIAS_l_l_to_f(name) long double _LD_NAME(name)(long double x) { return (long double) _FLOAT_NAME(name)((float) x); }
@@ -606,24 +589,24 @@ force_eval_long_double (long double x)
 #  define _MATH_ALIAS_k_l_to_f(name)
 #  define _MATH_ALIAS_i_ll_to_f(name)
 #  define _MATH_ALIAS_v_lLL_to_f(name)
-#  ifdef _HAVE_ALIAS_ATTRIBUTE
-#   define _MATH_ALIAS_l_to_d(name) extern long double _LD_NAME(name)(void) __attribute__((__alias__(_D_ALIAS(name))));
-#   define _MATH_ALIAS_l_l_to_d(name) extern long double _LD_NAME(name)(long double x) __attribute__((__alias__(_D_ALIAS(name))));
-#   define _MATH_ALIAS_l_L_to_d(name) extern long double _LD_NAME(name)(const long double *x) __attribute__((__alias__(_D_ALIAS(name))));
-#   define _MATH_ALIAS_l_s_to_d(name) extern long double _LD_NAME(name)(const char *x) __attribute__((__alias__(_D_ALIAS(name))));
-#   define _MATH_ALIAS_l_ll_to_d(name) extern long double _LD_NAME(name)(long double x, long double y) __attribute__((__alias__(_D_ALIAS(name))));
-#   define _MATH_ALIAS_l_lL_to_d(name) extern long double _LD_NAME(name)(long double x, long double *y) __attribute__((__alias__(_D_ALIAS(name))));
-#   define _MATH_ALIAS_l_lll_to_d(name) extern long double _LD_NAME(name)(long double x, long double y, long double z) __attribute__((__alias__(_D_ALIAS(name))));
-#   define _MATH_ALIAS_l_lI_to_d(name) extern long double _LD_NAME(name)(long double x, int *y) __attribute__((__alias__(_D_ALIAS(name))));
-#   define _MATH_ALIAS_l_llI_to_d(name) extern long double _LD_NAME(name)(long double x, long double y, int *z) __attribute__((__alias__(_D_ALIAS(name))));
-#   define _MATH_ALIAS_l_il_to_d(name) extern long double _LD_NAME(name)(int n, long double x) __attribute__((__alias__(_D_ALIAS(name))));
-#   define _MATH_ALIAS_l_li_to_d(name) extern long double _LD_NAME(name)(long double x, int n) __attribute__((__alias__(_D_ALIAS(name))));
-#   define _MATH_ALIAS_l_lj_to_d(name) extern long double _LD_NAME(name)(long double x, long n) __attribute__((__alias__(_D_ALIAS(name))));
-#   define _MATH_ALIAS_i_l_to_d(name) extern int _LD_NAME(name)(long double x) __attribute__((__alias__(_D_ALIAS(name))));
-#   define _MATH_ALIAS_j_l_to_d(name) extern long _LD_NAME(name)(long double x) __attribute__((__alias__(_D_ALIAS(name))));
-#   define _MATH_ALIAS_k_l_to_d(name) extern long long _LD_NAME(name)(long double x) __attribute__((__alias__(_D_ALIAS(name))));
-#   define _MATH_ALIAS_i_ll_to_d(name) extern int _LD_NAME(name)(long double x, long double y) __attribute__((__alias__(_D_ALIAS(name))));
-#   define _MATH_ALIAS_v_lLL_to_d(name) extern void _LD_NAME(name)(long double x, long double *y, long double *z) __attribute__((__alias__(_D_ALIAS(name))));
+#  ifdef __strong_reference
+#   define _MATH_ALIAS_l_to_d(name) __strong_reference_dup(_D_NAME(name), _LD_NAME(name));
+#   define _MATH_ALIAS_l_l_to_d(name) _MATH_ALIAS_l_to_d(name)
+#   define _MATH_ALIAS_l_L_to_d(name) _MATH_ALIAS_l_to_d(name)
+#   define _MATH_ALIAS_l_s_to_d(name) _MATH_ALIAS_l_to_d(name)
+#   define _MATH_ALIAS_l_ll_to_d(name) _MATH_ALIAS_l_to_d(name)
+#   define _MATH_ALIAS_l_lL_to_d(name) _MATH_ALIAS_l_to_d(name)
+#   define _MATH_ALIAS_l_lll_to_d(name) _MATH_ALIAS_l_to_d(name)
+#   define _MATH_ALIAS_l_lI_to_d(name) _MATH_ALIAS_l_to_d(name)
+#   define _MATH_ALIAS_l_llI_to_d(name) _MATH_ALIAS_l_to_d(name)
+#   define _MATH_ALIAS_l_il_to_d(name) _MATH_ALIAS_l_to_d(name)
+#   define _MATH_ALIAS_l_li_to_d(name) _MATH_ALIAS_l_to_d(name)
+#   define _MATH_ALIAS_l_lj_to_d(name) _MATH_ALIAS_l_to_d(name)
+#   define _MATH_ALIAS_i_l_to_d(name) _MATH_ALIAS_l_to_d(name)
+#   define _MATH_ALIAS_j_l_to_d(name) _MATH_ALIAS_l_to_d(name)
+#   define _MATH_ALIAS_k_l_to_d(name) _MATH_ALIAS_l_to_d(name)
+#   define _MATH_ALIAS_i_ll_to_d(name) _MATH_ALIAS_l_to_d(name)
+#   define _MATH_ALIAS_v_lLL_to_d(name) _MATH_ALIAS_l_to_d(name)
 #  else
 #   define _MATH_ALIAS_l_to_d(name) long double _LD_NAME(name)(void) { return (long double) _D_NAME(name)(); }
 #   define _MATH_ALIAS_l_l_to_d(name) long double _LD_NAME(name)(long double x) { return (long double) _D_NAME(name)((double) x); }
@@ -875,12 +858,12 @@ force_eval_long_double (long double x)
    cast should be enough, but compilers implement non-standard
    excess-precision handling, so when FLT_EVAL_METHOD != 0 then
    these functions may need to be customized.  */
-static ALWAYS_INLINE float
+static __always_inline float
 eval_as_float (float x)
 {
   return x;
 }
-static ALWAYS_INLINE double
+static __always_inline double
 eval_as_double (double x)
 {
   return x;
@@ -908,7 +891,7 @@ HIDDEN float __math_divzerof (uint32_t);
 /* Invalid input unless it is a quiet NaN.  */
 HIDDEN float __math_invalidf (float);
 /* set invalid exception */
-#if defined(FE_INVALID) && !defined(PICOLIBC_FLOAT_NOEXECPT)
+#if defined(FE_INVALID) && !defined(PICOLIBC_FLOAT_NOEXCEPT)
 HIDDEN void __math_set_invalidf(void);
 #else
 #define __math_set_invalidf()   ((void) 0)
@@ -932,7 +915,7 @@ check_uflowf (float x)
   return WANT_ERRNO ? __math_check_uflowf (x) : x;
 }
 
-#if defined(FE_INEXACT) && !defined(PICOLIBC_FLOAT_NOEXECPT)
+#if defined(FE_INEXACT) && !defined(PICOLIBC_FLOAT_NOEXCEPT)
 float __math_inexactf(float val);
 void __math_set_inexactf(void);
 #else
@@ -969,7 +952,7 @@ HIDDEN __float64 __math_divzero (uint32_t);
 /* Invalid input unless it is a quiet NaN.  */
 HIDDEN __float64 __math_invalid (__float64);
 /* set invalid exception */
-#if defined(FE_INVALID) && !defined(PICOLIBC_DOUBLE_NOEXECPT)
+#if defined(FE_INVALID) && !defined(PICOLIBC_DOUBLE_NOEXCEPT)
 HIDDEN void __math_set_invalid(void);
 #else
 #define __math_set_invalid()    ((void) 0)
@@ -994,7 +977,7 @@ check_uflow (__float64 x)
 }
 
 /* Set inexact exception */
-#if defined(FE_INEXACT) && !defined(PICOLIBC_FLOAT64_NOEXECPT)
+#if defined(FE_INEXACT) && !defined(PICOLIBC_FLOAT64_NOEXCEPT)
 __float64 __math_inexact64(__float64 x);
 void __math_set_inexact64(void);
 #else
@@ -1017,7 +1000,7 @@ __float64 __math_denorm (__float64 x);
 
 #endif /* _NEED_FLOAT64 */
 
-#ifdef _HAVE_LONG_DOUBLE
+#ifdef __HAVE_LONG_DOUBLE
 HIDDEN long double __math_oflowl (uint32_t);
 /* The result underflows to 0 in nearest rounding mode.  */
 HIDDEN long double __math_uflowl (uint32_t);
@@ -1028,7 +1011,7 @@ HIDDEN long double __math_divzerol (uint32_t);
 /* Invalid input unless it is a quiet NaN.  */
 HIDDEN long double __math_invalidl (long double);
 /* set invalid exception */
-#if defined(FE_INVALID) && !defined(PICOLIBC_LONG_DOUBLE_NOEXECPT)
+#if defined(FE_INVALID) && !defined(PICOLIBC_LONG_DOUBLE_NOEXCEPT)
 HIDDEN void __math_set_invalidl(void);
 #else
 #define __math_set_invalidl()    ((void) 0)
@@ -1052,7 +1035,7 @@ check_uflowl (long double x)
   return WANT_ERRNO ? __math_check_uflowl (x) : x;
 }
 
-#if defined(FE_INEXACT) && !defined(PICOLIBC_LONG_DOUBLE_NOEXECPT)
+#if defined(FE_INEXACT) && !defined(PICOLIBC_LONG_DOUBLE_NOEXCEPT)
 long double __math_inexactl(long double val);
 void __math_set_inexactl(void);
 #else
@@ -1073,7 +1056,7 @@ long double __math_denorml(long double x);
 #define __math_denorml(x) (x)
 #endif
 
-#endif /* _HAVE_LONG_DOUBLE */
+#endif /* __HAVE_LONG_DOUBLE */
 
 /* Shared between expf, exp2f and powf.  */
 #define EXP2F_TABLE_BITS 5
@@ -1160,7 +1143,7 @@ extern const struct log_data
   double poly[LOG_POLY_ORDER - 1]; /* First coefficient is 1.  */
   double poly1[LOG_POLY1_ORDER - 1];
   struct {double invc, logc;} tab[1 << LOG_TABLE_BITS];
-#if !_HAVE_FAST_FMA
+#if !__HAVE_FAST_FMA
   struct {double chi, clo;} tab2[1 << LOG_TABLE_BITS];
 #endif
 } __log_data HIDDEN;
@@ -1175,7 +1158,7 @@ extern const struct log2_data
   double poly[LOG2_POLY_ORDER - 1];
   double poly1[LOG2_POLY1_ORDER - 1];
   struct {double invc, logc;} tab[1 << LOG2_TABLE_BITS];
-#if !_HAVE_FAST_FMA
+#if !__HAVE_FAST_FMA
   struct {double chi, clo;} tab2[1 << LOG2_TABLE_BITS];
 #endif
 } __log2_data HIDDEN;
@@ -1295,7 +1278,7 @@ extern int __signgam;
 #define tgamma64 _NAME_64(tgamma)
 #define trunc64 _NAME_64(trunc)
 
-#ifdef _HAVE_ALIAS_ATTRIBUTE
+#ifdef __strong_reference
 float _powf(float, float);
 float _sinf(float);
 float _cosf(float);
@@ -1306,7 +1289,7 @@ __float64 _sin64(__float64);
 __float64 _cos64(__float64);
 #endif
 
-#ifdef _HAVE_LONG_DOUBLE_MATH
+#ifdef __HAVE_LONG_DOUBLE_MATH
 long double _powl(long double, long double);
 long double _sinl(long double);
 long double _cosl(long double);
@@ -1325,12 +1308,12 @@ long double _cosl(long double);
 #define _sin64(x) sin64(x)
 #define _cos64(x) cos64(x)
 
-#ifdef _HAVE_LONG_DOUBLE_MATH
+#ifdef __HAVE_LONG_DOUBLE_MATH
 #define _powl(x,y) powl(x,y)
 #define _sinl(x) sinl(x)
 #define _cosl(x) cosl(x)
-#endif /* _HAVE_LONG_DOUBLE_MATH */
+#endif /* __HAVE_LONG_DOUBLE_MATH */
 
-#endif /* _HAVE_ALIAS_ATTRIBUTE */
+#endif /* __strong_reference */
 
 #endif

@@ -30,7 +30,6 @@
 
 #include <stddef.h>
 #include <string.h>
-#include <_ansi.h>
 
 /* According to the run-time ABI for the ARM Architecture, this
    function is allowed to corrupt only the integer core register
@@ -43,7 +42,7 @@
    aeabi_memset-soft.S).  */
 
 /* NOTE: This ifdef MUST match the one in memset-soft.S.  */
-#if !defined (__SOFTFP__) && !defined(PREFER_SIZE_OVER_SPEED) && !defined(__OPTIMIZE_SIZE__)
+#if __ARM_FP != 0 && !defined(__PREFER_SIZE_OVER_SPEED) && !defined(__OPTIMIZE_SIZE__)
 
 /* Defined in memset-soft.S.  */
 

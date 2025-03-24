@@ -26,7 +26,6 @@
 
 #define _GNU_SOURCE
 #define _DEFAULT_SOURCE
-#include <_ansi.h>
 #include <stdio.h>
 #include <wchar.h>
 #include "local.h"
@@ -39,6 +38,5 @@
 wint_t
 putwchar_unlocked (wchar_t wc)
 {
-  _REENT_SMALL_CHECK_INIT (_REENT);
   return fputwc_unlocked (wc, stdout);
 }

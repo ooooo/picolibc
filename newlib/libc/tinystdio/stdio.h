@@ -39,17 +39,21 @@
 #ifndef _STDIO_H_
 #define	_STDIO_H_ 1
 
-#include "_ansi.h"
-
+#include <sys/cdefs.h>
 #define __need_NULL
 #define __need_size_t
-#define __need_ssize_t
-#include <sys/cdefs.h>
 #include <stddef.h>
-
-#include <inttypes.h>
+#define __need___va_list
 #include <stdarg.h>
-#include <sys/types.h>
+#include <sys/_types.h>
+
+_BEGIN_STD_C
+
+#if !((defined(__STDC_VERSION__) && __STDC_VERSION__ >= 201112L) || \
+     (defined(__cplusplus) && __cplusplus >= 201402L))
+     //Provide this function for applications which use an earlier C standard before C11 and C++14
+     #define _PICOLIBC_USE_DEPRECATED_GETS
+#endif
 
 /*
  * This is an internal structure of the library that is subject to be
@@ -57,8 +61,8 @@
  * elements of it beyond by using the official interfaces provided.
  */
 
-#ifdef ATOMIC_UNGETC
-#if defined(__riscv) || defined(__MICROBLAZE__)
+#ifdef __ATOMIC_UNGETC
+#if defined(__riscv) || defined(__MICROBLAZE__) || (__loongarch__)
 /*
  * Use 32-bit ungetc storage when doing atomic ungetc on RISC-V and
  * MicroBlaze, which have 4-byte swap intrinsics but not 2-byte swap
@@ -74,16 +78,16 @@
 #endif
 
 #if __PICOLIBC_UNGETC_SIZE == 4
-typedef uint32_t __ungetc_t;
+typedef __uint32_t __ungetc_t;
 #endif
 
 #if __PICOLIBC_UNGETC_SIZE == 2
-typedef uint16_t __ungetc_t;
+typedef __uint16_t __ungetc_t;
 #endif
 
 struct __file {
 	__ungetc_t unget;	/* ungetc() buffer */
-	uint8_t	flags;		/* flags, see below */
+	__uint8_t  flags;	/* flags, see below */
 #define __SRD	0x0001		/* OK to read */
 #define __SWR	0x0002		/* OK to write */
 #define __SERR	0x0004		/* found error */
@@ -130,10 +134,14 @@ struct __file_ext {
    \c FILE is the opaque structure that is passed around between the
    various standard IO functions.
 */
+#ifndef ___FILE_DECLARED
 typedef struct __file __FILE;
-#if !defined(__FILE_defined)
+# define ___FILE_DECLARED
+#endif
+
+#ifndef _FILE_DECLARED
 typedef __FILE FILE;
-# define __FILE_defined
+#define _FILE_DECLARED
 #endif
 
 /**
@@ -193,25 +201,19 @@ extern FILE *const stderr;
                 .flush = (fl),                  \
 	}
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 FILE *fdevopen(int (*__put)(char, FILE*), int (*__get)(FILE*), int(*__flush)(FILE *));
 int	fclose(FILE *__stream);
 int	fflush(FILE *stream);
 
 # define fdev_close(f) (fflush(f))
 
-#ifdef _HAVE_FORMAT_ATTRIBUTE
 #ifdef PICOLIBC_FLOAT_PRINTF_SCANF
+#ifdef __GNUCLIKE_PRAGMA_DIAGNOSTIC
 #pragma GCC diagnostic ignored "-Wformat"
-#define __FORMAT_ATTRIBUTE__(__a, __s, __f) __attribute__((__format__ (__a, __s, 0)))
-#else
-#define __FORMAT_ATTRIBUTE__(__a, __s, __f) __attribute__((__format__ (__a, __s, __f)))
 #endif
+#define __FORMAT_ATTRIBUTE__(__a, __s, __f) __format(__a, __s, 0)
 #else
-#define __FORMAT_ATTRIBUTE__(__a, __s, __f)
+#define __FORMAT_ATTRIBUTE__(__a, __s, __f) __format(__a, __s, __f)
 #endif
 
 #define __PRINTF_ATTRIBUTE__(__s, __f) __FORMAT_ATTRIBUTE__(printf, __s, __f)
@@ -225,14 +227,16 @@ int	putchar(int __c);
 
 int	printf(const char *__fmt, ...) __PRINTF_ATTRIBUTE__(1, 2);
 int	fprintf(FILE *__stream, const char *__fmt, ...) __PRINTF_ATTRIBUTE__(2, 3);
-int	vprintf(const char *__fmt, va_list __ap) __PRINTF_ATTRIBUTE__(1, 0);
-int	vfprintf(FILE *__stream, const char *__fmt, va_list __ap) __PRINTF_ATTRIBUTE__(2, 0);
+int	vprintf(const char *__fmt, __gnuc_va_list __ap) __PRINTF_ATTRIBUTE__(1, 0);
+int	vfprintf(FILE *__stream, const char *__fmt, __gnuc_va_list __ap) __PRINTF_ATTRIBUTE__(2, 0);
 int	sprintf(char *__s, const char *__fmt, ...) __PRINTF_ATTRIBUTE__(2, 3);
 int	snprintf(char *__s, size_t __n, const char *__fmt, ...) __PRINTF_ATTRIBUTE__(3, 4);
-int	vsprintf(char *__s, const char *__fmt, va_list ap) __PRINTF_ATTRIBUTE__(2, 0);
-int	vsnprintf(char *__s, size_t __n, const char *__fmt, va_list ap) __PRINTF_ATTRIBUTE__(3, 0);
+int	vsprintf(char *__s, const char *__fmt, __gnuc_va_list ap) __PRINTF_ATTRIBUTE__(2, 0);
+int	vsnprintf(char *__s, size_t __n, const char *__fmt, __gnuc_va_list ap) __PRINTF_ATTRIBUTE__(3, 0);
 int     asprintf(char **strp, const char *fmt, ...) __PRINTF_ATTRIBUTE__(2,3);
-int     vasprintf(char **strp, const char *fmt, va_list ap) __PRINTF_ATTRIBUTE__(2,0);
+char    *asnprintf(char *str, size_t *lenp, const char *fmt, ...) __PRINTF_ATTRIBUTE__(3,4);
+int     vasprintf(char **strp, const char *fmt, __gnuc_va_list ap) __PRINTF_ATTRIBUTE__(2,0);
+char    *vasnprintf(char *str, size_t *lenp, const char *fmt, __gnuc_va_list ap) __PRINTF_ATTRIBUTE__(3,0);
 
 int	fputs(const char *__str, FILE *__stream);
 int	puts(const char *__str);
@@ -248,13 +252,15 @@ int	ungetc(int __c, FILE *__stream);
 
 int	scanf(const char *__fmt, ...) __FORMAT_ATTRIBUTE__(scanf, 1, 2);
 int	fscanf(FILE *__stream, const char *__fmt, ...) __FORMAT_ATTRIBUTE__(scanf, 2, 3);
-int	vscanf(const char *__fmt, va_list __ap) __FORMAT_ATTRIBUTE__(scanf, 1, 0);
-int	vfscanf(FILE *__stream, const char *__fmt, va_list __ap) __FORMAT_ATTRIBUTE__(scanf, 2, 0);
+int	vscanf(const char *__fmt, __gnuc_va_list __ap) __FORMAT_ATTRIBUTE__(scanf, 1, 0);
+int	vfscanf(FILE *__stream, const char *__fmt, __gnuc_va_list __ap) __FORMAT_ATTRIBUTE__(scanf, 2, 0);
 int	sscanf(const char *__buf, const char *__fmt, ...) __FORMAT_ATTRIBUTE__(scanf, 2, 3);
-int	vsscanf(const char *__buf, const char *__fmt, va_list ap) __FORMAT_ATTRIBUTE__(scanf, 2, 0);
+int	vsscanf(const char *__buf, const char *__fmt, __gnuc_va_list ap) __FORMAT_ATTRIBUTE__(scanf, 2, 0);
 
 char	*fgets(char *__str, int __size, FILE *__stream);
-char	*gets(char *__str);
+#ifdef _PICOLIBC_USE_DEPRECATED_GETS
+     char *gets(char *str);
+#endif
 size_t	fread(void *__ptr, size_t __size, size_t __nmemb,
 		      FILE *__stream);
 
@@ -299,7 +305,45 @@ int	ferror(FILE *__stream);
 #define FILENAME_MAX 1024
 #endif
 
-__extension__ typedef _fpos_t fpos_t;
+/*
+ * Declare required C types
+ *
+ * size_t comes from stddef.h (included from cdefs.h)
+ */
+typedef _fpos_t fpos_t;
+
+#if __POSIX_VISIBLE
+/*
+ * Declare required additional POSIX types.
+ */
+
+# ifndef _OFF_T_DECLARED
+typedef	__off_t		off_t;		/* file offset */
+#  define _OFF_T_DECLARED
+# endif
+
+#ifndef _OFF64_T_DECLARED
+typedef __off64_t       off64_t;        /* 64-bit file offset */
+#define	_OFF64_T_DECLARED
+#endif
+
+# ifndef _SSIZE_T_DECLARED
+typedef _ssize_t ssize_t;
+#  define _SSIZE_T_DECLARED
+# endif
+
+/* This needs to agree with <stdarg.h> */
+# ifdef __GNUC__
+#  ifndef _VA_LIST_DEFINED
+typedef __gnuc_va_list va_list;
+#   define _VA_LIST_DEFINED
+#  endif
+# else
+#  include <stdarg.h>
+# endif
+
+#endif
+
 int fgetpos(FILE * __restrict stream, fpos_t * __restrict pos);
 FILE *fopen(const char *path, const char *mode) __malloc_like_with_free(fclose, 1);
 FILE *freopen(const char *path, const char *mode, FILE *stream);
@@ -321,14 +365,14 @@ void setlinebuf(FILE *stream);
 int setvbuf(FILE *stream, char *buf, int mode, size_t size);
 FILE *tmpfile(void);
 char *tmpnam (char *s);
-ssize_t getline(char **__restrict lineptr, size_t *__restrict n, FILE *__restrict stream);
-ssize_t getdelim(char **__restrict lineptr, size_t *__restrict  n, int delim, FILE *__restrict stream);
+_ssize_t getline(char **__restrict lineptr, size_t *__restrict n, FILE *__restrict stream);
+_ssize_t getdelim(char **__restrict lineptr, size_t *__restrict  n, int delim, FILE *__restrict stream);
 
 #if __BSD_VISIBLE
 FILE	*funopen (const void *cookie,
-		ssize_t (*readfn)(void *cookie, void *buf,
+		_ssize_t (*readfn)(void *cookie, void *buf,
 				size_t n),
-		ssize_t (*writefn)(void *cookie, const void *buf,
+		_ssize_t (*writefn)(void *cookie, const void *buf,
 				 size_t n),
 		__off_t (*seekfn)(void *cookie, __off_t off, int whence),
 		int (*closefn)(void *cookie));
@@ -350,6 +394,28 @@ int	putchar_unlocked (int);
 #define putchar_unlocked(c, f) fgetc(c, stdin)
 #endif
 
+#if __STDC_WANT_LIB_EXT1__ == 1
+#include <sys/_types.h>
+#include <stdarg.h>
+
+#ifndef _ERRNO_T_DEFINED
+typedef __errno_t errno_t;
+#define _ERRNO_T_DEFINED
+#endif
+
+#ifndef _RSIZE_T_DEFINED
+typedef __rsize_t rsize_t;
+#define _RSIZE_T_DEFINED
+#endif
+
+int sprintf_s(char *__restrict __s, rsize_t __bufsize,
+              const char *__restrict __format, ...);
+int vsnprintf_s(char *__restrict s, rsize_t n, const char *__restrict fmt,
+                va_list arg);
+int vfprintf_s(FILE *__restrict stream, const char *__restrict fmt,
+               va_list ap_orig);
+#endif
+
 /*
  * The format of tmpnam names is TXXXXXX, which works with mktemp
  */
@@ -364,36 +430,48 @@ int	putchar_unlocked (int);
  * We don't have any way of knowing any underlying POSIX limits,
  * so just use a reasonably small value here
  */
+#ifndef TMP_MAX
 #define TMP_MAX         32
-
-#ifdef __cplusplus
-}
 #endif
 
 /*@}*/
 
-static __inline uint32_t
+static __inline __uint32_t
 __printf_float(float f)
 {
 	union {
 		float		f;
-		uint32_t	u;
+		__uint32_t	u;
 	} u = { .f = f };
 	return u.u;
 }
+
+#ifdef _PICOLIBC_PRINTF
+#if _PICOLIBC_PRINTF == 'd'
+#define PICOLIBC_DOUBLE_PRINTF_SCANF
+#elif _PICOLIBC_PRINTF == 'f'
+#define PICOLIBC_FLOAT_PRINTF_SCANF
+#elif _PICOLIBC_PRINTF == 'l'
+#define PICOLIBC_LONG_LONG_PRINTF_SCANF
+#elif _PICOLIBC_PRINTF == 'i'
+#define PICOLIBC_INTEGER_PRINTF_SCANF
+#elif _PICOLIBC_PRINTF == 'm'
+#define PICOLIBC_MINIMAL_PRINTF_SCANF
+#endif
+#endif
 
 #if !defined(PICOLIBC_DOUBLE_PRINTF_SCANF) && \
     !defined(PICOLIBC_FLOAT_PRINTF_SCANF) && \
     !defined(PICOLIBC_LONG_LONG_PRINTF_SCANF) && \
     !defined(PICOLIBC_INTEGER_PRINTF_SCANF) && \
     !defined(PICOLIBC_MINIMAL_PRINTF_SCANF)
-#if defined(_FORMAT_DEFAULT_FLOAT)
+#if defined(__IO_DEFAULT_FLOAT)
 #define PICOLIBC_FLOAT_PRINTF_SCANF
-#elif defined(_FORMAT_DEFAULT_LONG_LONG)
+#elif defined(__IO_DEFAULT_LONG_LONG)
 #define PICOLIBC_LONG_LONG_PRINTF_SCANF
-#elif defined(_FORMAT_DEFAULT_INTEGER)
+#elif defined(__IO_DEFAULT_INTEGER)
 #define PICOLIBC_INTEGER_PRINTF_SCANF
-#elif defined(_FORMAT_DEFAULT_MINIMAL)
+#elif defined(__IO_DEFAULT_MINIMAL)
 #define PICOLIBC_MINIMAL_PRINTF_SCANF
 #else
 #define PICOLIBC_DOUBLE_PRINTF_SCANF
@@ -402,36 +480,36 @@ __printf_float(float f)
 
 #if defined(PICOLIBC_MINIMAL_PRINTF_SCANF)
 # define printf_float(x) ((double) (x))
-# if defined(_WANT_MINIMAL_IO_LONG_LONG) || __SIZEOF_LONG_LONG__ == __SIZEOF_LONG__
+# if defined(__IO_MINIMAL_LONG_LONG) || __SIZEOF_LONG_LONG__ == __SIZEOF_LONG__
 #  define _HAS_IO_LONG_LONG
 # endif
-# ifdef _WANT_IO_C99_FORMATS
+# ifdef __IO_C99_FORMATS
 #  define _HAS_IO_C99_FORMATS
 # endif
 #elif defined(PICOLIBC_INTEGER_PRINTF_SCANF)
 # define printf_float(x) ((double) (x))
-# if defined(_WANT_IO_LONG_LONG) || __SIZEOF_LONG_LONG__ == __SIZEOF_LONG__
+# if defined(__IO_LONG_LONG) || __SIZEOF_LONG_LONG__ == __SIZEOF_LONG__
 #  define _HAS_IO_LONG_LONG
 # endif
-# ifdef _WANT_IO_POS_ARGS
+# ifdef __IO_POS_ARGS
 #  define _HAS_IO_POS_ARGS
 # endif
-# ifdef _WANT_IO_C99_FORMATS
+# ifdef __IO_C99_FORMATS
 #  define _HAS_IO_C99_FORMATS
 # endif
-# ifdef _WANT_IO_PERCENT_B
+# ifdef __IO_PERCENT_B
 #  define _HAS_IO_PERCENT_B
 # endif
 #elif defined(PICOLIBC_LONG_LONG_PRINTF_SCANF)
 # define printf_float(x) ((double) (x))
 # define _HAS_IO_LONG_LONG
-# ifdef _WANT_IO_POS_ARGS
+# ifdef __IO_POS_ARGS
 #  define _HAS_IO_POS_ARGS
 # endif
-# ifdef _WANT_IO_C99_FORMATS
+# ifdef __IO_C99_FORMATS
 #  define _HAS_IO_C99_FORMATS
 # endif
-# ifdef _WANT_IO_PERCENT_B
+# ifdef __IO_PERCENT_B
 #  define _HAS_IO_PERCENT_B
 # endif
 #elif defined(PICOLIBC_FLOAT_PRINTF_SCANF)
@@ -439,7 +517,7 @@ __printf_float(float f)
 # define _HAS_IO_LONG_LONG
 # define _HAS_IO_POS_ARGS
 # define _HAS_IO_C99_FORMATS
-# ifdef _WANT_IO_PERCENT_B
+# ifdef __IO_PERCENT_B
 #  define _HAS_IO_PERCENT_B
 # endif
 # define _HAS_IO_FLOAT
@@ -449,13 +527,21 @@ __printf_float(float f)
 # define _HAS_IO_POS_ARGS
 # define _HAS_IO_C99_FORMATS
 # define _HAS_IO_DOUBLE
-# ifdef _WANT_IO_PERCENT_B
+# if defined(__MB_CAPABLE) || defined(__IO_WCHAR)
+#  define _HAS_IO_WCHAR
+# endif
+# ifdef __MB_CAPABLE
+#  define _HAS_IO_MBCHAR
+# endif
+# ifdef __IO_PERCENT_B
 #  define _HAS_IO_PERCENT_B
 # endif
-# ifdef _WANT_IO_LONG_DOUBLE
-#  define _HAS_IO_LONG_DOUBLE
+# ifdef __IO_LONG_DOUBLE
+#  define _HAS_IOlong double
 # endif
 #endif
+
+_END_STD_C
 
 #if __SSP_FORTIFY_LEVEL > 0
 #include <ssp/stdio.h>

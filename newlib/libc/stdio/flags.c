@@ -17,7 +17,6 @@
 /* No user fns here. Pesch 15apr92 */
 
 #define _DEFAULT_SOURCE
-#include <_ansi.h>
 #include <stdio.h>
 #include <time.h>
 #include <fcntl.h>
@@ -58,7 +57,7 @@ __sflags (
       o = O_CREAT | O_APPEND;
       break;
     default:			/* illegal mode */
-      _REENT_ERRNO(ptr) = EINVAL;
+      errno = EINVAL;
       return (0);
     }
   while (*++mode)
@@ -74,11 +73,6 @@ __sflags (
 	  m |= O_BINARY;
 #endif
 	  break;
-#ifdef __CYGWIN__
-	case 't':
-	  m |= O_TEXT;
-	  break;
-#endif
 #if defined (O_CLOEXEC) && defined (_GLIBC_EXTENSION)
 	case 'e':
 	  m |= O_CLOEXEC;
