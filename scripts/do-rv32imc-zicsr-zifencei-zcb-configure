@@ -45,6 +45,5 @@ case "$version" in
 esac
 exec "$(dirname "$0")"/do-configure "$arch" \
      -Dtests=false \
-     -Dnewlib-iconv-encodings=none \
      -Dmultilib=true \
      -Dtinystdio=true "$@"
