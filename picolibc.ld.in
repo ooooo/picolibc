@@ -137,6 +137,7 @@ SECTIONS
 		*(.srodata.cst4)
 		*(.srodata.cst2)
 		*(.srodata .srodata.*)
+		. = ALIGN(@DEFAULT_ALIGNMENT@);
 
 	} >@RODATA_MEM@ AT>@RODATA_AT@ :@RODATA_PHDR@
 
