@@ -4,37 +4,56 @@ DIR=build-"$TARGET"
 CONFIGURE=do-"$TARGET"-configure
 shift
 
-for p in /opt/*/bin /opt/*/models/*; do
-    PATH="$p":$PATH
-done
+if [ -d /opt/picolibc-ci ]; then
+    TOP=/opt/picolibc-ci
+else
+    TOP=/opt
+fi
 
-ANALYZER="-Danalyzer=true"
+# Put only the relevant toolchain in PATH for specific CI targets.
+# Fallback to previous behavior for other targets.
+case "$TARGET" in
+    *clang-hexagon*)
+        for p in "$TOP"/*hexagon*/bin "$TOP"/*/models/*; do
+            [ -d "$p" ] && PATH="$p":$PATH
+        done
+        ;;
+    *clang-arm*|*clang-aarch64*|*clang-thumb*)
+        for p in "$TOP"/LLVM-ET-Arm*/bin "$TOP"/*/models/*; do
+            [ -d "$p" ] && PATH="$p":$PATH
+        done
+        ;;
+    *)
+        for p in "$TOP"/*/bin "$TOP"/*/models/*; do
+            PATH="$p":$PATH
+        done
+        ;;
+esac
 
-# Disable analyzer on m68k because the compiler gets very confused
-# about complex values
+# We can't use both the analyzer and sanitizer because
+# the analyzer is run after the sanitizer and generates a lot
+# of false positives, so just use the sanitizer as it
+# appears to find more relevant bugs at this point.
+
+SANITIZER="-Dsanitize=undefined"
+
+# Use traps with the sanitizer on msp430 as the handlers make many
+# tests too large
 
 case "$TARGET" in
-    *m68k*)
-	ANALYZER=""
+    *msp430*)
+	SANITIZER="$SANITIZER -Dsanitize-trap-on-error=true"
 	;;
 esac
 
-# Disable the analyser when not using tinystdio as the stdio code is
-# full of problems
+OPTIONS="$SANITIZER -Dexhaustive-math-tests=native"
 
-case "$*" in
-    *-Dtinystdio=false*)
-	ANALYZER=""
-	;;
-esac
-
-mkdir "$DIR"
-trap 'rm -rf "$DIR"' 0 1 15
-(cd "$DIR" || exit 1
+(mkdir "$DIR" || exit 1
+ cd "$DIR" || exit 2
  echo '##################################################'
- echo '##########' ../scripts/"$CONFIGURE" -Dwerror=true $ANALYZER "$@"
+ echo '##########' ../scripts/"$CONFIGURE" -Dwerror=true $OPTIONS "$@"
  echo '##################################################'
- ../scripts/"$CONFIGURE" -Dwerror=true $ANALYZER "$@"
+ ../scripts/"$CONFIGURE" -Dwerror=true $OPTIONS "$@"
  case $? in
      0)
 	 echo 'Configuration succeeded'
@@ -44,10 +63,52 @@ trap 'rm -rf "$DIR"' 0 1 15
 	 exit 0
 	 ;;
      *)
-	 echo 'Configuration failed with' "$?"
-	 cat meson-logs/*
-	 exit 1
+	 exit 3
 	 ;;
  esac
- cat meson-logs/*
- ninja && meson test -t 20 -v) || exit 1
+ ninja --quiet || exit 4
+ meson test -t 20 || exit 5)
+case $? in
+    0)
+	rm -rf "$DIR"
+	;;
+    1)
+	echo '##################################'
+	echo '############# mkdir' "$DIR" 'failed'
+	echo '##################################'
+	exit 1
+	;;
+    2)
+	echo '##################################'
+	echo '############# cd' "$DIR" 'failed'
+	echo '##################################'
+	exit 1
+	;;
+    3)
+	echo '##################################'
+	echo '############# Configuration failed'
+	echo '##################################'
+	cat "$DIR"/meson-logs/meson-log.txt
+	exit 1
+	;;
+    4)
+	echo '##################################'
+	echo '############# Build failed'
+	echo '##################################'
+	exit 1
+	;;
+    5)
+	echo '##################################'
+	echo '############# Test failed'
+	echo '##################################'
+	cat "$DIR"/meson-logs/testlog.txt
+	exit 1
+	;;
+    *)
+	echo '##################################'
+	echo '############# Unknown failure' "$?"
+	echo '##################################'
+	cat "$DIR"/meson-logs/*
+	exit 1
+	;;
+esac

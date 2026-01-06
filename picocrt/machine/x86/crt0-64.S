@@ -92,7 +92,16 @@ _start64:
 	mov	$__bss_start, %rdi
 	call	memset
 
+	/* Initialize the IDT */
+	lidt	__idt
+
 #ifdef __THREAD_LOCAL_STORAGE
+
+#ifdef INIT_TLS
+	// call to _init_tls(__tls_base)
+	mov	$__tls_base, %rdi
+	call	_init_tls
+#endif
 	// call to _set_tls(__tls_base)
 	mov	$__tls_base, %rdi
 	call	_set_tls

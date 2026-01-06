@@ -8,10 +8,9 @@ code from [Newlib](http://sourceware.org/newlib/) and
 
 Build status:
 
- * ![Linux](https://github.com/picolibc/picolibc/workflows/Linux/badge.svg?branch=main)
- * ![Zephyr](https://github.com/picolibc/picolibc/workflows/Zephyr/badge.svg?branch=main)
- * ![Coreboot](https://github.com/picolibc/picolibc/workflows/Coreboot/badge.svg?branch=main)
- * ![Mac OS X](https://github.com/picolibc/picolibc/workflows/Mac%20OS%20X/badge.svg)
+ * [![Linux](https://github.com/picolibc/picolibc/actions/workflows/linux.yml/badge.svg)](https://github.com/picolibc/picolibc/actions/workflows/linux.yml)
+ * [![Zephyr](https://github.com/picolibc/picolibc/actions/workflows/zephyr.yml/badge.svg)](https://github.com/picolibc/picolibc/actions/workflows/zephyr.yml)
+ * [![Coreboot](https://github.com/picolibc/picolibc/actions/workflows/coreboot.yml/badge.svg?branch=main)](https://github.com/picolibc/picolibc/actions/workflows/coreboot.yml)
 
 ## License
 
@@ -66,7 +65,7 @@ but no integrated testing available for additional architectures:
 
 Supporting architectures that already have Newlib code requires:
 
- 1. newlib/libc/machine/_architecture_/meson.build to build the
+ 1. libc/machine/_architecture_/meson.build to build the
     architecture-specific libc bits. This should at least include
     setjmp/longjmp support as these cannot be performed in
     architecture independent code and are needed by libstdc++.
@@ -76,9 +75,9 @@ Supporting architectures that already have Newlib code requires:
     environment. By default, it stores them in 16-bit values, but
     some architectures only have 32-bit atomics. To avoid ABI
     issues, the size selected isn't detected automatically, instead
-    it must be configured in newlib/libc/tinystdio/stdio.h.
+    it must be configured in libc/tinystdio/stdio.h.
 
- 3. newlib/libm/machine/_architecture_/meson.build to build any
+ 3. libm/machine/_architecture_/meson.build to build any
     architecture-specific libm bits
 
  4. picocrt/machine/_architecture_ source code and build bits
@@ -92,7 +91,7 @@ Supporting architectures that already have Newlib code requires:
  6. do-_architecture_-configure to make testing the cross-compilation
     setup easier.
 
- 7. newlib/libc/picolib support. This should include whatever startup
+ 7. libc/picolib support. This should include whatever startup
     helpers are required (like ARM interrupt vector) and TLS support
     (if your compiler includes this).
 
@@ -124,6 +123,64 @@ The bulk of newlib changes over the last several years have been in
 areas unrelated to the code used by picolibc, so keeping things in
 sync has not been difficult so far.
 
+Here's a list of some differences between picolibc and newlib:
+
+ 1. Designed for and tested on 32- and 64- bit embedded
+    systems. Newlib (and newlib-nano) are used on both embedded
+    systems and Cygwin, with the bulk of the development focused on
+    improving the Cygwin support. Because the Cygwin version needs to
+    be very careful about ABI stability, many parts of the newlib code
+    base are very difficult to change. Picolibc has no such
+    constraints, so much work has been done to improve the ABI and API
+    for use in embedded systems.
+
+ 2. Tinystdio. This new stdio implementation borrows some code from
+    AVR-Libc along with substantial new code. The goal of tinystdio is
+    to remain compatible with relevant C and POSIX standards while
+    using a very narrow API to the underlying system (it only requires
+    getc and putc) along with doing no internal allocation and using a
+    minimal amount of RAM (16 bytes on a 32 bit system for
+    stdin/stdout/stderr).
+
+ 3. Thread-local-storage support. Instead of creating a large data
+    structure containing all possible thread-specific data, Picolibc
+    uses the underlying TLS support from the compiler which only
+    allocates the amount of per-thread storage needed to support the
+    API called by the application. Typically, this means you use only
+    4 bytes for errno.
+
+ 4. Integrated test suite. The old newlib test code, which hasn't
+    worked for years, has been fixed up and is used to test changes to
+    the library. The test suite was used to correct numerous bugs in
+    the library; many of those changes have been passed on to newlib.
+
+ 5. Bare-metal startup code and linker scripts for many
+    architectures. These may not support precisely what your
+    application requires, but these provide a good basis for writing
+    your own startup code and linker scripts. These are used to create
+    bare-metal versions of the test suite which can then be run using
+    QEMU.
+
+ 6. Meson-based build system. This is largely used to avoid conflicts
+    with the newlib autotools build system files, but a side effect is
+    that the library builds very quickly.
+
+ 7. Narrow and well-defined POSIX OS requirements. Portions of
+    Picolibc which require underlying OS support are documented so
+    that you will know which functions are necessary based on the API
+    in use. In particular, tinystdio requires no POSIX functions to
+    support stdin/stdout/stderr, and instead requires only functions
+    to get and put single characters to the target device.
+
+ 8. Built-in semihosting support for many architectures. This allows
+    you to take advantage of existing gdb, openocd and qemu
+    semihosting support for things like debugging output even before
+    you have a serial port working.
+
+ 9. Clear BSD licensing. All non-BSD compatible library source code
+    has been removed so that the status of the resulting library is
+    not in question.
+
 ## Documentation
 
 Introductory documentation. Read these first:
@@ -153,6 +210,74 @@ use Picolibc:
 
 ### Picolibc release 1.8.next
 
+ * Use __math_inexact to generate FE_INEXACT in several math
+   functions. Thanks to Gergely Futo.
+
+ * Support riscv '-mlarge' model in asm code.
+
+ * Initialize riscv vector unit in startup code when present.
+
+ * Improve arm32 A-profile operation in Thumb state. Thanks to Victor
+   Campos.
+
+ * Remove duplicate isinf and isnan declarations that were visible
+   even when building with C++. Thanks to Mostafa Salman.
+
+ * Improve accuracy of cacoshf for real inputs. Thanks to Ahmed
+   Shehab.
+
+ * Avoid use of float types in vfprintf to avoid unnecessary fpu
+   register use.
+
+ * Add missing pid_t and getdate_err declarations to time.h.
+
+ * Implement getdate and getdate_r as required by POSIX.
+
+ * Fix numerous minor bugs in strptime.
+
+ * Test exception handling on m68k
+
+ * Add Hexagon architecture support. Thanks to Kushal Pal.
+
+ * Clean up RISC-V asm code integration. Thanks to Venkata Ramanaiah
+   Nalamothu.
+
+ * Add more math tests, including exhaustive binary 32 testing.
+
+ * Improve cbrtf precision to within 1ulp.
+
+ * Fix lgammaf for values between -0x1p-70 and -0x1p-64.
+
+ * Add some missing stdint.h bits that are new in C23.
+
+ * Improve accuracy of erfcf for values between 1.25 and 28. Improve
+   performance for values between 0x1p-56 and 0x1p-26.
+
+ * Fix memchr on targets with 16-bit int and 32-bit long (MSP430).
+
+ * Mask needle with 0xff on rx version of memchr.
+
+ * Add missing POSIX functionality in fnmatch to support character
+   classes, equivalence classes and collating sequences. Limit fnmatch
+   recursion for '*' operators to 16 levels.
+
+ * Rename cross compile property 'libgcc' to 'librt' since we can now
+   specify either libgcc or compiler-rt as run-time library. However,
+   'libgcc' is still supported for backward compatibility.
+
+ * Fix bug in 32-bit riscv stpcpy which returned the wrong
+   value. Improve performance slightly by avoiding duplicate memory
+   reads of the tail of the string.
+
+ * Make sure `__STDC_LIB_EXT1__` gets defined as appropriate. Thanks to
+   Mostafa Salman.
+
+ * Fix -long_option parsing in getopt_long_only.
+
+ * Add strfmon and strfmon_l as required by POSIX.
+
+### Picolibc release 1.8.10
+
  * Add missing POSIX constants to limits.h.
 
  * Add Renesas RX support. Thanks to Duy Dguyen.
@@ -161,6 +286,48 @@ use Picolibc:
 
  * Add TLS support and testing on loongarch, m68k, or1k, powerpc and
    superh.
+
+ * Fix a couple of strncpy bugs in ARC assembly code.
+
+ * Clean up preprocessor symbols: remove unused symbols, rename
+   picolibc.h symbols to use a __ prefix and not include PICOLIBC or
+   NEWLIB in the names.
+
+ * Detect compiler attributes and builtins at compile time rather than
+   configure time where possible. Delete attributes and builtins not
+   used within the library implementation.
+
+ * Remove non-standard elf.h and mstats API.
+
+ * Clean up float predicates to make sure we provide implementations
+   of isinf, isnan and finite for all three types, both with and
+   without __ prefixes. Use symbol aliases to share the same function
+   implementation. Use the __ versions for the type generic macros
+   instead of fpclassify. Switch users of these within the math
+   library to use the type-generic versions.
+
+ * Start SuperH FPU in single mode when required.
+
+ * Test sh1 and sh2 targets using the binutils simulator.
+
+ * Initialize PowerPC IPLT table at startup.
+
+ * Switch printf/scanf aliases to prefer --printf=/--scanf= compiler
+   options
+
+ * Control UCS-2 and UCS-4 locales with mb-ucs-charsets configuration
+   option.
+
+ * Add stdio-locking option to provide full POSIX re-entrancy support
+   in tinystdio. Thanks to Alexey Lapshin.
+
+ * Add wcsto* string to number functions using tinystdio conversion
+   code. Avoids malloc call for float conversions.
+
+ * Add TLS API support for x86 targets. Thanks to TK Chia.
+
+ * Add -fsanitize=undefined handlers and make library build with that
+   enabled.
 
 ### Picolibc release 1.8.9
 
@@ -1259,7 +1426,7 @@ A minor update from 1.0, this release includes:
     how to us picolibc when installed for ARM and RISC-V embedded
     processors. The resulting executables can be run under qemu.
 
- 5. Remove newlib/libm/mathfp directory. This experimental code never
+ 5. Remove libm/mathfp directory. This experimental code never
     worked correctly anyways.
 
 ### Picolibc version 1.0

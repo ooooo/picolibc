@@ -11,9 +11,6 @@
 /* Always optimize strcmp for performance */
 #cmakedefine __FAST_STRCMP
 
-/* Obsoleted. Use regular syscalls */
-#cmakedefine MISSING_SYSCALL_NAMES
-
 /* use global errno variable */
 #cmakedefine __GLOBAL_ERRNO
 
@@ -26,16 +23,15 @@
 /* use thread local storage */
 #cmakedefine __THREAD_LOCAL_STORAGE
 
+/* use thread local storage for stack protection canary */
+#cmakedefine __THREAD_LOCAL_STORAGE_STACK_GUARD
+
 /* Use posix apis for console too */
 #cmakedefine POSIX_CONSOLE
 
 /* Optimize for space over speed */
 #cmakedefine __PREFER_SIZE_OVER_SPEED
 
-/* Obsoleted. Reentrant syscalls provided for us */
-#cmakedefine REENTRANT_SYSCALLS_PROVIDED
-
-/* Use tiny stdio from gcc avr */
 #cmakedefine __TINY_STDIO
 
 #cmakedefine _ATEXIT_DYNAMIC_ALLOC
@@ -106,8 +102,6 @@
 /* The newlib version in string format. */
 #define _NEWLIB_VERSION "@NEWLIB_VERSION@"
 
-#cmakedefine __PICO_EXIT
-
 /* The Picolibc minor version number. */
 #define _PICOLIBC_MINOR__ @PROJECT_VERSION_MINOR@
 
@@ -133,15 +127,7 @@
 
 #cmakedefine __IO_POS_ARGS
 
-#cmakedefine __IO_DEFAULT_DOUBLE
-
-#cmakedefine __IO_DEFAULT_FLOAT
-
-#cmakedefine __IO_DEFAULT_LONG_LONG
-
-#cmakedefine __IO_DEFAULT_INTEGER
-
-#cmakedefine __IO_DEFAULT_MINIMAL
+#define __IO_DEFAULT '@__IO_DEFAULT@'
 
 /* math library sets errno */
 #cmakedefine __MATH_ERRNO

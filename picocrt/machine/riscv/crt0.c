@@ -36,10 +36,9 @@
 #include <stddef.h>
 #include "../../crt0.h"
 
-static void __used __section(".init")
-_cstart(void)
+static void __used __section(".init") _cstart(void)
 {
-	__start();
+    __start();
 }
 
 #ifdef CRT0_SEMIHOST
@@ -54,48 +53,45 @@ _cstart(void)
 #endif
 
 #if __riscv_xlen == 32
-#define FMT     "%08lx"
-#define SD      "sw"
+#define FMT "%08lx"
+#define SD  "sw"
 #else
-#define FMT     "%016lx"
-#define SD      "sd"
+#define FMT "%016lx"
+#define SD  "sd"
 #endif
 
 struct fault {
-        unsigned long   r[NUM_REG];
-        unsigned long   mepc;
-        unsigned long   mcause;
-        unsigned long   mtval;
+    unsigned long r[NUM_REG];
+    unsigned long mepc;
+    unsigned long mcause;
+    unsigned long mtval;
 };
 
-static const char *const names[NUM_REG] = {
-        "zero", "ra",   "sp",   "gp",   "tp",   "t0",   "t1",   "t2",
-        "s0/fp","s1",   "a0",   "a1",   "a2",   "a3",   "a4",   "a5",
+static const char * const names[NUM_REG] = {
+    "zero",  "ra", "sp",  "gp",  "tp", "t0", "t1", "t2",
+    "s0/fp", "s1", "a0",  "a1",  "a2", "a3", "a4", "a5",
 #if NUM_REG > 16
-        "a6",   "a7",   "s2",   "s3",   "s4",   "s5",   "s6",   "s7",
-        "s8",   "s9",   "s10",  "s11",  "t3",   "t4",   "t5",   "t6",
+    "a6",    "a7", "s2",  "s3",  "s4", "s5", "s6", "s7",
+    "s8",    "s9", "s10", "s11", "t3", "t4", "t5", "t6",
 #endif
 };
 
-
-static void __used __section(".init")
-_ctrap(struct fault *fault)
+static void __used __section(".init") _ctrap(struct fault *fault)
 {
-        int r;
-        printf("RISCV fault\n");
-        for (r = 0; r < NUM_REG; r++)
-                printf("\tx%d %-5.5s%s 0x" FMT "\n", r, names[r], r < 10 ? " " : "", fault->r[r]);
-        printf("\tmepc:     0x" FMT "\n", fault->mepc);
-        printf("\tmcause:   0x" FMT "\n", fault->mcause);
-        printf("\tmtval:    0x" FMT "\n", fault->mtval);
-        _exit(1);
+    int r;
+    printf("RISCV fault\n");
+    for (r = 0; r < NUM_REG; r++)
+        printf("\tx%d %-5.5s%s 0x" FMT "\n", r, names[r], r < 10 ? " " : "", fault->r[r]);
+    printf("\tmepc:     0x" FMT "\n", fault->mepc);
+    printf("\tmcause:   0x" FMT "\n", fault->mcause);
+    printf("\tmtval:    0x" FMT "\n", fault->mtval);
+    _exit(1);
 }
 
 #define _PASTE(r) #r
-#define PASTE(r) _PASTE(r)
+#define PASTE(r)  _PASTE(r)
 
-void __naked __section(".init") __used __attribute((aligned(4)))
-_trap(void)
+void __naked __section(".init") __used __attribute((aligned(4))) _trap(void)
 {
 #ifndef __clang__
         __asm__(".option	nopic");
@@ -105,12 +101,18 @@ _trap(void)
 	__asm__(".option	push\n"
                 ".option	norelax\n"
                 "csrrw  sp, mscratch, sp\n"
+#ifdef __riscv_cmodel_large
+            "ld     sp, .trap_sp\n"
+#else
                 "la	sp, __heap_end\n"
+#endif
                 ".option	pop");
 
         /* Make space for saved registers */
         __asm__("addi   sp, sp, %0\n"
+#ifdef __GCC_HAVE_DWARF2_CFI_ASM
                 ".cfi_def_cfa sp, 0\n"
+#endif
                 :: "i"(-sizeof(struct fault)));
 
         /* Save registers on stack */
@@ -119,8 +121,14 @@ _trap(void)
                 "i" ((num) * sizeof(unsigned long) + offsetof(struct fault, r)))
 
 #define SAVE_REGS_8(base) \
-        SAVE_REG(base+0); SAVE_REG(base+1); SAVE_REG(base+2); SAVE_REG(base+3); \
-        SAVE_REG(base+4); SAVE_REG(base+5); SAVE_REG(base+6); SAVE_REG(base+7)
+    SAVE_REG(base + 0);   \
+    SAVE_REG(base + 1);   \
+    SAVE_REG(base + 2);   \
+    SAVE_REG(base + 3);   \
+    SAVE_REG(base + 4);   \
+    SAVE_REG(base + 5);   \
+    SAVE_REG(base + 6);   \
+    SAVE_REG(base + 7)
 
         SAVE_REGS_8(0);
         SAVE_REGS_8(8);
@@ -137,12 +145,14 @@ _trap(void)
          * Save the trapping frame's stack pointer that was stashed in mscratch
          * and tell the unwinder where we can find the return address (mepc).
          */
-        __asm__("csrr   ra, mepc\n"
-                SD "    ra, %0(sp)\n"
+    __asm__("csrr   ra, mepc\n" SD "    ra, %0(sp)\n"
+#ifdef __GCC_HAVE_DWARF2_CFI_ASM
                 ".cfi_offset ra, %0\n"
-                "csrrw t0, mscratch, zero\n"
-                SD "    t0, %1(sp)\n"
+#endif
+            "csrrw t0, mscratch, zero\n" SD "    t0, %1(sp)\n"
+#ifdef __GCC_HAVE_DWARF2_CFI_ASM
                 ".cfi_offset sp, %1\n"
+#endif
                 :: "i"(offsetof(struct fault, mepc)),
                    "i"(offsetof(struct fault, r[2])));
         SAVE_CSR(mcause);
@@ -151,7 +161,14 @@ _trap(void)
         /*
          * Pass pointer to saved registers in first parameter register
          */
-        __asm__("la	gp, __global_pointer$");
+    __asm__(".option	push\n"
+            ".option	norelax\n"
+#ifdef __riscv_cmodel_large
+            "ld     gp,.trap_gp\n"
+#else
+            "la	gp, __global_pointer$\n"
+#endif
+            ".option	pop");
         __asm__("mv     a0, sp");
 
         /* Enable FPU (just in case) */
@@ -192,8 +209,7 @@ struct fault {
         unsigned long   mcause;
 };
 
-void __attribute__((weak)) __section(".init")
-trap_handler(__attribute__((unused)) struct fault *fault)
+void __attribute__((weak)) __section(".init") trap_handler(__attribute__((unused)) struct fault *fault)
 {
         return;
 }
@@ -201,14 +217,17 @@ trap_handler(__attribute__((unused)) struct fault *fault)
 #define _PASTE(r) #r
 #define PASTE(r) _PASTE(r)
 
-void __attribute__((naked)) __section(".init") __attribute__((used)) __attribute((aligned(4)))
-_trap(void)
+void __attribute__((naked)) __section(".init") __attribute__((used)) __attribute((aligned(4))) _trap(void)
 {
 #ifndef __clang__
         __asm__(".option	nopic");
 #endif
         /* Make space for saved registers */
-        __asm__("addi   sp,sp,%0" :: "i" (-sizeof(struct fault)));
+        __asm__("addi   sp, sp, %0\n"
+#ifdef __GCC_HAVE_DWARF2_CFI_ASM
+                ".cfi_def_cfa sp, 0\n"
+#endif
+                :: "i"(-sizeof(struct fault)));
 
         /* Save registers on stack */
 #define SAVE_REG(num)   \
@@ -216,18 +235,29 @@ _trap(void)
                 "i" ((num) * sizeof(unsigned long) + offsetof(struct fault, r)))
 
 #define SAVE_REGS_7(base) \
-        SAVE_REG(base+0); SAVE_REG(base+1); SAVE_REG(base+2); SAVE_REG(base+3); \
-        SAVE_REG(base+4); SAVE_REG(base+5); SAVE_REG(base+6)
+    SAVE_REG(base+0);     \
+    SAVE_REG(base+1);     \
+    SAVE_REG(base+2);     \
+    SAVE_REG(base+3);     \
+    SAVE_REG(base+4);     \
+    SAVE_REG(base+5);     \
+    SAVE_REG(base+6)
 
 #define SAVE_REGS_8(base) \
-        SAVE_REG(base+0); SAVE_REG(base+1); SAVE_REG(base+2); SAVE_REG(base+3); \
-        SAVE_REG(base+4); SAVE_REG(base+5); SAVE_REG(base+6); SAVE_REG(base+7)
+    SAVE_REG(base + 0);   \
+    SAVE_REG(base + 1);   \
+    SAVE_REG(base + 2);   \
+    SAVE_REG(base + 3);   \
+    SAVE_REG(base + 4);   \
+    SAVE_REG(base + 5);   \
+    SAVE_REG(base + 6);   \
+    SAVE_REG(base + 7)
 
         SAVE_REGS_7(1);
         SAVE_REGS_8(8);
 #ifndef __riscv_32e
-        SAVE_REGS_8(16);
-        SAVE_REGS_8(24);
+    SAVE_REGS_8(16);
+    SAVE_REGS_8(24);
 #endif
 
 #define SAVE_CSR(name)  \
@@ -261,7 +291,7 @@ _trap(void)
          */
         __asm__ volatile ("mv     a0, sp");
 
-        /* Enable FPU (just in case) */
+    /* Enable FPU (just in case) */
 #ifdef __riscv_flen
 	__asm__ volatile ("csrr	t0, mstatus\n"
                 "li	t1, 8192\n"     	// 1 << 13 = 8192
@@ -277,12 +307,23 @@ _trap(void)
                 "i" ((num) * sizeof(unsigned long) + offsetof(struct fault, r)))
 
 #define RESTORE_REGS_7(base) \
-        RESTORE_REG(base+0); RESTORE_REG(base+1); RESTORE_REG(base+2); RESTORE_REG(base+3); \
-        RESTORE_REG(base+4); RESTORE_REG(base+5); RESTORE_REG(base+6)
+    RESTORE_REG(base+0);     \
+    RESTORE_REG(base+1);     \
+    RESTORE_REG(base+2);     \
+    RESTORE_REG(base+3);     \
+    RESTORE_REG(base+4);     \
+    RESTORE_REG(base+5);     \
+    RESTORE_REG(base+6)
 
 #define RESTORE_REGS_8(base) \
-        RESTORE_REG(base+0); RESTORE_REG(base+1); RESTORE_REG(base+2); RESTORE_REG(base+3); \
-        RESTORE_REG(base+4); RESTORE_REG(base+5); RESTORE_REG(base+6); RESTORE_REG(base+7)
+    RESTORE_REG(base+0);     \
+    RESTORE_REG(base+1);     \
+    RESTORE_REG(base+2);     \
+    RESTORE_REG(base+3);     \
+    RESTORE_REG(base+4);     \
+    RESTORE_REG(base+5);     \
+    RESTORE_REG(base+6);     \
+    RESTORE_REG(base+7)
 
         RESTORE_REGS_7(1);
         RESTORE_REGS_8(8);
@@ -305,37 +346,52 @@ _trap(void)
 }
 #endif
 
-void __naked __section(".text.init.enter") __used
-_start(void)
+void __naked __section(".text.init.enter") __used _start(void)
 {
 
-	/**
-	 * seems clang has no option "nopic". Now this could be problematic,
-	 * since according to the clang devs at [0], that option has an effect
-	 * on `la`. However, the resulting crt0.o looks the same as the one from
-	 * gcc (same opcodes + pc relative relocations where I used `la`), so
-	 * this could be okay.
-	 * [0] https://reviews.llvm.org/D55325
-	 */
+    /**
+     * seems clang has no option "nopic". Now this could be problematic,
+     * since according to the clang devs at [0], that option has an effect
+     * on `la`. However, the resulting crt0.o looks the same as the one from
+     * gcc (same opcodes + pc relative relocations where I used `la`), so
+     * this could be okay.
+     * [0] https://reviews.llvm.org/D55325
+     */
 #ifndef __clang__
-        __asm__(".option	nopic");
+    __asm__(".option	nopic");
 #endif
 
-	__asm__(".option	push\n"
-                ".option	norelax\n"
-                "la	sp, __stack\n"
-                "la	gp, __global_pointer$\n"
-                ".option	pop");
+    __asm__(".option	push\n"
+            ".option	norelax\n"
+#ifdef __riscv_cmodel_large
+            "ld     sp,.start_sp\n"
+            "ld     gp,.start_gp\n"
+#else
+            "la	sp, __stack\n"
+            "la	gp, __global_pointer$\n"
+#endif
+            ".option	pop");
 
 #ifdef __riscv_flen
-	__asm__("csrr	t0, mstatus\n"
-                "li	t1, 8192\n"     	// 1 << 13 = 8192
-                "or	t0, t1, t0\n"
-                "csrw	mstatus, t0\n"
-                "csrwi	fcsr, 0");
+    __asm__("csrr	t0, mstatus\n"
+            "li	t1, 8192\n" // 1 << 13 = 8192
+            "or	t0, t1, t0\n"
+            "csrw	mstatus, t0\n"
+            "csrwi	fcsr, 0");
+#endif
+#ifdef __riscv_vector
+    __asm__("csrr	t0, mstatus\n"
+            "li	t1, 512\n" // 1 << 9 = 512
+            "or	t0, t1, t0\n"
+            "csrw	mstatus, t0\n"
+            "csrwi	vxrm, 1");
 #endif
 #ifdef CRT0_SEMIHOST
-        __asm__("la     t0, _trap");
+#ifdef __riscv_cmodel_large
+    __asm__("ld     t0,.start_trap");
+#else
+    __asm__("la     t0, _trap");
+#endif
         __asm__("csrw   mtvec, t0");
         __asm__("csrr   t1, mtvec");
 #else
@@ -343,5 +399,14 @@ _start(void)
         __asm__("csrw   mtvec, t0");
         __asm__("csrr   t1, mtvec");
 #endif
-        __asm__("j      _cstart");
+    __asm__("j      _cstart");
+#ifdef __riscv_cmodel_large
+    __asm__(".align 3\n"
+            ".start_sp: .dword __stack\n"
+            ".start_gp: .dword __global_pointer$\n"
+#ifdef CRT0_SEMIHOST
+            ".start_trap: .dword _trap"
+#endif
+    );
+#endif
 }

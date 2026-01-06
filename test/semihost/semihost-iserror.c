@@ -35,24 +35,26 @@
 #include <stdlib.h>
 #include <semihost.h>
 
+#ifndef TEST_FILE_NAME
 #define TEST_FILE_NAME "SEMIERR.TXT"
+#endif
 
 int
 main(void)
 {
-	int	fd;
+    int fd;
 
-	(void) sys_semihost_remove(TEST_FILE_NAME);
-	fd = sys_semihost_open(TEST_FILE_NAME, SH_OPEN_R);
-	if (!sys_semihost_iserror(fd)) {
-		printf("open non-existant file for read did not return error\n");
-		exit(1);
-	}
-	fd = sys_semihost_open(TEST_FILE_NAME, SH_OPEN_W);
-	if (sys_semihost_iserror(fd)) {
-		printf("open new file for write returned error\n");
-		exit(2);
-	}
-	(void) sys_semihost_remove(TEST_FILE_NAME);
-	exit(0);
+    (void)sys_semihost_remove(TEST_FILE_NAME);
+    fd = sys_semihost_open(TEST_FILE_NAME, SH_OPEN_R);
+    if (!sys_semihost_iserror(fd)) {
+        printf("open non-existant file for read did not return error\n");
+        exit(1);
+    }
+    fd = sys_semihost_open(TEST_FILE_NAME, SH_OPEN_W);
+    if (sys_semihost_iserror(fd)) {
+        printf("open new file for write returned error\n");
+        exit(2);
+    }
+    (void)sys_semihost_remove(TEST_FILE_NAME);
+    exit(0);
 }

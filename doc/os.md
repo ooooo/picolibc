@@ -191,15 +191,20 @@ picolibc configuration parameters:
 
 ```console
 $ meson \
-	-Dtls-model=global-dynamic \
-	-Dmultilib=false \
-	-Dpicolib=false \
+        -Dtls-model=global-dynamic \
+        -Dmultilib=false \
 	-Dpicocrt=false \
+	-Dsemihost=false \
+	-Duse-stdlib=true \
 	-Dposix-console=true \
-	-Dnewlib-global-atexit=true \
+	-Dthread-local-storage=true \
+	-Dthread-local-storage-api=false \
+	-Dinternal-heap=8388608 \
+	-Derrno-function=auto \
+	-Dinitfini-array=false\
 	-Dincludedir=lib/picolibc/include \
 	-Dlibdir=lib/picolibc/lib \
-	-Dspecsdir=none
+	-Dspecsdir=none \
 ```
 
  * -Dtls-model=global-dynamic makes picolibc use the default TLS model
@@ -208,23 +213,33 @@ $ meson \
  * -Dmultilib=false makes picolibc build only a single library for the
    default GCC configuration.
 
- * -Dpicolib=false disables building the TLS and sbrk support built-in
-   to picolibc so that the underlying system support is used instead.
-
  * -Dpicocrt=false disables building the C startup code as that is
    provided by the underlying system.
+
+ * -Dsemihost=false disables building semihosting support as OS
+   interfaces are provided by the underlying system.
+
+ * -Duse-stdlib=true removes -nostdlib from the compile and link
+   command lines so that the native C library will be used.
 
  * -Dposix-console=true uses POSIX I/O read/write APIs for stdin,
     stdout and stderr.
 
- * -Dnewlib-global-atexit=true disables the per-thread atexit behavior
-   so that picolibc acts like a regular C library.
+ * -Dthread-local-storage=true and -Dthread-local-storage-api=false
+   set up the library to enable TLS but not attempt to provide the
+   picolibc-specific TLS apis as those don't work with the system C
+   library.
 
- * -Dincludedir and -Dlibdir specify install locations for the headers
-   and library
+ * -Dinternal-heap=8388608 allocates a stack chunk of memory for use
+   by the picolibc `sbrk` implementation.
 
- * -Dspecsdir=none disables installing picolibc.specs as that file
-   is not useful in this environment
+ * -Derrno-function=auto detects the native C library errno implementation.
+
+ * -Dinitfini-array=false skips the picolibc constructor bits and lets
+    the native C library do that initialization step.
+
+ * -Dincludedir, -Dlibdir and -Dspecsdir set up the installation so it
+   doesn't conflict with the native system.
 
 Once built, you can install and use picolibc on the host:
 
