@@ -37,10 +37,10 @@ version=`riscv32-unknown-elf-gcc --version | awk '/gcc/ { print $NF }'`
 echo "version" "$version"
 case "$version" in
     8*|9*|10*)
-	arch=rv32e
+	arch=rv32imc
 	;;
     *)
-	arch=rv32e_zicsr_zifencei
+	arch=rv32imc_zicsr_zifencei_zcb_zfinx
 	;;
 esac
 exec "$(dirname "$0")"/do-configure "$arch" \
