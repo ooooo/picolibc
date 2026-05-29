@@ -190,31 +190,17 @@ _trap(void)
 #endif
 }
 #else
-#include <unistd.h>
-
-#define SOC_MCAUSE_ECALL_EXP 0x0000000B
-
 #ifdef __riscv_32e
 #define NUM_REG 16
-#define STACK_FRAME_MEPC_OFFSET 64
 #else
 #define NUM_REG 32
-#define STACK_FRAME_MEPC_OFFSET 128
-#endif
-
-#if __riscv_xlen == 32
-#define SD      "sw"
-#define LD      "lw"
-#else
-#define SD      "sd"
-#define LD      "ld"
 #endif
 
 struct fault {
-        unsigned long   r[NUM_REG];
         unsigned long   mepc;
         unsigned long   mstatus;
         unsigned long   mcause;
+        unsigned long   r[NUM_REG];
 };
 
 void __attribute__((weak)) __section(".init")
@@ -223,110 +209,145 @@ trap_handler(__attribute__((unused)) struct fault *fault)
         return;
 }
 
-#define _PASTE(r) #r
-#define PASTE(r) _PASTE(r)
-
 void __attribute__((naked)) __section(".init") __attribute__((used)) __attribute((aligned(4)))
 _trap(void)
 {
-#ifndef __clang__
-        __asm__(".option	nopic");
+    __asm__ volatile (
+        /* 1. スタック領域の確保 */
+#ifdef __riscv_32e
+        "addi   sp, sp, -80 \n\t"     /* sizeof(struct fault) = 19words * 4 = 76 -> align 16 -> 80 bytes */
+#else
+        "addi   sp, sp, -144 \n\t"     /* sizeof(struct fault) = 35words * 4 = 140 -> align 16 -> 144 bytes */
 #endif
-        /* Make space for saved registers */
-        __asm__("addi   sp,sp,%0" :: "i" (-sizeof(struct fault)));
 
-        /* Save registers on stack */
-#define SAVE_REG(num)   \
-        __asm__ volatile (SD"     x%0, %1(sp)" :: "i" (num), \
-                "i" ((num) * sizeof(unsigned long) + offsetof(struct fault, r)))
+        /* 2. CSR の保存 */
+        /* t0 を作業用に使用するので最初に保存 */
+        "sw     t0, 32(sp) \n\t"      /* x5  */
+        "csrr   t0, mepc    \n\t"
+        "sw     t0, 0(sp)  \n\t"
+        "csrr   t0, mstatus \n\t"
+        "sw     t0, 4(sp)  \n\t"
+        "csrr   t0, mcause  \n\t"
+        "sw     t0, 8(sp)  \n\t"
 
-#define SAVE_REGS_7(base) \
-        SAVE_REG(base+0); SAVE_REG(base+1); SAVE_REG(base+2); SAVE_REG(base+3); \
-        SAVE_REG(base+4); SAVE_REG(base+5); SAVE_REG(base+6)
-
-#define SAVE_REGS_8(base) \
-        SAVE_REG(base+0); SAVE_REG(base+1); SAVE_REG(base+2); SAVE_REG(base+3); \
-        SAVE_REG(base+4); SAVE_REG(base+5); SAVE_REG(base+6); SAVE_REG(base+7)
-
-        SAVE_REGS_7(1);
-        SAVE_REGS_8(8);
+        /* 2. 汎用レジスタの保存 (x1-x15) */
+        /* x0 は保存不要 (常に0) */
+        "sw     ra, 16(sp)  \n\t"     /* x1  */
+        /* x2 (sp) は後で保存 */
+        "sw     gp, 24(sp) \n\t"      /* x3  */
+        "sw     tp, 28(sp) \n\t"      /* x4  */
+        /* x5 (t0) は保存済み */
+        "sw     t1, 36(sp) \n\t"      /* x6  */
+        "sw     t2, 40(sp) \n\t"      /* x7  */
+        "sw     s0, 44(sp) \n\t"      /* x8  */
+        "sw     s1, 48(sp) \n\t"      /* x9  */
+        "sw     a0, 52(sp) \n\t"      /* x10 */
+        "sw     a1, 56(sp) \n\t"      /* x11 */
+        "sw     a2, 60(sp) \n\t"      /* x12 */
+        "sw     a3, 64(sp) \n\t"      /* x13 */
+        "sw     a4, 68(sp) \n\t"      /* x14 */
+        "sw     a5, 72(sp) \n\t"      /* x15 */
 #ifndef __riscv_32e
-        SAVE_REGS_8(16);
-        SAVE_REGS_8(24);
+        "sw     a6, 76(sp) \n\t"      /* x16 */
+        "sw     a7, 80(sp) \n\t"      /* x17 */
+        "sw     s2, 84(sp) \n\t"      /* x18 */
+        "sw     s3, 88(sp) \n\t"      /* x19 */
+        "sw     s4, 92(sp) \n\t"      /* x20 */
+        "sw     s5, 96(sp) \n\t"      /* x21 */
+        "sw     s6, 100(sp) \n\t"     /* x22 */
+        "sw     s7, 104(sp) \n\t"     /* x23 */
+        "sw     s8, 108(sp) \n\t"     /* x24 */
+        "sw     s9, 112(sp) \n\t"     /* x25 */
+        "sw     s10, 116(sp) \n\t"    /* x26 */
+        "sw     s11, 120(sp) \n\t"    /* x27 */
+        "sw     t3, 124(sp) \n\t"     /* x28 */
+        "sw     t4, 128(sp) \n\t"     /* x29 */
+        "sw     t5, 132(sp) \n\t"     /* x30 */
+        "sw     t6, 136(sp) \n\t"     /* x31 */
 #endif
 
-#define SAVE_CSR(name)  \
-        __asm__ volatile ("csrr   t0, "PASTE(name)); \
-        __asm__ volatile (SD"  t0, %0(sp)" :: "i" (offsetof(struct fault, name)));
-
-        SAVE_CSR(mepc);
-        SAVE_CSR(mstatus);
-        SAVE_CSR(mcause);
-
-        /*
-        * Add 4 to mepc value if mcause equals to "Machine mode Environment Call(0x0000000B)".
-        */
-        __asm__ volatile (
-                "li t1, %0"
-                : 
-                : "i"(SOC_MCAUSE_ECALL_EXP)
-        );
-        __asm__ volatile(
-                "bne t0, t1, is_not_ecall\n\t"
-                LD" t0, %0(sp)\n\t"
-                "addi t0, t0, 4\n\t"
-                SD" t0, %1(sp)\n\t"
-                "is_not_ecall:\n\t"
-                :
-                :"i"(STACK_FRAME_MEPC_OFFSET), "i"(STACK_FRAME_MEPC_OFFSET)
-        );
-
-        /*
-         * Pass pointer to saved registers in first parameter register
-         */
-        __asm__ volatile ("mv     a0, sp");
-
-        /* Enable FPU (just in case) */
-#ifdef __riscv_flen
-	__asm__ volatile ("csrr	t0, mstatus\n"
-                "li	t1, 8192\n"     	// 1 << 13 = 8192
-                "or	t0, t1, t0\n"
-                "csrw	mstatus, t0\n"
-                "csrwi	fcsr, 0");
+        /* 3. 元の SP (x2) の計算と保存 */
+#ifdef __riscv_32e
+        "addi   t0, sp, 80 \n\t"      /* 確保した分を足して元のSPを計算 */
+#else
+        "addi   t0, sp, 144 \n\t"      /* 確保した分を足して元のSPを計算 */
 #endif
-        __asm__ volatile ("jal      trap_handler");
+        "sw     t0, 20(sp)  \n\t"      /* struct fault.r[2] に保存 */
 
-        /* Restore registers on stack */
-#define RESTORE_REG(num)   \
-        __asm__ volatile (LD"     x%0, %1(sp)" :: "i" (num), \
-                "i" ((num) * sizeof(unsigned long) + offsetof(struct fault, r)))
+        /* 5. ecall の場合の mepc 進め処理 --- */
+        "lw     t0, 8(sp)   \n\t"       /* struct fault.mcause をロード */
+        "li     t1, 11      \n\t"       /* Machine mode ecall (0xB) */
+        "bne    t0, t1, 1f  \n\t"       /* mcause != 11 ならスキップ */
 
-#define RESTORE_REGS_7(base) \
-        RESTORE_REG(base+0); RESTORE_REG(base+1); RESTORE_REG(base+2); RESTORE_REG(base+3); \
-        RESTORE_REG(base+4); RESTORE_REG(base+5); RESTORE_REG(base+6)
+        "lw     t0, 0(sp)  \n\t"        /* struct fault.mepc をロード */
+        "addi   t0, t0, 4   \n\t"       /* 次の命令へ (ecall は常に 32bit命令) */
+        "sw     t0, 0(sp)  \n\t"        /* 更新した mepc を保存 */
+        "1:                 \n\t"
+        /* -------------------------------------- */
 
-#define RESTORE_REGS_8(base) \
-        RESTORE_REG(base+0); RESTORE_REG(base+1); RESTORE_REG(base+2); RESTORE_REG(base+3); \
-        RESTORE_REG(base+4); RESTORE_REG(base+5); RESTORE_REG(base+6); RESTORE_REG(base+7)
+        /* 6. Cハンドラの呼び出し */
+        "mv     a0, sp      \n\t"     /* 第1引数に struct fault* を渡す */
+        "call   trap_handler \n\t"    /* jal より call 推奨 (リンカが距離に応じて最適化) */
 
-        RESTORE_REGS_7(1);
-        RESTORE_REGS_8(8);
+        /* --------------------------------------------------- */
+        /* 7. 復帰処理 (重要: CSR -> GPR の順序) */
+        /* --------------------------------------------------- */
+
+        /* CSR の復帰 (t0 を作業用に使用するため、GPR復帰より先に行う) */
+        "lw     t0, 8(sp)  \n\t"
+        "csrw   mcause, t0  \n\t"
+        "lw     t0, 4(sp)  \n\t"
+        "csrw   mstatus, t0 \n\t"
+        "lw     t0, 0(sp)  \n\t"
+        "csrw   mepc, t0    \n\t"
+
+        /* 汎用レジスタの復帰 (x1, x3-x15) */
+        /* x0, x2(sp) は除外 */
+        "lw     ra, 16(sp)   \n\t"    /* x1 */
+        "lw     gp, 24(sp)  \n\t"     /* x3 */
+        "lw     tp, 28(sp)  \n\t"     /* x4 */
+        /* t0 はまだ復帰しない */
+        "lw     t1, 36(sp)  \n\t"     /* x6 */
+        "lw     t2, 40(sp)  \n\t"     /* x7 */
+        "lw     s0, 44(sp)  \n\t"     /* x8 */
+        "lw     s1, 48(sp)  \n\t"     /* x9 */
+        "lw     a0, 52(sp)  \n\t"     /* x10 */
+        "lw     a1, 56(sp)  \n\t"     /* x11 */
+        "lw     a2, 60(sp)  \n\t"     /* x12 */
+        "lw     a3, 64(sp)  \n\t"     /* x13 */
+        "lw     a4, 68(sp)  \n\t"     /* x14 */
+        "lw     a5, 72(sp)  \n\t"     /* x15 */
 #ifndef __riscv_32e
-        RESTORE_REGS_8(16);
-        RESTORE_REGS_8(24);
+        "lw     a6, 76(sp) \n\t"      /* x16 */
+        "lw     a7, 80(sp) \n\t"      /* x17 */
+        "lw     s2, 84(sp) \n\t"      /* x18 */
+        "lw     s3, 88(sp) \n\t"      /* x19 */
+        "lw     s4, 92(sp) \n\t"      /* x20 */
+        "lw     s5, 96(sp) \n\t"      /* x21 */
+        "lw     s6, 100(sp) \n\t"     /* x22 */
+        "lw     s7, 104(sp) \n\t"     /* x23 */
+        "lw     s8, 108(sp) \n\t"     /* x24 */
+        "lw     s9, 112(sp) \n\t"     /* x25 */
+        "lw     s10, 116(sp) \n\t"    /* x26 */
+        "lw     s11, 120(sp) \n\t"    /* x27 */
+        "lw     t3, 124(sp) \n\t"     /* x28 */
+        "lw     t4, 128(sp) \n\t"     /* x29 */
+        "lw     t5, 132(sp) \n\t"     /* x30 */
+        "lw     t6, 136(sp) \n\t"     /* x31 */
 #endif
-#define RESTORE_CSR(name)  \
-        __asm__ volatile (LD"  t0, %0(sp)" :: "i" (offsetof(struct fault, name))); \
-        __asm__ volatile ("csrw  " PASTE(name) ", t0");
+        /* 最後に t0 を復帰 */
+        "lw     t0, 32(sp)  \n\t"     /* x5 */
 
-        RESTORE_CSR(mepc);
-        RESTORE_CSR(mstatus);
-        RESTORE_CSR(mcause);
+        /* スタック解放 */
+#ifdef __riscv_32e
+        "addi   sp, sp, 80  \n\t"
+#else
+        "addi   sp, sp, 144  \n\t"
+#endif
 
-        /* Free space for saved registers */
-        __asm__ volatile ("addi   sp,sp,%0" :: "i" (sizeof(struct fault)));
-
-        __asm__ volatile ("mret");
+        /* 割り込み復帰 */
+        "mret               \n\t"
+    );
 }
 #endif
 
@@ -372,6 +393,17 @@ _start(void)
             "csrwi	vxrm, 1");
 #endif
 #ifdef CRT0_SEMIHOST
+#ifdef __riscv_cmodel_large
+    __asm__("ld     t0,.start_trap");
+#else
+    __asm__("la     t0, _trap");
+#endif
+    __asm__("csrw   mtvec, t0");
+    __asm__("csrr   t1, mtvec");
+#ifdef CRT0_SMRNMI
+    __asm__("csrsi 0x744, 0x8"); // mnstatus = 0x744, 1 << 3 = 8
+#endif
+#else
 #ifdef __riscv_cmodel_large
     __asm__("ld     t0,.start_trap");
 #else

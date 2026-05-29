@@ -162,6 +162,13 @@ __start(void)
 #endif
 
     int ret = main(argc, argv);
+	__asm__ volatile (
+		".global __after_main_label\n"
+		"__after_main_label:\n"
+		:
+		:
+		: "memory"
+	);
 #ifdef CRT0_EXIT
     exit(ret);
 #else
