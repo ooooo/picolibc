@@ -46,4 +46,5 @@ esac
 exec "$(dirname "$0")"/do-configure "$arch" \
      -Dtests=false \
      -Dmultilib=true \
-     -Dtinystdio=true "$@"
+     -Dthread-local-storage=false \
+     -Dsingle-thread=true "$@"
