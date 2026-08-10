@@ -30,13 +30,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Clone picolibc
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           path: picolibc
 
       - name: Cache the Docker Image
         id: cache
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: ${{ env.IMAGE_FILE }}
           key: ${{ env.IMAGE_FILE }}-${{ hashFiles( env.DOCKERFILE, env.PACKAGES_FILE, env.EXTRA_FILE ) }}
@@ -60,12 +60,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Clone picolibc
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           path: picolibc
 
       - name: Restore the Docker Image
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: ${{ env.IMAGE_FILE }}
           key: ${{ env.IMAGE_FILE }}-${{ hashFiles( env.DOCKERFILE, env.PACKAGES_FILE, env.EXTRA_FILE ) }}
@@ -83,7 +83,7 @@ jobs:
 
       - name: Upload Formatting Patch
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: clang-format-fix
           path: picolibc/clang-format.patch

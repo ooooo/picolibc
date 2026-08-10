@@ -39,7 +39,7 @@
 
 FILE *__stdio_file_list;
 
-static void
+void
 _bufio_exit_flush(void)
 {
     for (;;) {

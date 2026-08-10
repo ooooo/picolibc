@@ -57,13 +57,25 @@ else
 endif
 
 machine_found = false
+test_picocrt_machine = ''
 foreach machine : picocrt_machines
   if machine['name'] == test_machine
     machine_found = true
+    test_picocrt_machine = machine.get('alias', machine['name'])
   endif
 endforeach
 if not machine_found
   error(test_machine + ': requested test machine not found')
+endif
+
+test_picocrt_machine_found = false
+foreach machine : picocrt_machines
+  if not machine.has_key('alias') and machine['name'] == test_picocrt_machine
+    test_picocrt_machine_found = true
+  endif
+endforeach
+if not test_picocrt_machine_found
+  error(test_machine + ': requested test machine maps to missing startup machine ' + test_picocrt_machine)
 endif
 
 stack_c_args = []
@@ -149,6 +161,16 @@ if host_cpu_family == 'riscv'
     'c_args': ['-DCRT0_EXIT', '-DCRT0_SEMIHOST', '-DCRT0_SMRNMI'],
     'src': src_picocrt,
   }
+  # A CRT0 Semihosting variant that performs Zicfiss shadow-stack
+  # initialization via an Sv32 MMU page-table setup and drops to U-mode
+  # before running the application.  Only useful for builds that target
+  # Zicfilp+Zicfiss and are linked with -fcf-protection.
+  picocrt_variants += {
+    'name': 'semihost-cfi',
+    'suffix': '-semihost-cfi',
+    'c_args': ['-DCRT0_EXIT', '-DCRT0_SEMIHOST'],
+    'src': src_picocrt_riscv_cfi,
+  }
 endif
 
 foreach params : targets
@@ -159,6 +181,10 @@ foreach params : targets
   instdir = join_paths(lib_dir, target_dir)
 
   foreach machine : picocrt_machines
+    if machine.has_key('alias')
+      continue
+    endif
+
     machine_suffix = machine['suffix']
 
     foreach variant : picocrt_variants
@@ -191,7 +217,7 @@ foreach params : targets
                           link_args : _link_args)
       endif
 
-      if machine['name'] == test_machine
+      if machine['name'] == test_picocrt_machine
         set_variable('crt0' + variant_suffix.underscorify() + target,
                      _crt.extract_objects(_src)
                     )

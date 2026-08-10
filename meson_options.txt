@@ -81,6 +81,9 @@ option('system-libc', type: 'boolean', value: false,
 option('force-install', type: 'boolean', value: false,
        description: 'If picolibc is a subproject its targets will not be installed by default, setting this to true forces installation')
 
+option('libgccdir', type: 'string',
+       description: 'path to picolibc libgcc dirictory')
+
 #
 # Testing options
 #
@@ -169,7 +172,7 @@ option('have-fcntl', type: 'boolean', value: false,
 option('fstat-bufsiz', type: 'boolean', value: false,
        description: 'use fstat to detect optimum buffer sizes for stdio')
 option('stdio-exit-flush', type: 'boolean', value: false,
-       description: 'flush all runtime allocated bufio files at exit')
+       description: 'flush all runtime allocated bufio files at exit and fflush(NULL)')
 
 #
 # Internationalization options
@@ -228,6 +231,13 @@ option('single-thread', type: 'boolean', value: false,
        description: 'disable support for multiple threads')
 
 #
+# Dynamic loading (libdl) options
+#
+
+option('libdl', type: 'boolean', value: false,
+       description: 'build libdl providing dlopen/dlsym/dlclose/dlerror (requires a supported machine port, default: false)')
+
+#
 # Thread-local storage options
 #
 
@@ -245,6 +255,8 @@ option('tls-rp2040', type: 'boolean', value: false,
        description: 'Use Raspberry Pi RP2040 CPUID register to index thread local storage value')
 option('stack-protector-guard', type: 'combo', choices: ['global', 'tls', 'auto'], value: 'auto',
        description: 'Set stack protection canary type')
+option('tmpdir', type: 'string', value: '',
+       description: 'Directory prefix for tmpnam()/tmpfile() names (P_tmpdir). Must be empty or end with a path separator. Empty means names are created in the current directory.')
 
 #
 # Math options

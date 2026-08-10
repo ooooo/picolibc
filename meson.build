@@ -1,7 +1,7 @@
 #
 # SPDX-License-Identifier: BSD-3-Clause
 #
-# Copyright © 2019-2021 Keith Packard
+# Copyright © 2019-2026 Keith Packard
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -42,7 +42,7 @@ project('picolibc', 'c',
 	],
 	license : 'BSD',
 	meson_version : '>= 0.61',
-	version: '1.8.11'
+	version: '1.8.12'
        )
 
 # When picolibc is embedded as a subproject you probably don't expect
@@ -132,6 +132,7 @@ enable_picocrt_lib = get_option('picocrt-lib')
 picocrt_enable_mmu = get_option('picocrt-enable-mmu')
 test_machine = get_option('test-machine')
 enable_tests = get_option('tests')
+enable_libdl = get_option('libdl')
 if get_option('tests-cdefs') == 'auto'
   enable_cdefs_tests = enable_tests
 else
@@ -692,8 +693,8 @@ have_alloc_size = cc.compiles(alloc_size_code, name : 'attribute __alloc_size__'
 
 # attributes constructor/destructor are a GNU extension - if the compiler doesn't have them, don't test them.
 attr_ctor_dtor_code = '''
-void __attribute__((constructor(101))) ctor (void) {}
-void __attribute__((destructor(101))) dtor (void) {}
+static void __attribute__((constructor(101))) ctor (void) {}
+static void __attribute__((destructor(101))) dtor (void) {}
 '''
 have_attr_ctor_dtor = cc.compiles(attr_ctor_dtor_code, name : 'attributes constructor/destructor', args : werror_c_args)
 
@@ -1015,6 +1016,12 @@ foreach params : [default_target] + targets
     if cc.get_linker_id() == 'ld.eld'
       picolibc_ld_data.set('TLS_PHDRS', 'tls PT_TLS;')
       picolibc_ld_data.set('TLS_INIT_PHDR', 'tls')
+    endif
+
+    if host_cpu_family == 'riscv'
+      picolibc_ld_data.set('RISCV', '')
+    else
+      picolibc_ld_data.set('RISCV', ld_comment)
     endif
 
     default_init_section_template = init_section_template.format('@0@', '''
@@ -1493,6 +1500,19 @@ endif
 conf_data.set('__TINY_STDIO', true, description: 'Picolibc stdio comes from the avr C library')
 conf_data.set('__IO_DEFAULT', '\'@0@\''.format(format_default),
               description: 'The default printf and scanf variants')
+tmpdir = get_option('tmpdir')
+if tmpdir != '' and not tmpdir.endswith('/')
+  error('tmpdir must be empty or end with a path separator, got "@0@"'.format(tmpdir))
+endif
+if tmpdir != ''
+  strlen = find_program('scripts/strlen', required : true)
+  tmpdir_len_result = run_command(strlen, tmpdir, capture: true, check: true)
+  tmplen = tmpdir_len_result.stdout().to_int() + 8
+  conf_data.set('__P_tmpdir', '"@0@"'.format(tmpdir),
+                description: 'Directory prefix for temporary file names (P_tmpdir)')
+  conf_data.set('__L_tmpnam', tmplen,
+                description: 'Size of the tmpnam() buffer (L_tmpnam)')
+endif
 conf_data.set('__IO_SMALL_ULTOA',
               printf_small_ultoa,
               description: 'avoid software division in decimal conversion')
@@ -1689,6 +1709,10 @@ bios_bin = []
 
 subdir('libos')
 
+if enable_libdl
+  subdir('libdl')
+endif
+
 if use_stdlib or has_os_linux or has_os_fallback
   has_os_library = true
 endif
@@ -1760,8 +1784,8 @@ else
   endif
 endif
 
-if crt0_test_variant == 'semihost_smrnmi'
-  test_env.set('QEMU_ADD_SMRNMI', 'true')
+if crt0_test_variant == 'semihost_cfi'
+  test_env.set('QEMU_ADD_ZICFI', 'true')
 endif
 
 crt0_test = 'crt0_' + crt0_test_variant
@@ -1875,7 +1899,7 @@ if oslib_test != ''
                  ['-nostdlib', '-T', picolibc_noflash_ld_string])
     set_variable(test_link_depends_noflash_variable, [picolibc_noflash_ld_value])
   endforeach
-  test_noflash = linkerscript_test_variant == '' and crt0_test_variant != 'semihost_smrnmi'
+  test_noflash = linkerscript_test_variant == '' and crt0_test_variant != 'semihost_smrnmi' and crt0_test_variant != 'semihost_cfi'
 else
   test_link_args = test_link_args_base
   test_link_depends = []
@@ -1999,6 +2023,7 @@ crt0_default = meson.get_external_property('crt0_default', 'crt0')
 if system_libc
   specs_isystem = ''
   specs_libpath = ''
+  specs_libgccpath = ''
   # The '%s' here asks gcc to search for this file in the 'usual' library path
   specs_startfile = '%{-crt0=*:crt0-%*%O%s; :@0@%O%s}'.format(crt0_default)
 else
@@ -2079,6 +2104,27 @@ else
   specs_libpath = '-L' + specs_option_format.format(lib_prefix, lib_buildtype, lib_gen)
 
   #
+  # Build the non-multilib libgcc -L value
+  #
+
+  libgcc_dir_option = get_option('libgccdir')
+  if libgcc_dir_option == ''
+    libgcc_dir = get_option('includedir') / '..' / 'lib' / 'gcc' / gcc_dumpmachine / '%(version)'
+  else
+    libgcc_dir = libgcc_dir_option / '%(version)'
+  endif
+  prefix_libgcc_dir = '%*/@0@'.format(libgcc_dir)
+  libgcc_prefix = picolibc_prefix_format.format(prefix_libgcc_dir)
+
+  buildtype_libgcc_dir = specs_prefix_format.format(libgcc_dir / '%*')
+  libgcc_buildtype = picolibc_buildtype_format.format(buildtype_libgcc_dir)
+
+  gen_libgcc_dir = specs_prefix_format.format(libgcc_dir)
+  libgcc_gen = gen_format.format(gen_libgcc_dir)
+
+  specs_libgccpath = '-L' + specs_option_format.format(libgcc_prefix, libgcc_buildtype, libgcc_gen)
+
+  #
   # Build the non-multilib *startfile options
   #
 
@@ -2111,9 +2157,24 @@ else
     specs_multilibpath = '-L' + specs_option_format.format(multilib_prefix, multilib_buildtype, multilib_gen)
 
     #
+    # Build the multilib libgcc -L value
+    #
+    prefix_multilibgcc_dir = '%*/@0@'.format(libgcc_dir / '%M')
+    multilibgcc_prefix = picolibc_prefix_format.format(prefix_multilibgcc_dir)
+
+    buildtype_multilibgcc_dir = specs_prefix_format.format(libgcc_dir / '%*/%M')
+    multilibgcc_buildtype = picolibc_buildtype_format.format(buildtype_multilibgcc_dir)
+
+    gen_multilibgcc_dir = specs_prefix_format.format(libgcc_dir / '%M')
+    multilibgcc_gen = gen_format.format(gen_multilibgcc_dir)
+
+    specs_multilibgccpath = '-L' + specs_option_format.format(multilibgcc_prefix, multilibgcc_buildtype, multilibgcc_gen)
+
+    #
     # Prepend the multilib -L option to the non-multilib option
     #
     specs_libpath = specs_multilibpath + ' ' + specs_libpath
+    specs_libgccpath = specs_multilibgccpath + ' ' + specs_libgccpath
 
     #
     # Build the multilib *startfile options
@@ -2149,6 +2210,7 @@ endif
 
 specs_data = configuration_data()
 specs_data.set('SPECS_ISYSTEM', specs_isystem)
+specs_data.set('SPECS_LIBGCC_PATH', specs_libgccpath)
 specs_data.set('SPECS_LIBPATH', specs_libpath)
 specs_data.set('SPECS_STARTFILE', specs_startfile)
 specs_data.set('TLSMODEL', tls_model_spec)

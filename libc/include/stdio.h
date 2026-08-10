@@ -481,6 +481,10 @@ FILE *freopen(const char *path, const char *mode, FILE *stream) __nonnull((3)) _
 FILE *fdopen(int, const char *) __malloc_like_with_free(fclose, 1) __picolibc_export;
 FILE *fmemopen(void *buf, size_t size, const char *mode)
     __malloc_like_with_free(fclose, 1) __picolibc_export;
+#if __POSIX_VISIBLE >= 200809
+FILE *open_memstream(char **bufp, size_t *sizep)
+    __malloc_like_with_free(fclose, 1) __picolibc_export;
+#endif
 int   fseek(FILE *stream, long offset, int whence) __nonnull((1)) __picolibc_export;
 int   fsetpos(FILE *stream, const fpos_t *pos) __nonnull((1)) __picolibc_export;
 long  ftell(FILE *stream) __nonnull((1)) __picolibc_export;
@@ -589,14 +593,22 @@ int vfprintf_s(FILE * __restrict stream, const char * __restrict fmt,
 #endif
 
 /*
- * The format of tmpnam names is TXXXXXX, which works with mktemp
+ * P_tmpdir must be empty or end with a path separator; L_tmpnam must fit
+ * P_tmpdir + the template + NUL. Both are set via meson or cmake tmpdir
  */
+#ifdef __L_tmpnam
+#define L_tmpnam __L_tmpnam
+#else
 #define L_tmpnam 8
+#endif
 
-/*
- * tmpnam files are created in the current directory
- */
+#if __MISC_VISIBLE || XSI_VISIBLE
+#ifdef __P_tmpdir
+#define P_tmpdir __P_tmpdir
+#else
 #define P_tmpdir ""
+#endif
+#endif
 
 /*
  * We don't have any way of knowing any underlying POSIX limits,

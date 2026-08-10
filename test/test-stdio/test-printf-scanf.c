@@ -115,6 +115,18 @@ check_vsnprintf(char *str, size_t size, const char *format, ...)
 #endif
 
 #ifndef NO_WIDE_IO
+static int
+check_vswprintf(wchar_t *str, size_t size, const wchar_t *format, ...)
+{
+    int     i;
+    va_list ap;
+
+    va_start(ap, format);
+    i = vswprintf(str, size, format, ap);
+    va_end(ap);
+    return i;
+}
+
 static const struct {
     const wchar_t * const str;
     const wchar_t * const fmt;
@@ -270,6 +282,14 @@ main(void)
             ++errors;
         }
     }
+    {
+        char result[4];
+
+        if (swscanf(L"", L"%[Gdo]", result) != EOF) {
+            printf("swscanf did not report an input failure for an empty string\n");
+            ++errors;
+        }
+    }
 #ifndef NO_MULTI_BYTE
     {
         wchar_t c;
@@ -288,6 +308,53 @@ main(void)
         }
     }
 #endif
+
+    /*
+     * snprintf returns the number of characters that would have been
+     * written, while swprintf returns a negative value on truncation.
+     * "123456" needs 7 characters including the terminating null.
+     */
+    {
+        wchar_t wbuf[8];
+        int     nret;
+        int     wret;
+
+#if ((__GNUC__ == 4 && __GNUC_MINOR__ >= 2) || __GNUC__ > 4)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wformat-truncation"
+#endif
+        nret = snprintf(buf, 6, "123456");
+#if ((__GNUC__ == 4 && __GNUC_MINOR__ >= 2) || __GNUC__ > 4)
+#pragma GCC diagnostic pop
+#endif
+        wret = swprintf(wbuf, 6, L"123456");
+        if (nret != 6 || wret >= 0) {
+            printf("truncation: snprintf returned %d, swprintf returned %d\n", nret, wret);
+            ++errors;
+        }
+        if (swprintf(wbuf, 7, L"123456") != 6 || wcscmp(wbuf, L"123456") != 0) {
+            printf("swprintf: exact fit failed\n");
+            ++errors;
+        }
+        if (swprintf(wbuf, 0, L"123456") >= 0) {
+            printf("swprintf: zero size reported as success\n");
+            ++errors;
+        }
+        if (swprintf(NULL, 0, L"") >= 0) {
+            printf("swprintf: empty zero-size output reported as success\n");
+            ++errors;
+        }
+        nret = check_vsnprintf(buf, 6, "123456");
+        wret = check_vswprintf(wbuf, 6, L"123456");
+        if (nret != 6 || wret >= 0) {
+            printf("truncation: vsnprintf returned %d, vswprintf returned %d\n", nret, wret);
+            ++errors;
+        }
+        if (check_vswprintf(NULL, 0, L"") >= 0) {
+            printf("vswprintf: empty zero-size output reported as success\n");
+            ++errors;
+        }
+    }
 #endif
 
 #if !defined(__IO_NO_FLOATING_POINT)
@@ -309,7 +376,39 @@ main(void)
         errors++;
         fflush(stdout);
     }
+#ifndef NO_MULTI_BYTE
+    r = snprintf(buf, sizeof(buf), "%2$lc %1$d", 3, (wint_t)L'㌰');
+    if (r != 5 || strcmp(buf, "㌰ 3") != 0) {
+        printf("pos: wanted \"㌰ 3\" (ret %d) got \"%s\" (ret %d)\n", 5, buf, r);
+        errors++;
+        fflush(stdout);
+    }
 #endif
+#endif
+
+    {
+        struct {
+            const char *input;
+            const char *format;
+            const char *expected;
+        } scansets[] = {
+            { "aconve-rsion", "%[acveron-]", "aconve-r" },
+            { "-abc",         "%[-a]",       "-a"       },
+            { "abcXYZ",       "%[a-c]",      "abc"      },
+        };
+        unsigned i;
+
+        for (i = 0; i < sizeof(scansets) / sizeof(scansets[0]); i++) {
+            char result[16] = "";
+            int  ret = sscanf(scansets[i].input, scansets[i].format, result);
+
+            if (ret != 1 || strcmp(result, scansets[i].expected) != 0) {
+                printf("scanset %s on %s: wanted %s, got %s (ret %d)\n", scansets[i].format,
+                       scansets[i].input, scansets[i].expected, result, ret);
+                errors++;
+            }
+        }
+    }
 
     /*
      * test snprintf and vsnprintf to make sure they don't
@@ -506,6 +605,33 @@ main(void)
             errors += check_float("< 1", c, buf, "1", x, "");
         else
             errors += check_float("< 1", c, buf, "0.", x - 1, "1");
+    }
+#endif
+
+#if !defined(__IO_NO_FLOATING_POINT)
+    /*
+     * On a matching failure the differing input character must remain
+     * unread. "left777" is used because 'l' cannot start a float and,
+     * unlike 'i' or 'n', does not enter the inf/nan matching path.
+     */
+    {
+        FILE      *f = fmemopen((void *)"left777", 7, "r");
+        float_type fv;
+
+        if (f == NULL) {
+            printf("fmemopen failed\n");
+            errors++;
+        } else {
+            if (fscanf(f, scanf_format, &fv) != 0) {
+                printf("scanf rollback: wanted a matching failure\n");
+                errors++;
+            }
+            if (fgetc(f) != 'l') {
+                printf("scanf rollback: nonmatching input was consumed\n");
+                errors++;
+            }
+            fclose(f);
+        }
     }
 #endif
 

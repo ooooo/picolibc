@@ -47,6 +47,7 @@ tests = [
   'test-ilp32',
   'test-raise',
   'test-regex',
+  'test-riscv-jvt',
   'test-scmpu',
   'test-setjmp',
   'test-strftime',
@@ -118,6 +119,10 @@ test_args = {
   'test-argv-no-flash': ['--args', 'hello world'],
 }
 
+if host_cpu_family == 'aarch64' and test_machine == 'fvp'
+  check_aarch64_fvp_page_table = find_program('check-aarch64-fvp-page-table.py')
+endif
+
 test_skip_native = [
   'test-stack-smash',
   'test-thread-safety',
@@ -161,6 +166,25 @@ foreach params : targets
   _link_depends = get_variable('test_link_depends' + target, test_link_depends) + _libs
   if have_cplusplus
     _cpp_args = target_c_args + get_variable('test_cpp_args' + target, test_cpp_args)
+  endif
+
+  target_arch_profile = ''
+  if host_cpu_family == 'aarch64' and test_machine == 'fvp' and crt0_test_variant == 'semihost'
+    target_arch_profile = cc.get_define('__ARM_ARCH_PROFILE', args: _c_args)
+  endif
+  if host_cpu_family == 'aarch64' and test_machine == 'fvp' and crt0_test_variant == 'semihost' and target_arch_profile == '\'A\''
+    t1 = 'test-crt0-page-table'
+    t1_exe = executable(t1 + target, t1 + '.c',
+                        c_args: _c_args,
+                        link_args: _link_args,
+                        objects: _objs,
+                        link_depends: _link_depends,
+                        include_directories: inc)
+    test(t1 + target,
+         check_aarch64_fvp_page_table,
+         args: ['--cc', cc.cmd_array()[0], t1_exe],
+         depends: t1_exe,
+         suite: 'test')
   endif
 
   if test_noflash
@@ -271,6 +295,19 @@ foreach params : targets
   endif
 
   if have_cplusplus
+    t1 = 'test-inttypes-cplusplus'
+    t1_src = t1 + '.cpp'
+    test(t1 + target,
+         executable(t1 + target, t1_src,
+                    cpp_args: _cpp_args,
+		    link_args: _cpp_args + _link_args,
+		    objects: _objs,
+		    link_depends: _link_depends,
+                    include_directories: inc),
+         depends: bios_bin,
+         suite: 'test',
+         env: test_env)
+
     t1 = 'test-cplusplus'
     t1_src = t1 + '.cpp'
     test(t1 + target,
@@ -295,6 +332,20 @@ foreach params : targets
            suite: 'test-no-flash',
            env: test_env)
     endif
+
+    t1 = 'test-cdefs-cxx03'
+    t1_src = t1 + '.cpp'
+    _cxx03_args = _cpp_args + ['-std=c++03']
+    test(t1 + target,
+         executable(t1 + target, t1_src,
+                    cpp_args: _cxx03_args,
+                    link_args: _cxx03_args + _link_args,
+                    objects: _objs,
+                    link_depends: _link_depends,
+                    include_directories: inc),
+         depends: bios_bin,
+         suite: 'test',
+         env: test_env)
   endif
 
   foreach t1 : tests
@@ -355,6 +406,13 @@ if enable_native_tests
          suite: 'test',
          env: test_env
         )
+
+    test('test-cdefs-cxx03-native',
+         executable('test-cdefs-cxx03-native', 'test-cdefs-cxx03.cpp',
+                    cpp_args: native_cpp_args + ['-std=c++03'],
+                    link_args: native_cpp_args + ['-std=c++03']),
+         suite: 'test',
+         env: test_env)
   endif
 
   foreach t1 : tests
@@ -388,6 +446,10 @@ subdir('test-monetary')
 subdir('test-stdio')
 subdir('test-stdlib')
 subdir('testsuite')
+
+if enable_libdl
+  subdir('test-libdl')
+endif
 
 if has_arm_semihost and oslib_test_variant == 'semihost'
   subdir('semihost')

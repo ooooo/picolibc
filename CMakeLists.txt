@@ -35,7 +35,7 @@
 
 cmake_minimum_required(VERSION 3.20.0)
 
-project(Picolibc VERSION 1.8.11 LANGUAGES C ASM)
+project(Picolibc VERSION 1.8.12 LANGUAGES C ASM)
 
 # Set a default build type if none was specified
 set(default_build_type "MinSizeRel")
@@ -240,6 +240,15 @@ endif()
 
 if(NOT DEFINED __IO_DEFAULT)
   set(__IO_DEFAULT d)
+endif()
+
+# Directory prefix and buffer size for tmpnam()/tmpfile() names. tmpdir must be
+# empty or already end with a path separator (it is concatenated with the
+# template, no slash added); __L_tmpnam must hold tmpdir + "TXXXXXX" + NUL.
+if(DEFINED tmpdir)
+  set(__P_tmpdir ${tmpdir})
+  string(LENGTH ${tmpdir} tmpdir_len)
+  math(EXPR __L_tmpnam "${tmpdir_len} + 8")
 endif()
 
 # math library sets errno
