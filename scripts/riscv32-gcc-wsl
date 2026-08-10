@@ -1,0 +1,73 @@
+#!/usr/bin/env bash
+
+# place this script in the same directory as the windows riscv32-unknown-elf-gcc.exe and run it from WSL to invoke the Windows compiler with the correct paths.
+GCC="/mnt/c/Program Files/ROHM/MatisseRV/bin/riscv32-unknown-elf-gcc.exe"
+
+GCC_B1='-BC:/Program Files/ROHM/MatisseRV/libexec/gcc/riscv32-unknown-elf/16.1.0/'
+GCC_B2='-BC:/Program Files/ROHM/MatisseRV/riscv32-unknown-elf/bin/'
+GCC_INC='C:/Program Files/ROHM/MatisseRV/lib/gcc/riscv32-unknown-elf/16.1.0/include'
+
+convert_path()
+{
+    local p="$1"
+
+    case "$p" in
+        /*)
+            wslpath -m "$p"
+            ;;
+        *)
+            printf '%s\n' "$p"
+            ;;
+    esac
+}
+
+args=()
+need_path=0
+
+for arg in "$@"; do
+
+    if [ "$need_path" = 1 ]; then
+        args+=("$(convert_path "$arg")")
+        need_path=0
+        continue
+    fi
+
+    case "$arg" in
+
+        # 次の引数がパス
+        -o|-MF|-include|-imacros|-isystem|-iquote|-idirafter)
+            args+=("$arg")
+            need_path=1
+            ;;
+
+        # -I/path, -L/path, -B/path
+        -I/*|-L/*|-B/*)
+            prefix="${arg:0:2}"
+            path="${arg:2}"
+            args+=("${prefix}$(convert_path "$path")")
+            ;;
+
+        # --sysroot=/path
+        --sysroot=/*)
+            path="${arg#--sysroot=}"
+            args+=("--sysroot=$(convert_path "$path")")
+            ;;
+
+        # response file
+        @/*)
+            path="${arg#@}"
+            args+=("@$(convert_path "$path")")
+            ;;
+
+        # 通常の絶対パス
+        /*)
+            args+=("$(convert_path "$arg")")
+            ;;
+
+        *)
+            args+=("$arg")
+            ;;
+    esac
+done
+
+exec "$GCC" "$GCC_B1" "$GCC_B2" -isystem "$GCC_INC" "${args[@]}"

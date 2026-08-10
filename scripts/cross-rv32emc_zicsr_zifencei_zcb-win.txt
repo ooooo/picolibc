@@ -1,0 +1,24 @@
+[binaries]
+c = ['/mnt/c/Program Files/ROHM/MatisseRV/bin/riscv32-gcc-wsl', '-BC:/Program Files/ROHM/MatisseRV/libexec/gcc/riscv32-unknown-elf/16.1.0/', '-BC:/Program Files/ROHM/MatisseRV/riscv32-unknown-elf/bin/', '-nostdlib']
+ar = '/mnt/c/Program Files/ROHM/MatisseRV/bin/riscv32-unknown-elf-ar.exe'
+as = '/mnt/c/Program Files/ROHM/MatisseRV/bin/riscv32-unknown-elf-as.exe'
+nm = '/mnt/c/Program Files/ROHM/MatisseRV/bin/riscv32-unknown-elf-nm.exe'
+strip = '/mnt/c/Program Files/ROHM/MatisseRV/bin/riscv32-unknown-elf-strip.exe'
+# only needed to run tests
+exe_wrapper = ['sh', '-c', 'test -z "$PICOLIBC_TEST" || run-riscv "$@"', 'run-riscv']
+
+[host_machine]
+system = 'unknown'
+cpu_family = 'riscv32'
+cpu = 'riscv32'
+endian = 'little'
+
+[properties]
+c_args = ['-msave-restore', '-fshort-enums', '-march=rv32emc_zicsr_zifencei_zcb', '-mabi=ilp32e']
+c_link_args = ['-msave-restore', '-fshort-enums', '-march=rv32emc', '-mabi=ilp32e']
+needs_exe_wrapper = true
+skip_sanity_check = true
+default_flash_addr = '0x00000000'
+default_flash_size = '0x00008000'
+default_ram_addr   = '0x20000000'
+default_ram_size   = '0x00008000'
